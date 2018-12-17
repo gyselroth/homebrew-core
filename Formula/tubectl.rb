@@ -8,6 +8,7 @@ class Tubectl < Formula
   bottle :unneeded
 
   def install
-    bin.install "tubectl"
+    bin.install "tubectl-osx-x64"
+    mv bin/"tubectl-osx-x64", bin/"tubectl"
   end
 end
