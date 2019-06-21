@@ -3,7 +3,7 @@ class Balloonfs < Formula
   homepage "https://github.com/gyselroth/balloon-client-fuse"
   url "https://github.com/gyselroth/tubee-client-cli/releases/download/v1.0.0-alpha5/balloonfs-osx-x64"
   sha256 "adedb4efe8affb669da567138f4faa342df3d759587faa1777d90018e17bc9f5"
-  version ""
+  version "v1.0.0-alpha5"
 
   bottle :unneeded
 
