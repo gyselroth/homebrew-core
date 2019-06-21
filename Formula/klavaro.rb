@@ -1,15 +1,14 @@
 class Klavaro < Formula
   desc "Free touch typing tutor program"
   homepage "https://klavaro.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/klavaro/klavaro-3.03.tar.bz2"
-  sha256 "e0959f21e54e7f4700042a3a14987a7f8fc898701eab4f721ebcf4559a2c87b5"
-  revision 1
+  url "https://downloads.sourceforge.net/project/klavaro/klavaro-3.05.tar.bz2"
+  sha256 "fe82c6c108a3c40ab97902a8874c6d10fd891b4ff1accce757e5cba0e361dd10"
+  revision 2
 
   bottle do
-    sha256 "7c0fc628a833ff67ec8a2af37ed385b6592ef7430337066c4ab54a8fb5380d1f" => :mojave
-    sha256 "de9f3cad2e98abd81d4c9597c3a90dd502aa2ac1586ef49f8f55f3a255d23654" => :high_sierra
-    sha256 "25a171b81e8e90d3c92625e89567abcf8ca6b8f326189e40d90714844bbbfa89" => :sierra
-    sha256 "298080d48f362d502364a1048a6dceb581137c918da31d68d526ffcc14118d64" => :el_capitan
+    sha256 "e7e5581d3c799500af68003a23c4c1235b24e86e1500b68ea9698977d1e03f96" => :mojave
+    sha256 "42b361645e169c196e5cf3efe0dcc4dca90e1cb36bd6a3fa46b477b7b88b2a77" => :high_sierra
+    sha256 "e169711632e0b63cdea433288dc29e6860cd52241cd7681afc7aea0eeb70c1ca" => :sierra
   end
 
   depends_on "intltool" => :build
@@ -20,6 +19,7 @@ class Klavaro < Formula
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
+    rm_rf include
   end
 
   test do

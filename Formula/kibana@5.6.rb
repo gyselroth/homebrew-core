@@ -4,20 +4,21 @@ class KibanaAT56 < Formula
   desc "Analytics and search dashboard for Elasticsearch"
   homepage "https://www.elastic.co/products/kibana"
   url "https://github.com/elastic/kibana.git",
-      :tag      => "v5.6.13",
-      :revision => "689427c076a5a45dc59d113df04bd4522c105391"
+      :tag      => "v5.6.16",
+      :revision => "e4c8b3e8245cbf4f81d0d31476c61125e366c2d9"
 
   bottle do
-    sha256 "18deeaa1b8dad4a91b2ad3ab7986ec69fbf9328e57409a10986f93b00db50d63" => :mojave
-    sha256 "bcaa16ba671d40a45051bef8ffd56b07ae3e5643e6bd1be4a423ab535ae604a6" => :high_sierra
-    sha256 "9497dba02685d1d4cc88c7aed2b79cc6a10cddfc24d76fd2c8d6722f2e44f189" => :sierra
+    cellar :any_skip_relocation
+    sha256 "5718b742a4505d7b5844dac7ae74c8909830a8acf92b9904d26efa177de63a52" => :mojave
+    sha256 "f6f111399387e6d22169f8a9f527fc12c709cd86f2282b919a54433b5a8461c6" => :high_sierra
+    sha256 "0d7822349fe000d31c07d04eb19eb7d2f2038fd1e63f46dcdd6d4ea45a0453c4" => :sierra
   end
 
   keg_only :versioned_formula
 
   resource "node" do
-    url "https://nodejs.org/dist/v6.14.4/node-v6.14.4.tar.xz"
-    sha256 "9a4bfc99787f8bdb07d5ae8b1f00ec3757e7b09c99d11f0e8a5e9a16a134ec0f"
+    url "https://nodejs.org/dist/v6.17.0/node-v6.17.0.tar.xz"
+    sha256 "c1dac78ea71c2e622cea6f94ba97a4be49329a1d36cd05945a1baf1ae8652748"
   end
 
   def install
@@ -31,6 +32,11 @@ class KibanaAT56 < Formula
 
     # trick the build into thinking we've already downloaded the Node.js binary
     mkdir_p buildpath/".node_binaries/#{resource("node").version}/darwin-x64"
+
+    # set MACOSX_DEPLOYMENT_TARGET to compile native addons against libc++
+    inreplace libexec/"node/include/node/common.gypi", "'MACOSX_DEPLOYMENT_TARGET': '10.7',",
+                                                       "'MACOSX_DEPLOYMENT_TARGET': '#{MacOS.version}',"
+    ENV["npm_config_nodedir"] = libexec/"node"
 
     # set npm env and fix cache edge case (https://github.com/Homebrew/brew/pull/37#issuecomment-208840366)
     ENV.prepend_path "PATH", prefix/"libexec/node/bin"
@@ -63,7 +69,7 @@ class KibanaAT56 < Formula
   EOS
   end
 
-  plist_options :manual => "kibana"
+  plist_options :manual => "#{HOMEBREW_PREFIX}/opt/kibana@5.6/bin/kibana"
 
   def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>

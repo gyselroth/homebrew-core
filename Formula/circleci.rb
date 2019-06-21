@@ -3,14 +3,14 @@ class Circleci < Formula
   homepage "https://circleci.com/docs/2.0/local-cli/"
   # Updates should be pushed no more frequently than once per week.
   url "https://github.com/CircleCI-Public/circleci-cli.git",
-      :tag      => "v0.1.4427",
-      :revision => "8bee1e64d2f3eacf849bc25ca670822f9089903d"
+      :tag      => "v0.1.5652",
+      :revision => "8181ba39bfa333b15299af67e033b9c3ca3edfcb"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "fcad27fdb4648103749894ffece58df47057a17424110fd2cdf03fbe3068566e" => :mojave
-    sha256 "7065a47fcb08292e0dd2a8b551d0f99ddb0f3f656b73c6dbe18d7eed9808a0c4" => :high_sierra
-    sha256 "b4ea14c889b5e34c46c00441e2c109a1723f135da3c94dc1d3e41bf66b0be12e" => :sierra
+    sha256 "1299e61a1ce0ce4a5b7d4c48d6e20d929eec6b0ccb7b613ada94ac45df9502a7" => :mojave
+    sha256 "c2192067cea61fe85e993f09189b4cd43f0d3cf07e2a069942532e977f93bcf3" => :high_sierra
+    sha256 "741850a705d26eb10f05e57f38add00133ad61f5f887d4b04b8ade6681cb5af1" => :sierra
   end
 
   depends_on "go" => :build
@@ -30,6 +30,7 @@ class Circleci < Formula
         -X github.com/CircleCI-Public/circleci-cli/version.Version=#{version}
         -X github.com/CircleCI-Public/circleci-cli/version.Commit=#{commit}
       ]
+      system "make", "pack"
       system "go", "build", "-ldflags", ldflags.join(" "),
              "-o", bin/"circleci"
       prefix.install_metafiles

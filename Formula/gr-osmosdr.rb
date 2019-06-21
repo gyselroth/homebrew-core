@@ -4,13 +4,13 @@ class GrOsmosdr < Formula
   url "https://cgit.osmocom.org/gr-osmosdr/snapshot/gr-osmosdr-0.1.4.tar.gz"
   mirror "https://github.com/osmocom/gr-osmosdr/archive/v0.1.4.tar.gz"
   sha256 "bcf9a9b1760e667c41a354e8cd41ef911d0929d5e4a18e0594ccb3320d735066"
-  revision 4
+  revision 7
 
   bottle do
     cellar :any
-    sha256 "03ed53425d62f0c4bd012276f8de1f90bd893baed4c0e1ec459db758bb289de4" => :mojave
-    sha256 "6af8dc42268c450c2b4621f478ab4345f8bd6735a3f7059dd5a7e380057c4aea" => :high_sierra
-    sha256 "36f800b7f6795c07335f9506c5e5176d184f49979a9a6eeb95ffcb0c6fed0cc2" => :sierra
+    sha256 "41b1ffedf51e182e7d66e8d0fb3e652e73fcf34093864a84341315e2e70822ca" => :mojave
+    sha256 "243b45beb970bdff75ba54787d002f46e4f8b34b382ac0303fd87ec639a5b6a2" => :high_sierra
+    sha256 "d37ac0fe72f411cf8e9a5a2635b5651fd598e42f44270113f764e6cea57c1147" => :sierra
   end
 
   depends_on "cmake" => :build

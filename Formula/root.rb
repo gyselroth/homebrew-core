@@ -1,15 +1,16 @@
 class Root < Formula
   desc "Object oriented framework for large scale data analysis"
   homepage "https://root.cern.ch/"
-  url "https://root.cern.ch/download/root_v6.14.06.source.tar.gz"
-  version "6.14.06"
-  sha256 "0fb943b61396f282b289e35c455a9ab60126229be1bd3f04a8f00b37c13ab432"
+  url "https://root.cern.ch/download/root_v6.16.00.source.tar.gz"
+  version "6.16.00"
+  sha256 "2a45055c6091adaa72b977c512f84da8ef92723c30837c7e2643eecc9c5ce4d8"
+  revision 3
   head "https://github.com/root-project/root.git"
 
   bottle do
-    sha256 "d2ba62a7e1a888db4ce32e26217335c101b926e5b2748f218c95c32f409eaf29" => :mojave
-    sha256 "740f87c0c8709ee8b84c72bdf076cbd289ec2f65df553564d70d9f7e6af3615d" => :high_sierra
-    sha256 "b577e12850f46851f8a8066b006cae307af559ba96015d9d98f07b257d1f375a" => :sierra
+    sha256 "2558ee66fabed50042b220de1c44dd76f1abf5d51189d87b9683344cadabf37f" => :mojave
+    sha256 "f58e215c3d48c84c82292765888c70075d3bec7cfd31b95fb23c0bca05e7c68a" => :high_sierra
+    sha256 "912c3a161650b00341b96007ebd614dccecf7fe3cb2bf97612ed801eae660156" => :sierra
   end
 
   # https://github.com/Homebrew/homebrew-core/issues/30726
@@ -36,15 +37,12 @@ class Root < Formula
   depends_on "lz4"
   depends_on "openssl"
   depends_on "pcre"
+  depends_on "python"
   depends_on "tbb"
   depends_on "xrootd"
   depends_on "xz" # for LZMA
-  depends_on "python" => :recommended
-  depends_on "python@2" => :optional
 
   skip_clean "bin"
-
-  needs :cxx11
 
   def install
     # Work around "error: no member named 'signbit' in the global namespace"
@@ -58,59 +56,52 @@ class Root < Formula
               "http://lcgpackages",
               "https://lcgpackages"
 
+    # Fix issue with ROOT 6.12-6.16 on a case-insensitive filesystem
+    # with /usr/local/include included before /usr/local/include/root
+    # Will be fixed in 6.16.02
+    # See https://trac.macports.org/ticket/57007
+    inreplace "core/base/inc/RConfig.h",
+              "<ROOT/RConfig.h>",
+              "\"ROOT/RConfig.h\""
+
+    py_exe = Utils.popen_read("which python3").strip
+    py_prefix = Utils.popen_read("python3 -c 'import sys;print(sys.prefix)'").chomp
+    py_inc = Utils.popen_read("python3 -c 'from distutils import sysconfig;print(sysconfig.get_python_inc(True))'").chomp
+
     args = std_cmake_args + %W[
-      -Dgnuinstall=ON
-      -DCMAKE_INSTALL_ELISPDIR=#{elisp}
+      -Dcxx11=OFF
       -DCLING_CXX_PATH=clang++
-      -Dbuiltin_freetype=ON
+      -DCMAKE_INSTALL_ELISPDIR=#{elisp}
+      -DPYTHON_EXECUTABLE=#{py_exe}
+      -DPYTHON_INCLUDE_DIR=#{py_inc}
+      -DPYTHON_LIBRARY=#{py_prefix}/Python
       -Dbuiltin_cfitsio=OFF
+      -Dbuiltin_freetype=ON
       -Ddavix=ON
-      -Dfitsio=OFF
       -Dfftw3=ON
+      -Dfitsio=OFF
       -Dfortran=ON
       -Dgdml=ON
+      -Dgnuinstall=ON
+      -Dimt=ON
       -Dmathmore=ON
       -Dminuit2=ON
       -Dmysql=OFF
       -Dpgsql=OFF
+      -Dpython=ON
       -Droofit=ON
       -Dssl=ON
-      -Dimt=ON
-      -Dxrootd=ON
       -Dtmva=ON
+      -Dxrootd=ON
     ]
 
-    if build.with?("python") && build.with?("python@2")
-      odie "Root: Does not support building both python 2 and 3 wrappers"
-    elsif build.with?("python") || build.with?("python@2")
-      if build.with? "python@2"
-        ENV.prepend_path "PATH", Formula["python@2"].opt_libexec/"bin"
-        python_executable = Utils.popen_read("which python").strip
-        python_version = Language::Python.major_minor_version("python")
-      elsif build.with? "python"
-        python_executable = Utils.popen_read("which python3").strip
-        python_version = Language::Python.major_minor_version("python3")
-      end
-
-      python_prefix = Utils.popen_read("#{python_executable} -c 'import sys;print(sys.prefix)'").chomp
-      python_include = Utils.popen_read("#{python_executable} -c 'from distutils import sysconfig;print(sysconfig.get_python_inc(True))'").chomp
-      args << "-Dpython=ON"
-
-      # cmake picks up the system's python dylib, even if we have a brewed one
-      if File.exist? "#{python_prefix}/Python"
-        python_library = "#{python_prefix}/Python"
-      elsif File.exist? "#{python_prefix}/lib/lib#{python_version}.a"
-        python_library = "#{python_prefix}/lib/lib#{python_version}.a"
-      elsif File.exist? "#{python_prefix}/lib/lib#{python_version}.dylib"
-        python_library = "#{python_prefix}/lib/lib#{python_version}.dylib"
-      else
-        odie "No libpythonX.Y.{a,dylib} file found!"
-      end
-      args << "-DPYTHON_EXECUTABLE='#{python_executable}'"
-      args << "-DPYTHON_INCLUDE_DIR='#{python_include}'"
-      args << "-DPYTHON_LIBRARY='#{python_library}'"
+    # This will become -DCMAKE_CXX_STANDARD=14 (or 17) in ROOT 6.18
+    if MacOS.version < :mojave
+      args << "-Dcxx14=ON"
+      args << "-Dcxx17=OFF"
     else
-      args << "-Dpython=OFF"
+      args << "-Dcxx14=OFF"
+      args << "-Dcxx17=ON"
     end
 
     mkdir "builddir" do
@@ -142,6 +133,8 @@ class Root < Formula
       pushd #{HOMEBREW_PREFIX} >/dev/null; . bin/thisroot.sh; popd >/dev/null
     For csh/tcsh users:
       source #{HOMEBREW_PREFIX}/bin/thisroot.csh
+    For fish users:
+      . #{HOMEBREW_PREFIX}/bin/thisroot.fish
   EOS
   end
 
@@ -152,16 +145,38 @@ class Root < Formula
         std::cout << "Hello, world!" << std::endl;
       }
     EOS
-    (testpath/"test.bash").write <<~EOS
+
+    # Test ROOT command line mode
+    system "#{bin}/root", "-b", "-l", "-q", "-e", "gSystem->LoadAllLibraries(); 0"
+
+    # Test ROOT executable
+    (testpath/"test_root.bash").write <<~EOS
       . #{bin}/thisroot.sh
       root -l -b -n -q test.C
     EOS
     assert_equal "\nProcessing test.C...\nHello, world!\n",
-                 shell_output("/bin/bash test.bash")
+                 shell_output("/bin/bash test_root.bash")
 
-    if build.with? "python"
-      ENV["PYTHONPATH"] = lib/"root"
-      system "python3", "-c", "import ROOT"
-    end
+    (testpath/"test.cpp").write <<~EOS
+      #include <iostream>
+      #include <TString.h>
+      int main() {
+        std::cout << TString("Hello, world!") << std::endl;
+        return 0;
+      }
+    EOS
+
+    # Test linking
+    (testpath/"test_compile.bash").write <<~EOS
+      . #{bin}/thisroot.sh
+      $(root-config --cxx) $(root-config --cflags) $(root-config --libs) $(root-config --ldflags) test.cpp
+      ./a.out
+    EOS
+    assert_equal "Hello, world!\n",
+                 shell_output("/bin/bash test_compile.bash")
+
+    # Test Python module
+    ENV["PYTHONPATH"] = lib/"root"
+    system "python3", "-c", "import ROOT; ROOT.gSystem.LoadAllLibraries()"
   end
 end

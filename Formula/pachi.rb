@@ -1,6 +1,6 @@
 class Pachi < Formula
   desc "Software for the Board Game of Go/Weiqi/Baduk"
-  homepage "http://pachi.or.cz/"
+  homepage "https://pachi.or.cz/"
   url "https://repo.or.cz/pachi.git/snapshot/pachi-11.00-retsugen.tar.gz"
   sha256 "2aaf9aba098d816d20950d283c8eaed522f3fa71f68390a4c384c0c1ab03cd6f"
   revision 1
@@ -15,7 +15,7 @@ class Pachi < Formula
     sha256 "88480b1583b55e3eb05dd1f3b32617024873465f09d19e5998c2c81afb4d9dba" => :yosemite
   end
 
-  fails_with :clang if MacOS.version <= :mavericks
+  fails_with :clang if MacOS.version == :mavericks
 
   resource "patterns" do
     url "https://sainet-dist.s3.amazonaws.com/pachi_patterns.zip"

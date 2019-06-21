@@ -1,20 +1,21 @@
 class Socat < Formula
   desc "netcat on steroids"
   homepage "http://www.dest-unreach.org/socat/"
-  url "http://www.dest-unreach.org/socat/download/socat-1.7.3.2.tar.gz"
-  sha256 "ce3efc17e3e544876ebce7cd6c85b3c279fda057b2857fcaaf67b9ab8bdaf034"
-  revision 2
+  url "http://www.dest-unreach.org/socat/download/socat-1.7.3.3.tar.gz"
+  sha256 "8cc0eaee73e646001c64adaab3e496ed20d4d729aaaf939df2a761e99c674372"
 
   bottle do
     cellar :any
-    sha256 "492cd9ef5b2f6bc959a8c5618a627f40b8e386d337ed4f5c4fc534d4daeb8c8b" => :mojave
-    sha256 "8440c4f765cf7c068461e33088e80057fbfa6be598107666714ba7cd0bb8c97d" => :high_sierra
-    sha256 "c630c4273615556c167da5875a67e28d79e51bc7493eb07ba73b7f7fead14372" => :sierra
-    sha256 "78787f35cdbc55bc5bce5f12c253eace7db1ae39767d55ad1e032eadc4f33ad3" => :el_capitan
+    sha256 "8df52f1aac80cb54571c817acf3dc3a37dc7c6cc61efda3ff5d894b802e41488" => :mojave
+    sha256 "146f0a748cf86284207e7a23f178eace6019d861add738fca74e74171a079fb6" => :high_sierra
+    sha256 "c17ddaf91194b3b06845c63f9d38f364612a5bbee315ff716eccd3b89a543bc2" => :sierra
   end
 
   depends_on "openssl"
   depends_on "readline"
+
+  # patch for type conflict, sent upstream
+  patch :p0, :DATA
 
   def install
     system "./configure", "--prefix=#{prefix}", "--mandir=#{man}"
@@ -26,3 +27,16 @@ class Socat < Formula
     assert_match "HTTP/1.0", output.lines.first
   end
 end
+
+__END__
+--- xio-termios.h	2019-05-11 09:10:55.000000000 +0900
++++ xio-termios.h	2019-05-11 09:11:13.000000000 +0900
+@@ -148,7 +148,7 @@
+ extern int xiotermios_value(int fd, int word, tcflag_t mask, tcflag_t value);
+ extern int xiotermios_char(int fd, int n, unsigned char c);
+ #ifdef HAVE_TERMIOS_ISPEED
+-extern int xiotermios_speed(int fd, int n, unsigned int speed);
++extern int xiotermios_speed(int fd, int n, speed_t speed);
+ #endif
+ extern int xiotermios_spec(int fd, int optcode);
+ extern int xiotermios_flush(int fd);

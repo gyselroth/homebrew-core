@@ -1,14 +1,13 @@
 class Pdns < Formula
   desc "Authoritative nameserver"
   homepage "https://www.powerdns.com"
-  url "https://downloads.powerdns.com/releases/pdns-4.1.4.tar.bz2"
-  sha256 "e9408603383d529b3bbee2509b73187d2186c502a9b052d07e250cd8f3873ed5"
+  url "https://downloads.powerdns.com/releases/pdns-4.1.8.tar.bz2"
+  sha256 "94561132f46c08f646399511b680ce8cda150fd2b8e3d38c0b90b4187163e617"
 
   bottle do
-    sha256 "bc1a65731abdae414d570226baba57f4c36b1052422d2382f40a8c53536eb5aa" => :mojave
-    sha256 "1c11ec28d719c51ef467f008f4237873317f03feb414d29a220cc4207552ff95" => :high_sierra
-    sha256 "bfc38558f2e8c7a2e76e7757ed7a89d1c384fd25bcd9ca8882153dc73f61be4b" => :sierra
-    sha256 "33926c7c32351853246ffbaef636fcc24dfd8516afead31e84f3a151daba9816" => :el_capitan
+    sha256 "44cef8a6fdbb901422ff37309f5080bbeda9eeafc7297cfe241c5b7e6daea09b" => :mojave
+    sha256 "3f1dc45321b7c14074baec9a9a53d7fb3cd5ca069ccca589f70fa15ff83e446d" => :high_sierra
+    sha256 "4196afa3c93a17356a69d96458e2792c5636c9005363892add5a9a9311c0f8f3" => :sierra
   end
 
   head do
@@ -20,18 +19,11 @@ class Pdns < Formula
     depends_on "ragel"
   end
 
-  option "with-postgresql", "Enable the PostgreSQL backend"
-  option "with-remote", "enable the Remote backend"
-
-  deprecated_option "pgsql" => "with-postgresql"
-  deprecated_option "with-pgsql" => "with-postgresql"
-
   depends_on "pkg-config" => :build
   depends_on "boost"
   depends_on "lua"
   depends_on "openssl"
   depends_on "sqlite"
-  depends_on "postgresql" => :optional
 
   def install
     # Fix "configure: error: cannot find boost/program_options.hpp"
@@ -43,21 +35,11 @@ class Pdns < Formula
       --with-lua
       --with-openssl=#{Formula["openssl"].opt_prefix}
       --with-sqlite3
+      --with-modules=gsqlite3
     ]
-
-    # Include the PostgreSQL backend if requested
-    if build.with? "postgresql"
-      args << "--with-modules=gsqlite3 gpgsql"
-    elsif build.with? "remote"
-      args << "--with-modules=gsqlite3 remote"
-    else
-      # SQLite3 backend only is the default
-      args << "--with-modules=gsqlite3"
-    end
 
     system "./bootstrap" if build.head?
     system "./configure", *args
-
     system "make", "install"
   end
 

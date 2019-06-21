@@ -1,14 +1,14 @@
 class Libvirt < Formula
   desc "C virtualization API"
   homepage "https://www.libvirt.org"
-  url "https://libvirt.org/sources/libvirt-4.9.0.tar.xz"
-  sha256 "4fd4bfe7312b7996a817c7919cf0062de0d5b3c400c93bd30855a46c40dd455a"
+  url "https://libvirt.org/sources/libvirt-5.4.0.tar.xz"
+  sha256 "1cfa802081bee09fd0ddfa97bd491e6554e25fa59f7a7758b41d8aef53458e7b"
   head "https://github.com/libvirt/libvirt.git"
 
   bottle do
-    sha256 "28567968e4eea5fb6fcde271745f4011591620173a444be047f62fa5e37e6aaa" => :mojave
-    sha256 "f14f8eefa731eb7761dd03d63f2fc937ebc0dcc26f13b7acad75ac9d27ca29e7" => :high_sierra
-    sha256 "c51bcefec712847ce9ae8e36bc2a6536109a53884499023f84c70b46fd8d205a" => :sierra
+    sha256 "a9c0b1b4466e2d3b87565b2b893baa981e54082d0e8e31d7beeb5cb4add0a6f8" => :mojave
+    sha256 "e5a42a756d659e1423fff10dbbf1ff96c63da6f0e0214a04d67d10b714c29a21" => :high_sierra
+    sha256 "8478162f9cad2897bb817589d85d03176ffe894482cf1a2cb5a5eebb0d2bf34e" => :sierra
   end
 
   depends_on "pkg-config" => :build
@@ -47,9 +47,6 @@ class Libvirt < Formula
     # Compilation of docs doesn't get done if we jump straight to "make install"
     system "make"
     system "make", "install"
-
-    # Update the SASL config file with the Homebrew prefix
-    inreplace "#{etc}/sasl2/libvirt.conf", "/etc/", "#{HOMEBREW_PREFIX}/etc/"
 
     # Update the libvirt daemon config file to reflect the Homebrew prefix
     inreplace "#{etc}/libvirt/libvirtd.conf" do |s|

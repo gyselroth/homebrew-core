@@ -1,21 +1,21 @@
 class Baobab < Formula
   desc "Gnome disk usage analyzer"
   homepage "https://wiki.gnome.org/Apps/Baobab"
-  url "https://download.gnome.org/sources/baobab/3.30/baobab-3.30.0.tar.xz"
-  sha256 "5e4dd06f241eb32f00850efa1a4541cee088de480be2b52d788143187410a74f"
+  url "https://download.gnome.org/sources/baobab/3.32/baobab-3.32.0.tar.xz"
+  sha256 "39414ce94045b35768acddf72d341e7d436cd71298994379d9cec50b57d2632c"
+  revision 1
 
   bottle do
-    sha256 "b63fcc8dd3de87dc5ccb37b51a60038eb481f457ef93af3418600b0cbcf600f6" => :mojave
-    sha256 "11f6b1bc93bc07d3d029437fca774875c253d0979b689e0e3515da2cd7f62faa" => :high_sierra
-    sha256 "2ae6e39ef772e7a43fd04a58c65576b2fd828398f05138656ff48475a9f92626" => :sierra
-    sha256 "fac932ecf76732c1284ab91d1da849a514e5b818a684de9b2d4b792cfc6d9a37" => :el_capitan
+    sha256 "720156b89e707645562c7d4bbe6f630dd85a371588a69dca181356d21d445500" => :mojave
+    sha256 "754b24a65120fc1aa7d289fc357ed45c7305e802d5d0d71962bd8fde886b3d67" => :high_sierra
+    sha256 "881bb64db834d11db421bd419195c4bda0b750094f24cbd4dbdb469684af7d88" => :sierra
   end
 
   depends_on "itstool" => :build
   depends_on "meson" => :build
   depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "python@2" => :build
+  depends_on "python" => :build
   depends_on "vala" => :build
   depends_on "adwaita-icon-theme"
   depends_on "gtk+3"

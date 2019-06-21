@@ -1,31 +1,31 @@
 class Geoipupdate < Formula
   desc "Automatic updates of GeoIP2 and GeoIP Legacy databases"
   homepage "https://github.com/maxmind/geoipupdate"
-  url "https://github.com/maxmind/geoipupdate/releases/download/v3.1.1/geoipupdate-3.1.1.tar.gz"
-  sha256 "3de22e3fe3282024288a00807bbea9a1ffa2d1e8fe9c611f4b14a5b4d8ebe08a"
+  url "https://github.com/maxmind/geoipupdate/archive/v4.0.3.tar.gz"
+  sha256 "d8257e53091cef5591745f2cf5c730a0431e3b8440903709f1707ae4e291bb4a"
+  head "https://github.com/maxmind/geoipupdate.git"
 
   bottle do
-    sha256 "9cf68c91a00193bed2bd55b3c2d8add1fa937433a429af7c01829b14a58eb7fa" => :mojave
-    sha256 "1e45c489ab5d3022b71e00adca105287de4175ae999552a1f0f62981a16cbf4c" => :high_sierra
-    sha256 "d13fd47dd374265af81e2824335b714bd647359671f82ed6643ae988722647fc" => :sierra
-    sha256 "a8fdd107eca63868f7ae9e216f3ecab4bb1c0ce635d9bda0fdb03d35f37d1380" => :el_capitan
+    sha256 "9258106805ea114bbc7703b855b8cf08f765457ed2fe924d46b68e5c01a1baba" => :mojave
+    sha256 "8aa639ac343793ac2eeca63302dff9bb8df629a6740ca1b4fbc54468196ffeac" => :high_sierra
+    sha256 "4e75d3e839c3e89ef8cadb332c94c6710b109eca8e9be7a8f60f05f609a11b08" => :sierra
   end
 
-  head do
-    url "https://github.com/maxmind/geoipupdate.git"
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
-  end
+  depends_on "go" => :build
+  depends_on "pandoc" => :build
 
   def install
-    system "./bootstrap" if build.head?
-    system "./configure", "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--datadir=#{var}",
-                          "--prefix=#{prefix}",
-                          "--sysconfdir=#{etc}"
-    system "make", "install"
+    ENV["GOPATH"] = buildpath
+    (buildpath/"src/github.com/maxmind/geoipupdate").install buildpath.children
+
+    cd "src/github.com/maxmind/geoipupdate" do
+      system "make", "CONFFILE=#{etc}/GeoIP.conf", "DATADIR=#{var}/GeoIP", "VERSION=#{version} (homebrew)"
+
+      bin.install  "build/geoipupdate"
+      etc.install  "build/GeoIP.conf"
+      man1.install "build/geoipupdate.1"
+      man5.install "build/GeoIP.conf.5"
+    end
   end
 
   def post_install

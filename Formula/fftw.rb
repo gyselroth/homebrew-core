@@ -3,38 +3,34 @@ class Fftw < Formula
   homepage "http://www.fftw.org"
   url "http://fftw.org/fftw-3.3.8.tar.gz"
   sha256 "6113262f6e92c5bd474f2875fa1b01054c4ad5040f6b0da7c03c98821d9ae303"
+  revision 1
 
   bottle do
     cellar :any
-    sha256 "9de0f472ee7346aca3d44e10c94f4c3fcb89f0c3ba223aaaa530a4a3d9234980" => :mojave
-    sha256 "79b08a5da9b091c43d4fdaabd73ecb6e4dba6525598d376d7d74bdf5d1183acc" => :high_sierra
-    sha256 "17f2f88898b2754adb35f19857cd7c80966299fcdf2158cc1466b054deaa460e" => :sierra
-    sha256 "a94c5f646948f918e986ab0be56672ac52f527debe1ed4cc783fd1ba6c99fe73" => :el_capitan
+    sha256 "fafc0d1b43619cf3ac63946a4380782747903378dfb4f7b21387c40131ad2d59" => :mojave
+    sha256 "da4329aec211bdc19e9404b35318517d8a3d029dde6e0e28dac646330a7554c4" => :high_sierra
+    sha256 "eb140060084d40bc484f8e7048b516b7afe92902c6da04f9e283bfa83f271551" => :sierra
   end
 
-  option "with-mpi", "Enable MPI parallel transforms"
-  option "with-openmp", "Enable OpenMP parallel transforms"
-  option "without-fortran", "Disable Fortran bindings"
+  depends_on "gcc"
+  depends_on "open-mpi"
 
-  depends_on "gcc" if build.with?("fortran") || build.with?("openmp")
-
-  depends_on "open-mpi" if build.with? "mpi"
-
-  fails_with :clang if build.with? "openmp"
+  fails_with :clang
 
   def install
-    args = ["--enable-shared",
-            "--disable-debug",
-            "--prefix=#{prefix}",
-            "--enable-threads",
-            "--disable-dependency-tracking"]
-    simd_args = ["--enable-sse2"]
-    simd_args << "--enable-avx" if ENV.compiler == :clang && Hardware::CPU.avx? && !build.bottle?
-    simd_args << "--enable-avx2" if ENV.compiler == :clang && Hardware::CPU.avx2? && !build.bottle?
+    args = [
+      "--enable-shared",
+      "--disable-debug",
+      "--prefix=#{prefix}",
+      "--enable-threads",
+      "--disable-dependency-tracking",
+      "--enable-mpi",
+      "--enable-openmp",
+    ]
 
-    args << "--disable-fortran" if build.without? "fortran"
-    args << "--enable-mpi" if build.with? "mpi"
-    args << "--enable-openmp" if build.with? "openmp"
+    # FFTW supports runtime detection of CPU capabilities, so it is safe to
+    # use with --enable-avx and the code will still run on all CPUs
+    simd_args = ["--enable-sse2", "--enable-avx"]
 
     # single precision
     # enable-sse2, enable-avx and enable-avx2 work for both single and double precision

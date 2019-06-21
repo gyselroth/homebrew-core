@@ -3,14 +3,15 @@ require "language/node"
 class Triton < Formula
   desc "Joyent Triton CLI"
   homepage "https://www.npmjs.com/package/triton"
-  url "https://registry.npmjs.org/triton/-/triton-6.1.2.tgz"
-  sha256 "8178ba4944ec4bdd889f512c75757b4957a849cd1a25a156c6a4590c6f51daaa"
+  url "https://registry.npmjs.org/triton/-/triton-7.1.1.tgz"
+  sha256 "24a1f697ee71451893f108dba9e4a5a7830cefe22028d98b504b3d2fe65ab2fe"
+  revision 1
 
   bottle do
-    sha256 "8076f9d3e55399ba25ab931a19518189d5cd6e01241171140b3a42a97e98c4ae" => :mojave
-    sha256 "636d290a02708b0da5bd5253255992577582f7f302c1525646a05dd12106e189" => :high_sierra
-    sha256 "6c50d2c6a7afa147faf8933c7ab6eefcede05a12aadcc5060b58b0883d0f8089" => :sierra
-    sha256 "b0aa58088e9ae79da67cfcb9c277116b53906e1a528629edb8350c797976568d" => :el_capitan
+    cellar :any_skip_relocation
+    sha256 "ac5ad301b021c6e5ca98e44ef22c6f84d812fed18a6f66a2e1ebf3692d77134b" => :mojave
+    sha256 "d88a47d97195784e7819e0f619f13054bb30227bf14210ff61fc23a0a278c0a0" => :high_sierra
+    sha256 "93f600d3e1e5e55d8a92f6bd8d93d5a61d3cbe1d38d98695393fe15aeef3a475" => :sierra
   end
 
   depends_on "node"
@@ -18,6 +19,7 @@ class Triton < Formula
   def install
     system "npm", "install", *Language::Node.std_npm_install_args(libexec)
     bin.install_symlink Dir["#{libexec}/bin/*"]
+    (bash_completion/"triton").write `#{bin}/triton completion`
   end
 
   test do

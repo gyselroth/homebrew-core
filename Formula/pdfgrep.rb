@@ -1,15 +1,14 @@
 class Pdfgrep < Formula
   desc "Search PDFs for strings matching a regular expression"
   homepage "https://pdfgrep.org/"
-  url "https://pdfgrep.org/download/pdfgrep-2.1.1.tar.gz"
-  sha256 "2c8155f30fe5d9d8ec4340e48133ed0b241496bbebe29498931f975c67a10c0b"
+  url "https://pdfgrep.org/download/pdfgrep-2.1.2.tar.gz"
+  sha256 "0ef3dca1d749323f08112ffe68e6f4eb7bc25f56f90a2e933db477261b082aba"
 
   bottle do
     cellar :any
-    sha256 "d60488a632255a11357beea91d489bbb707d883cd549140ffdb2b1f8abe193dc" => :mojave
-    sha256 "164e7937ccf496ae35b3abbb5f7718a09428a25b9d67b7d6e35f7f6a55e06ac7" => :high_sierra
-    sha256 "99b80991db034c80573ab2153c831b9feccf535ca453ce3ffa770561e91e95b2" => :sierra
-    sha256 "633b29af2386f3feaf857ba3cd44258c614295c0b49f32ed95292abfb1c434b2" => :el_capitan
+    sha256 "4e6828ef5db24086dae00e10c9c18671352303c6e79a2148f62bd9104678ea08" => :mojave
+    sha256 "95ffadce5ed5baa82a48c71e1bb8915d080c9e9d4a14e63982945eb543e58b10" => :high_sierra
+    sha256 "b004e7801489c6cb0361c5032278d11cafd4ace151a02ee97214c79dba0f89be" => :sierra
   end
 
   head do
@@ -21,18 +20,14 @@ class Pdfgrep < Formula
 
   depends_on "pkg-config" => :build
   depends_on "libgcrypt"
+  depends_on "pcre"
   depends_on "poppler"
-  depends_on "pcre" => :optional
-
-  needs :cxx11
 
   def install
     ENV.cxx11
     system "./autogen.sh" if build.head?
 
-    args = %W[--disable-dependency-tracking --prefix=#{prefix}]
-    args << "--without-libpcre" if build.without? "pcre"
-    system "./configure", *args
+    system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
 
     ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
     system "make", "install"

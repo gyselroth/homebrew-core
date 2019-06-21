@@ -1,29 +1,28 @@
 class Openblas < Formula
   desc "Optimized BLAS library"
   homepage "https://www.openblas.net/"
-  url "https://github.com/xianyi/OpenBLAS/archive/v0.3.4.tar.gz"
-  sha256 "4b4b4453251e9edb5f57465bf2b3cf67b19d811d50c8588cdf2ea1f201bb834f"
+  url "https://github.com/xianyi/OpenBLAS/archive/v0.3.6.tar.gz"
+  sha256 "e64c8fe083832ffbc1459ab6c72f71d53afd3b36e8497c922a15a06b72e9002f"
+  revision 1
   head "https://github.com/xianyi/OpenBLAS.git", :branch => "develop"
 
   bottle do
     cellar :any
-    sha256 "8e793c793676bfcec1871086beb2388554af4f043bc913ae1c6ed225f0dd1b06" => :mojave
-    sha256 "9b8be755e4700ab9e4d8f778682483f8f9353ee468ed7919f2607e3b3abcb933" => :high_sierra
-    sha256 "82a17700bad90768044add63c810c6e530bb93f23542e4fd22bc6e50ea669ced" => :sierra
+    sha256 "ce1788eedcf1776fcad04ae78cb81e7141e7db07762dafb44118c9cfb7748de0" => :mojave
+    sha256 "50d5f9b0eae2a5b3c97c4a5adb23cd9d7a8e78c2dee9b7a8ea789185aed64b1e" => :high_sierra
+    sha256 "54d4bd0bd7115090d40200f59ff71d36e60dc3a03bc4538a01050891137c7e7f" => :sierra
   end
 
   keg_only :provided_by_macos,
            "macOS provides BLAS and LAPACK in the Accelerate framework"
 
-  option "with-openmp", "Enable parallel computations with OpenMP"
-
   depends_on "gcc" # for gfortran
-
-  fails_with :clang if build.with? "openmp"
+  fails_with :clang
 
   def install
-    ENV["DYNAMIC_ARCH"] = "1" if build.bottle?
-    ENV["USE_OPENMP"] = "1" if build.with? "openmp"
+    ENV["DYNAMIC_ARCH"] = "1"
+    ENV["USE_OPENMP"] = "1"
+    ENV["NO_AVX512"] = "1"
 
     # Must call in two steps
     system "make", "CC=#{ENV.cc}", "FC=gfortran", "libs", "netlib", "shared"

@@ -1,14 +1,14 @@
 class Ansifilter < Formula
   desc "Strip or convert ANSI codes into HTML, (La)Tex, RTF, or BBCode"
   homepage "http://www.andre-simon.de/doku/ansifilter/ansifilter.html"
-  url "http://www.andre-simon.de/zip/ansifilter-2.12.tar.bz2"
-  sha256 "a01c36f515711019a0cdf495056ea68ab500d4325cf5d66fd28182d443615b6b"
+  url "http://www.andre-simon.de/zip/ansifilter-2.14.tar.bz2"
+  sha256 "e2eee3912718b226d3217e2848e5c5a447bf30b7fbb9f0ebc8dd4ddfeb4797af"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "54ac35d7070d268ddccfb365b02df23488642309bbf2f28bde95b79d8000915d" => :mojave
-    sha256 "bc8b44b251714842c9f4b338f8ba129f3834ecf24b85247278e54e03033bbc69" => :high_sierra
-    sha256 "66e69a7a4fe7190d7975fe414a43423bdd271dcf991017f3ce7e1f2f44b19590" => :sierra
+    sha256 "78a752145456f9be0bf7eb0639c0797ee61f262d3305c95ebd3efafd43568176" => :mojave
+    sha256 "0038d6bc9d690591df08c050a63fac325174df8c6cb64264524199f4b0c000c5" => :high_sierra
+    sha256 "3b242df11f164808dcc618830b5ecd0ac85f1ecc14943a6695eec0bd849327ce" => :sierra
   end
 
   def install

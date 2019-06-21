@@ -1,14 +1,14 @@
 class Akamai < Formula
   desc "CLI toolkit for working with Akamai's APIs"
   homepage "https://github.com/akamai/cli"
-  url "https://github.com/akamai/cli/archive/1.1.0.tar.gz"
-  sha256 "d1fcb43ad1792ed9d911e2fde9ca151aeef06c03c49258c40a308be69c73adb2"
+  url "https://github.com/akamai/cli/archive/1.1.4.tar.gz"
+  sha256 "af87d96a71882c98135b5cfb84ed421a246999979b8d2a927507cfcb94ff8242"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "8524d114bdea37d871e66f1d83eae456851d2a7427e42fd8843f674127f1b2d4" => :mojave
-    sha256 "8080e803f11d79173b5d7da51f1c2182b8cb8e1dfc71af5f428fb53e5f32e60c" => :high_sierra
-    sha256 "f3b1f4afacb62da8b49822fb664e2074015eef863079c79e55f85696bd888b9e" => :sierra
+    sha256 "e9850383e5d94f1e8c5c1b813cdb735a81aa0e5d073e23d797cebc6e895fe96d" => :mojave
+    sha256 "cf2b12e909cf2b622e2c2913dc5b20d86a45a6fa3f5b7de551dd30cde142d3df" => :high_sierra
+    sha256 "a79cf0cbf309d832059bfa4a62be000ac39eb12220491ad3d93e7ca7086fcf4c" => :sierra
   end
 
   depends_on "dep" => :build

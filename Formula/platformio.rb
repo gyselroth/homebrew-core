@@ -3,26 +3,26 @@ class Platformio < Formula
 
   desc "Ecosystem for IoT development (Arduino and ARM mbed compatible)"
   homepage "https://platformio.org/"
-  url "https://files.pythonhosted.org/packages/8c/d0/99da2ec4a2f0f2ca3a6122a29c20a8157fcfffabce2e4227744f9cb3e5d6/platformio-3.6.3.tar.gz"
-  sha256 "5b339df778f846392e37b49d98a44ef561425ba811a1e51c2b2e1b4445e3ce03"
+  url "https://files.pythonhosted.org/packages/dc/19/b92d62fdb3937f9f46ed833e27005923949a960fa3fe78185d4f3549bd09/platformio-3.6.7.tar.gz"
+  sha256 "eb698b93bfc06010a2a210aacadc5d08efd4f05fe5494eaf171ef54618cead36"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "f6672bce44fcb4512a3c85587573d36c5553b844c8f6be0129ff593e3ed6e517" => :mojave
-    sha256 "0b287bbbc021dd041b76d25c84728eada32d41e2c948552069818f784959d503" => :high_sierra
-    sha256 "097c18ade34fd2d4f86242b7978a564c75df380d573e96157680294a23f229da" => :sierra
+    sha256 "44564b3fe02c74a0d4f76ff45aee28546b0e8795bcc69e71a26aa80196257fb1" => :mojave
+    sha256 "dfe9f15b23aed3a33ee0063b1c6a53a7ff288392e136d90abe38a27a985fdd38" => :high_sierra
+    sha256 "15d1add995b55416e0d42dad9e884e099416a14650e975e90ec91ff6a418a5bf" => :sierra
   end
 
   depends_on "python@2" # does not support Python 3
 
   resource "bottle" do
-    url "https://files.pythonhosted.org/packages/38/6d/593c8338851a249c9981322bab2bcffade1101127dce27d4c682ed234558/bottle-0.12.15.tar.gz"
-    sha256 "b5529f8956682320b90f518041269784a37770d5fcc1ae6d70d288e9fc060fbc"
+    url "https://files.pythonhosted.org/packages/32/4e/ed046324d5ec980c252987c1dca191e001b9f06ceffaebf037eef469937c/bottle-0.12.16.tar.gz"
+    sha256 "9c310da61e7df2b6ac257d8a90811899ccb3a9743e77e947101072a2e3186726"
   end
 
   resource "certifi" do
-    url "https://files.pythonhosted.org/packages/55/54/3ce77783acba5979ce16674fc98b1920d00b01d337cfaaf5db22543505ed/certifi-2018.11.29.tar.gz"
-    sha256 "47f9c83ef4c0c621eaef743f133f09fa8a74a9b75f037e8624f83bd1b6626cb7"
+    url "https://files.pythonhosted.org/packages/06/b8/d1ea38513c22e8c906275d135818fee16ad8495985956a9b7e2bb21942a1/certifi-2019.3.9.tar.gz"
+    sha256 "b26104d6835d1f5e49452a26eb2ff87fe7090b89dfcaee5ea2212697e1e1d7ae"
   end
 
   resource "chardet" do
@@ -61,8 +61,8 @@ class Platformio < Formula
   end
 
   resource "urllib3" do
-    url "https://files.pythonhosted.org/packages/b1/53/37d82ab391393565f2f831b8eedbffd57db5a718216f82f1a8b4d381a1c1/urllib3-1.24.1.tar.gz"
-    sha256 "de9529817c93f27c8ccbfead6985011db27bd0ddfcdb2d86f3f663385c6a9c22"
+    url "https://files.pythonhosted.org/packages/fd/fa/b21f4f03176463a6cccdb612a5ff71b927e5224e83483012747c12fc5d62/urllib3-1.24.2.tar.gz"
+    sha256 "9a247273df709c4fedb38c711e44292304f73f39ab01beda9f6b9fc375669ac3"
   end
 
   def install

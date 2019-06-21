@@ -1,23 +1,19 @@
 class MysqlAT57 < Formula
   desc "Open source relational database management system"
   homepage "https://dev.mysql.com/doc/refman/5.7/en/"
-  url "https://cdn.mysql.com/Downloads/MySQL-5.7/mysql-boost-5.7.24.tar.gz"
-  sha256 "b980dced9c9eb3385cca44870facc220504ca011196c5a19c2bfe43d3f5d6212"
+  url "https://cdn.mysql.com/Downloads/MySQL-5.7/mysql-boost-5.7.26.tar.gz"
+  sha256 "effca6d3aceebc286a9fb046257330d125cc2f4def87081c286bfc4df3d974d1"
 
   bottle do
-    rebuild 1
-    sha256 "729dd1d4a74b33c896db22208cd2a32056f669229fe2af755f250267c3a2365a" => :mojave
-    sha256 "667541324e582ceb8c1adb66333e41c5fdb7b054fb25d8203dcfe5dd3f3f0f8b" => :high_sierra
-    sha256 "889653b5b94e283f3adecb4bb4aab88e65608274fe6da4ee35da0acb30608301" => :sierra
+    sha256 "815ae8aa8c765f57e806ff9197eaa5783b138c493d68333c553b25f441b6af3e" => :mojave
+    sha256 "67596a278a3810535dcc997f8c644d554850b3bdb25e95c02ba8c3c5f0cfd1be" => :high_sierra
+    sha256 "3d50a2e8a82bc6265b47aaacfff203a82587a2d3cdb9eef0a74845ccc8b41f37" => :sierra
   end
 
   keg_only :versioned_formula
 
   depends_on "cmake" => :build
-  # https://github.com/Homebrew/homebrew-core/issues/1475
-  # Needs at least Clang 3.3, which shipped alongside Lion.
-  # Note: MySQL themselves don't support anything below El Capitan.
-  depends_on :macos => :lion
+
   depends_on "openssl"
 
   def datadir

@@ -2,15 +2,14 @@ class Calicoctl < Formula
   desc "Calico CLI tool"
   homepage "https://www.projectcalico.org"
   url "https://github.com/projectcalico/calicoctl.git",
-      :tag      => "v3.1.3",
-      :revision => "231083c2ce934b7946ebed3ed96f4fc1a3ba4f69"
+      :tag      => "v3.7.3",
+      :revision => "3be51cfc310d7d7ffac7b11e3c058f1c240347fa"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "f16fc8a7934c3dd46552224353a1a36a5ed1fc9c5265a81e48f1dc4226646b9e" => :mojave
-    sha256 "0a050b4fd951cd8cf7593a436fe99571d6e7ce325a2449a12d6168972a1c714c" => :high_sierra
-    sha256 "1d8f80446c3395ea05dce58b3ff04f9ec9b5bafee6598c0c5704475e00f1786d" => :sierra
-    sha256 "f3c800eb604d967120d6b26897b25a85b2e877d05502baaa17ecd1d8dbbdb24a" => :el_capitan
+    sha256 "11540d057076679aa09cfec1afdbbc3124fbadc1a894152747af20d379972464" => :mojave
+    sha256 "3217ecdd877cab638d49357398098f50574c896b3884f61aa952db05d7464744" => :high_sierra
+    sha256 "00acb7f161a511303d1013749d5b2e63d8500b589560647fb3e0a95c61af0982" => :sierra
   end
 
   depends_on "glide" => :build
@@ -23,7 +22,9 @@ class Calicoctl < Formula
     dir.install buildpath.children
     cd dir do
       system "glide", "install", "-strip-vendor"
-      system "make", "binary"
+      commands = "github.com/projectcalico/calicoctl/calicoctl/commands"
+      ldflags = "-X #{commands}.VERSION=#{stable.specs[:tag]} -X #{commands}.GIT_REVISION=#{stable.specs[:revision][0, 8]} -s -w"
+      system "go", "build", "-v", "-o", "dist/calicoctl-darwin-amd64", "-ldflags", ldflags, "./calicoctl/calicoctl.go"
       bin.install "dist/calicoctl-darwin-amd64" => "calicoctl"
       prefix.install_metafiles
     end

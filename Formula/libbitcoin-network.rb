@@ -3,12 +3,13 @@ class LibbitcoinNetwork < Formula
   homepage "https://github.com/libbitcoin/libbitcoin-network"
   url "https://github.com/libbitcoin/libbitcoin-network/archive/v3.5.0.tar.gz"
   sha256 "e065bd95f64ad5d7b0f882e8759f6b0f81a5fb08f7e971d80f3592a1b5aa8db4"
-  revision 1
+  revision 3
 
   bottle do
-    sha256 "25cdc75678d929d2306397fea58dd75015c1ecebe42813b8b55777784d47b951" => :mojave
-    sha256 "928ea0512c134bbff8004812c0681e742db1af2d0b98c72d8b046c01cf7849cd" => :high_sierra
-    sha256 "061fd0b2d89dc373a61410c3d7a9dc401b14d12f17584250ce03aaa392f0d66f" => :sierra
+    cellar :any
+    sha256 "f789c7974c37496e7d2775d90b857b27fd8c533d210f2e3143cb4abbee2e7f9b" => :mojave
+    sha256 "1321fa1d375f5a4cabdcd8a54202d0d0c20221d675697ae8e04041fdb5cc5765" => :high_sierra
+    sha256 "10409f4b0ad84135cbdd8a7d52223f9465da42af66bbb1dc6ee6d08d31bff29b" => :sierra
   end
 
   depends_on "autoconf" => :build

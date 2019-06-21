@@ -1,49 +1,45 @@
 class Libsoup < Formula
   desc "HTTP client/server library for GNOME"
   homepage "https://wiki.gnome.org/Projects/libsoup"
-  url "https://download.gnome.org/sources/libsoup/2.64/libsoup-2.64.2.tar.xz"
-  sha256 "75ddc194a5b1d6f25033bb9d355f04bfe5c03e0e1c71ed0774104457b3a786c6"
+  url "https://download.gnome.org/sources/libsoup/2.66/libsoup-2.66.2.tar.xz"
+  sha256 "bd2ea602eba642509672812f3c99b77cbec2f3de02ba1cc8cb7206bf7de0ae2a"
+  revision 1
 
   bottle do
-    sha256 "b53e3d934346b9329aa0bbaca1497a6da9dd04bd2ad7a1933a9faa11bcb2369d" => :mojave
-    sha256 "47635a7b40764b64daf4e8f6ebfc0a44f4be4acc14a07f27b95a8b20efbe30b8" => :high_sierra
-    sha256 "c46b8de3d6e603a73fc78f5ec338a69d3f96d73e3e9917e694c954eb26cf3caf" => :sierra
+    sha256 "8336aa92e8a2638745181f159f848b264bec952ecb5571eb36a3dbe62da3a016" => :mojave
+    sha256 "f157867c692050ca95d78b048c01a1f1ada8a8c53c3a65e83397de2a3ae92af8" => :high_sierra
+    sha256 "e8dbd05c6f0eeb707192192c6e1c370678ee63db12963dc1329e61e62b302398" => :sierra
   end
 
   depends_on "gobject-introspection" => :build
-  depends_on "intltool" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "python" => :build
   depends_on "glib-networking"
   depends_on "gnutls"
   depends_on "libpsl"
   depends_on "vala"
 
   def install
-    args = %W[
-      --disable-debug
-      --disable-dependency-tracking
-      --disable-silent-rules
-      --prefix=#{prefix}
-      --disable-tls-check
-      --enable-introspection=yes
-    ]
-
-    # ensures that the vala files remain within the keg
-    inreplace "libsoup/Makefile.in",
-              "VAPIDIR = @VAPIDIR@",
-              "VAPIDIR = @datadir@/vala/vapi"
-
-    system "./configure", *args
-    system "make", "install"
+    mkdir "build" do
+      system "meson", "--prefix=#{prefix}", ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
+    end
   end
 
   test do
+    # if this test start failing, the problem might very well be in glib-networking instead of libsoup
     (testpath/"test.c").write <<~EOS
       #include <libsoup/soup.h>
 
       int main(int argc, char *argv[]) {
-        guint version = soup_get_major_version();
+        SoupMessage *msg = soup_message_new("GET", "https://brew.sh");
+        SoupSession *session = soup_session_new();
+        soup_session_send_message(session, msg); // blocks
+        g_assert_true(SOUP_STATUS_IS_SUCCESSFUL(msg->status_code));
+        g_object_unref(msg);
+        g_object_unref(session);
         return 0;
       }
     EOS

@@ -1,15 +1,15 @@
 class Bitcoin < Formula
   desc "Decentralized, peer to peer payment network"
   homepage "https://bitcoin.org/"
-  url "https://bitcoin.org/bin/bitcoin-core-0.17.0/bitcoin-0.17.0.tar.gz"
-  sha256 "98ef39e851644bba1ac51edaa53c7c47c20a3980333def7bc642c8261a12785e"
+  url "https://bitcoin.org/bin/bitcoin-core-0.18.0/bitcoin-0.18.0.tar.gz"
+  sha256 "5e4e6890e07b620a93fdb24605dae2bb53e8435b2a93d37558e1db1913df405f"
   revision 1
 
   bottle do
     cellar :any
-    sha256 "db844809efff3e95d080a2ff5daece1307f575644de2fc04589041ddf82bc7f6" => :mojave
-    sha256 "0c0aeea4647867639494fe703ac4b21419548c3a9e3efb8d27a035ee4d84071e" => :high_sierra
-    sha256 "349f5c915ca2d363befa0d5c6fbbcc6b97757bb1d29c2ce9b3ab939d2e4326da" => :sierra
+    sha256 "b90adc43e6fa8a3e44caf1ea4aceaedda17e73e5ddf595eaf5f23b986b479cbd" => :mojave
+    sha256 "d77a60aea170c72a60bf198d12ebd97a20b388fa5299551667774dc86c7bd2d0" => :high_sierra
+    sha256 "eb6a4279a322c29e853606792ed19e0fec2550560b74d6e2aa9b2bd36e20e27d" => :sierra
   end
 
   head do
@@ -28,11 +28,8 @@ class Bitcoin < Formula
   depends_on "openssl"
   depends_on "zeromq"
 
-  needs :cxx11
-
   def install
-    if MacOS.version == :el_capitan && MacOS::Xcode.installed? &&
-       MacOS::Xcode.version >= "8.0"
+    if MacOS.version == :el_capitan && MacOS::Xcode.version >= "8.0"
       ENV.delete("SDKROOT")
     end
 

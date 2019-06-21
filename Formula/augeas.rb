@@ -1,14 +1,13 @@
 class Augeas < Formula
   desc "Configuration editing tool and API"
   homepage "http://augeas.net"
-  url "http://download.augeas.net/augeas-1.11.0.tar.gz"
-  sha256 "393ce8f4055af89cd4c20bf903eacbbd909cf427891f41b56dc2ba66243ea0b0"
+  url "http://download.augeas.net/augeas-1.12.0.tar.gz"
+  sha256 "321942c9cc32185e2e9cb72d0a70eea106635b50269075aca6714e3ec282cb87"
 
   bottle do
-    sha256 "cebc1b3db31952c0d347586576b983a7f0585f0791e6ed9cab40bbd7485eeca8" => :mojave
-    sha256 "589af77e50225882c0f052379ffdcf935bba550f01190074395f6b5e195cb332" => :high_sierra
-    sha256 "1fbc0ab4f4537d59730fc84829cac47eb98362178423fed6f3e3241ec0c306d2" => :sierra
-    sha256 "afd1ca94038dfcccb49b2d5c36ebbc45ca95d749d847a25e26c39c080edf5f64" => :el_capitan
+    sha256 "9a561491e3574dfe2cfe7da2a618c12d02218f88f760de46722d9b603e4f27ba" => :mojave
+    sha256 "0e1477f692cf67442dfcaf7c20a24733838df072ec867f59322070a7eaf3f925" => :high_sierra
+    sha256 "55b3fab93f2ec4a703dc2bb3b3d58c47375456bdb5f0308e0856b231d309c02d" => :sierra
   end
 
   head do

@@ -1,14 +1,14 @@
 class LibtorrentRasterbar < Formula
-  desc "C++ bittorrent library by Rasterbar Software"
+  desc "C++ bittorrent library with Python bindings"
   homepage "https://www.libtorrent.org/"
-  url "https://github.com/arvidn/libtorrent/releases/download/libtorrent_1_1_11/libtorrent-rasterbar-1.1.11.tar.gz"
-  sha256 "7c23deba7fa279825642307587609d51c9935ac7606e0ef2f2d0ba10728b5847"
+  url "https://github.com/arvidn/libtorrent/releases/download/libtorrent-1_2_1/libtorrent-rasterbar-1.2.1.tar.gz"
+  sha256 "cceba9842ec7d87549cee9e39d95fd5ce68b0eb9b314a2dd0d611cfa9798762d"
 
   bottle do
     cellar :any
-    sha256 "ce18f1e7cb6bc5be735c1b9388995312d92781d0f543e88d7d1c0c2bdbfcc643" => :mojave
-    sha256 "1950410d90d2e1b5342fd917ba498abbb3caeb31080a6f6908de80988a9cc06e" => :high_sierra
-    sha256 "45bdf1f92a889fb71b61213e65a61aa17245120cbd4e4e08b2fae2215bf69da4" => :sierra
+    sha256 "01861883a907e1a1dad65a7a7c8172bff6fcd35ed137e07d62ce80a39fd768c3" => :mojave
+    sha256 "acdcf6ddc140f4ccf423b8238b61f7caa6908e0de22287f2c6e42cadfb318ea1" => :high_sierra
+    sha256 "8e6bd07ced569f546d324c2ec9832ac09135bf32e9f382c862d0a41215f69651" => :sierra
   end
 
   head do
@@ -25,8 +25,6 @@ class LibtorrentRasterbar < Formula
   depends_on "python"
 
   def install
-    ENV.cxx11
-
     args = %W[
       --disable-debug
       --disable-dependency-tracking
@@ -50,10 +48,12 @@ class LibtorrentRasterbar < Formula
   end
 
   test do
-    system ENV.cxx, "-L#{lib}", "-ltorrent-rasterbar",
-           "-I#{Formula["boost"].include}/boost",
-           "-L#{Formula["boost"].lib}", "-lboost_system",
-           libexec/"examples/make_torrent.cpp", "-o", "test"
+    system ENV.cxx, "-std=c++11", "-I#{Formula["boost"].include}/boost",
+                    "-L#{lib}", "-ltorrent-rasterbar",
+                    "-L#{Formula["boost"].lib}", "-lboost_system",
+                    "-framework", "SystemConfiguration",
+                    "-framework", "CoreFoundation",
+                    libexec/"examples/make_torrent.cpp", "-o", "test"
     system "./test", test_fixtures("test.mp3"), "-o", "test.torrent"
     assert_predicate testpath/"test.torrent", :exist?
   end

@@ -1,22 +1,21 @@
 class Gtkmm3 < Formula
   desc "C++ interfaces for GTK+ and GNOME"
   homepage "https://www.gtkmm.org/"
-  url "https://download.gnome.org/sources/gtkmm/3.22/gtkmm-3.22.3.tar.xz"
-  sha256 "178c2728a4f37eae986eabdd758547cd7579d15000048596fa6bbc25cbba5c90"
+  url "https://download.gnome.org/sources/gtkmm/3.24/gtkmm-3.24.1.tar.xz"
+  sha256 "ddfe42ed2458a20a34de252854bcf4b52d3f0c671c045f56b42aa27c7542d2fd"
+  revision 1
 
   bottle do
     cellar :any
-    sha256 "382c9d6d39b748e956dd77a8c30a8c2b1991cb5779e21c43c2f52ec8713d4812" => :mojave
-    sha256 "b6ee67d840de03dd6ed4dc090884179dc1bec228c3fe903201c2dc39b61f46c8" => :high_sierra
-    sha256 "688f1647777163cc28bd0115f89c43188ca669b427f90ed3abd9dd5cb1b308ac" => :sierra
+    sha256 "99bb9351e1dd2764b9465ce9561ebdcc4c82668d7bb60f65a26a99a67072d629" => :mojave
+    sha256 "63de94b19ab03505463674078c17317364ce2a56bc608d1b26985061653bdb3c" => :high_sierra
+    sha256 "1e8894c4abbf6a46ff719d0640fe718853628afcb41cc4963fb8499fb0f54004" => :sierra
   end
 
   depends_on "pkg-config" => :build
   depends_on "atkmm"
   depends_on "gtk+3"
   depends_on "pangomm"
-
-  needs :cxx11
 
   def install
     ENV.cxx11

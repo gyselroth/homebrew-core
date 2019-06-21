@@ -2,14 +2,14 @@ class ErlangAT20 < Formula
   desc "Programming language for highly scalable real-time systems"
   homepage "https://www.erlang.org/"
   # Download tarball from GitHub; it is served faster than the official tarball.
-  url "https://github.com/erlang/otp/archive/OTP-20.3.8.15.tar.gz"
-  sha256 "871eaf1f0e1e367428fc08dde163d906c75f28ca454785362cbb6d2cf8378236"
+  url "https://github.com/erlang/otp/archive/OTP-20.3.8.22.tar.gz"
+  sha256 "d2c36130938659a63d8de094c3d4f8a1d3ea33d4d993d0723ba9c745df2a2753"
 
   bottle do
     cellar :any
-    sha256 "4a1d222ab690294c9affccc4333df59497f714e9d0e366df77daea4ec42efa89" => :mojave
-    sha256 "24b795efe2766156f5f62fcaf91eddc16fe53b0f8e19967c8fc0ce791e524601" => :high_sierra
-    sha256 "8bc94fb29c94ae33f2fd08ed44323d3a034c4cfe838513fb5334f56248176f18" => :sierra
+    sha256 "54249a34084538789604c4036726479da340b0560b4330763333561d9684ce49" => :mojave
+    sha256 "f43df661b59996712ade26c66cb48c588945f3b5e963e28b8f898002aea3be8f" => :high_sierra
+    sha256 "3137291cbec2d1e71160b50bbdfd2efc583c7c27de3943a320220422edb5ff06" => :sierra
   end
 
   keg_only :versioned_formula
@@ -54,9 +54,9 @@ class ErlangAT20 < Formula
       --enable-wx
       --with-ssl=#{Formula["openssl"].opt_prefix}
       --without-javac
+      --enable-darwin-64bit
     ]
 
-    args << "--enable-darwin-64bit" if MacOS.prefer_64_bit?
     args << "--with-dynamic-trace=dtrace" if MacOS::CLT.installed?
 
     system "./configure", *args

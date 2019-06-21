@@ -3,18 +3,17 @@ class Supervisor < Formula
 
   desc "Process Control System"
   homepage "http://supervisord.org/"
-  url "https://github.com/Supervisor/supervisor/archive/3.3.4.tar.gz"
-  sha256 "d6456e784a54d90b11bacd95d18382e336aa9786f33c91830a0941df4748ed02"
+  url "https://github.com/Supervisor/supervisor/archive/4.0.3.tar.gz"
+  sha256 "d01dc774f55fadf74344cc1b46fba2d00f3543bfdb7b4885dffa73f6d1eb8eb2"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "4516d66758dedd72409d7bcb650dc29fc33df660f0bcc025653309e2c4182025" => :mojave
-    sha256 "de602ba5a4d850c369a1cb9f7275044babd776b21aed0d028e87b68e68dba2b4" => :high_sierra
-    sha256 "432c2afe07eecfb03c4b8268caa0898b68cd7af5bf6364ae71d054e805842905" => :sierra
-    sha256 "dfae5fc72acbfe08f53222ee70fa34259c29a46927272f1af8512c010acf02df" => :el_capitan
+    sha256 "1450701c9f2fcfac99ca8fdc1d28da44f7d3baff2cd56b831970041cae083d8b" => :mojave
+    sha256 "fcd6f28b1a7b61b1a2d0e6ef91eb4b761fbd0db92985f4104aa83f32279b991c" => :high_sierra
+    sha256 "5cf72359b6a43c84c0dfec32fa0cbf02d354572b266b5fe70b36577691ffef38" => :sierra
   end
 
-  depends_on "python@2" # does not support Python 3
+  depends_on "python"
 
   resource "meld3" do
     url "https://files.pythonhosted.org/packages/45/a0/317c6422b26c12fe0161e936fc35f36552069ba8e6f7ecbd99bbffe32a5f/meld3-1.0.2.tar.gz"

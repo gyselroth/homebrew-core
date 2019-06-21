@@ -1,14 +1,14 @@
 class GstPluginsBad < Formula
   desc "GStreamer plugins less supported, not fully tested"
   homepage "https://gstreamer.freedesktop.org/"
-  url "https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-1.14.4.tar.xz"
-  sha256 "910b4e0e2e897e8b6d06767af1779d70057c309f67292f485ff988d087aa0de5"
+  url "https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-1.16.0.tar.xz"
+  sha256 "22139de35626ada6090bdfa3423b27b7fc15a0198331d25c95e6b12cb1072b05"
+  revision 1
 
   bottle do
-    rebuild 1
-    sha256 "e57833f732a4ad1c279dfa6f0f0df404b8bd7528d1740c39db56bf20f0835941" => :mojave
-    sha256 "96eb2f6435c7084db9810de2ac4f0e8ff401e2c29eb8198b7faf09b618867c00" => :high_sierra
-    sha256 "341523cffd36560c364af0f2eceb0faf649657cdc886f09f85ba0efbcb52fa0e" => :sierra
+    sha256 "22cad057848653fed6dbbe94f95d13d158fd4bca5b0168f3a06c30bdb96a2225" => :mojave
+    sha256 "d03cde706f512aa5d15b77895aa2988b41d0241de7bcd567bb7c59e6baad139a" => :high_sierra
+    sha256 "5c28732cc6646aad8fffbacc0a0156ce7ae1083c5ea3083ffcdc5d76dc4d66a1" => :sierra
   end
 
   head do
@@ -30,18 +30,6 @@ class GstPluginsBad < Formula
   depends_on "openssl"
   depends_on "opus"
   depends_on "orc"
-  depends_on "dirac" => :optional
-  depends_on "fdk-aac" => :optional
-  depends_on "gnutls" => :optional
-  depends_on "libdvdread" => :optional
-  depends_on "libexif" => :optional
-  depends_on "libnice" => :optional
-  depends_on "libvo-aacenc" => :optional
-  depends_on "opencv@2" => :optional
-  depends_on "rtmpdump" => :optional
-  depends_on "schroedinger" => :optional
-  depends_on "sound-touch" => :optional
-  depends_on "srt" => :optional
 
   def install
     args = %W[

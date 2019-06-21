@@ -1,15 +1,14 @@
 class Travis < Formula
   desc "Command-line client for Travis CI"
   homepage "https://github.com/travis-ci/travis.rb/"
-  url "https://github.com/travis-ci/travis.rb/archive/v1.8.9.tar.gz"
-  sha256 "7a143bd0eb90e825370c808d38b70cca8c399c68bea8138442f40f09b6bbafc4"
-  revision 2
+  url "https://github.com/travis-ci/travis.rb/archive/v1.8.10.tar.gz"
+  sha256 "77f43de7c1e686e2b8eca3f467047de9687c4021c4a12f46dcf1e0f3e63a96c3"
 
   bottle do
     cellar :any
-    sha256 "f81ad6903a2c924f100f5a745a69c9ce4b48be202c01c41b65a96cceb28bea13" => :mojave
-    sha256 "8b0c39a8ef1eaf1ff3d2662fa649cd296cdd2b7991653c143b2586415e765d3a" => :high_sierra
-    sha256 "bef2b3095ad01ac92c24b1085de1a1df9e3800a50d18134f56f10854888bf66c" => :sierra
+    sha256 "42d8323b7ebb3687b3ea96b1051fd9e02c22732ebd2964d6bea064fb443f99ba" => :mojave
+    sha256 "d66aa769ff2b66c634ead1d76966015f852d39c3b6baf5ef01e80f2da5c66c45" => :high_sierra
+    sha256 "01b6473c4a5d559e0920c8badd3fd182d0ce9896db2e0017419176814c800d99" => :sierra
   end
 
   depends_on "ruby" if MacOS.version <= :sierra
@@ -104,7 +103,7 @@ class Travis < Formula
   def install
     ENV["GEM_HOME"] = libexec
     resources.each do |r|
-      r.verify_download_integrity(r.fetch)
+      r.fetch
       system "gem", "install", r.cached_download, "--ignore-dependencies",
              "--no-document", "--install-dir", libexec
     end

@@ -1,27 +1,25 @@
 class Libgit2 < Formula
   desc "C library of Git core methods that is re-entrant and linkable"
   homepage "https://libgit2.github.com/"
-  url "https://github.com/libgit2/libgit2/archive/v0.27.7.tar.gz"
-  sha256 "1a5435a483759b1cd96feb12b11abb5231b0688016db506ce5947178f6ba2531"
+  url "https://github.com/libgit2/libgit2/archive/v0.28.1.tar.gz"
+  sha256 "0ca11048795b0d6338f2e57717370208c2c97ad66c6d5eac0c97a8827d13936b"
   head "https://github.com/libgit2/libgit2.git"
 
   bottle do
     cellar :any
-    sha256 "640ab236291c600299d1a59545fa4087d5f29672d2687d7e797755e69058edc8" => :mojave
-    sha256 "3ec4d61485eb4e46976aaed7fd1d2cd7f842f8b2c649c870ec3a2ba79517fdd0" => :high_sierra
-    sha256 "9946b33af89f683497ba8a2ac7b992b12d25792ae6b28b6995282c748bfb4c79" => :sierra
+    sha256 "8c40517602d53a5e163caeb1859dd34d4cd039f9d1ca4e20fedc94e21acb030b" => :mojave
+    sha256 "c88430caf41e2813605349e8600ebd3a04f61f1b0addea820f14f59ae237cf57" => :high_sierra
+    sha256 "2daf457689e8a02eb75b71706e82f417a9ca1a73c58ac121b15e16712346b26c" => :sierra
   end
 
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
-  depends_on "openssl" if MacOS.version <= :lion # Uses SecureTransport on >10.7
-  depends_on "libssh2" => :recommended
+  depends_on "libssh2"
 
   def install
     args = std_cmake_args
     args << "-DBUILD_EXAMPLES=YES"
     args << "-DBUILD_CLAR=NO" # Don't build tests.
-    args << "-DUSE_SSH=NO" if build.without? "libssh2"
 
     mkdir "build" do
       system "cmake", "..", *args

@@ -1,25 +1,22 @@
 class Sysbench < Formula
   desc "System performance benchmark tool"
   homepage "https://github.com/akopytov/sysbench"
-  url "https://github.com/akopytov/sysbench/archive/1.0.15.tar.gz"
-  sha256 "7f004534ae58311a010480af8852b3ab4fdacd2292688e678bed9cbfe68c3c06"
+  url "https://github.com/akopytov/sysbench/archive/1.0.17.tar.gz"
+  sha256 "9bcad62eaf473510f5184f33cc41f1e07c2640c8810ae9eebe25ba27ba04df5d"
 
   bottle do
-    rebuild 1
-    sha256 "88e3ab23abe4cefc6c3aa3971a1572c122dc6da07d16be8a7a507bcfe65e7440" => :mojave
-    sha256 "c0cac7822ea2b4e68b29373f924a8d367f77e42635a9cf28392b41e2f45d3ebf" => :high_sierra
-    sha256 "8aae1f5f0966a4ad0915d1443cbc2dd0aeac5e919fbc094af545ad78c2686c5b" => :sierra
+    cellar :any
+    sha256 "064afff9de05baa1de8eea0fb9d4c94fb247c87364e7bdbe238e127b68922971" => :mojave
+    sha256 "39aef6117641eebb5157d30a6523b9881e9049d5f5cfabb9710f34f37387cb1a" => :high_sierra
+    sha256 "e58185196573b1731c1ba57f9356798ab91fa35d9d0e89b23e03e0bfc9491dc3" => :sierra
   end
-
-  deprecated_option "without-mysql" => "without-mysql-client"
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
   depends_on "pkg-config" => :build
+  depends_on "mysql-client"
   depends_on "openssl"
-  depends_on "mysql-client" => :recommended
-  depends_on "postgresql" => :optional
 
   def install
     system "./autogen.sh"
@@ -29,15 +26,7 @@ class Sysbench < Formula
     # is not set then it's forced to 10.4, which breaks compile on Mojave.
     ENV["MACOSX_DEPLOYMENT_TARGET"] = MacOS.version
 
-    args = ["--prefix=#{prefix}"]
-    if build.with? "mysql-client"
-      args << "--with-mysql"
-    else
-      args << "--without-mysql"
-    end
-    args << "--with-psql" if build.with? "postgresql"
-
-    system "./configure", *args
+    system "./configure", "--prefix=#{prefix}", "--with-mysql"
     system "make", "install"
   end
 

@@ -1,13 +1,13 @@
 class Monetdb < Formula
   desc "Column-store database"
   homepage "https://www.monetdb.org/"
-  url "https://www.monetdb.org/downloads/sources/Aug2018-SP1/MonetDB-11.31.11.tar.xz"
-  sha256 "169f78f6509241e63028adec3f5082fdcf9f8a1ae9d87a59dddf423f8e9f81d5"
+  url "https://www.monetdb.org/downloads/sources/Apr2019/MonetDB-11.33.3.tar.xz"
+  sha256 "f69e7312a77407bef2d970e6d8edfc0ca687d5b31c6b4714bd9132fa468a12e9"
 
   bottle do
-    sha256 "df8bdde8ed02b9bd3e7e0aff359824ce363092332ae99c0991eb4a66e942fb22" => :mojave
-    sha256 "81fe91062a42037bb497c033e59c1256bffb68e4f3be4c081a9b026b6c3f7162" => :high_sierra
-    sha256 "35983a31e38ab40e3bbf9b2f0c557a1b9902842a373ca224e33c805402209b95" => :sierra
+    sha256 "98754982eb7de2da55d57923901c2b4e888cba24045a63bdf362fb343dbdc8dc" => :mojave
+    sha256 "001a6ae3a8cf8c602789403d75f92d7cbcbc18ca223f1a7dc2f80a8e28966151" => :high_sierra
+    sha256 "5ae1ba5352b0d8d4eea311e77ca94671446c7d8c977cb3060fb91dbdad2add9c" => :sierra
   end
 
   head do
@@ -36,6 +36,11 @@ class Monetdb < Formula
                           "--enable-testing=no",
                           "--with-readline=#{Formula["readline"].opt_prefix}",
                           "--disable-rintegration"
+    system "make"
     system "make", "install"
+  end
+
+  test do
+    assert_match "Usage", shell_output("#{bin}/mclient --help 2>&1")
   end
 end

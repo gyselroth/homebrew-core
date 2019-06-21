@@ -1,37 +1,29 @@
 class Gmic < Formula
   desc "Full-Featured Open-Source Framework for Image Processing"
   homepage "https://gmic.eu/"
-  url "https://gmic.eu/files/source/gmic_2.1.5.tar.gz"
-  sha256 "2f3de90a09bba6d24c89258be016fd6992886bda13dbbcaf03de58c765774845"
-  revision 1
+  url "https://gmic.eu/files/source/gmic_2.6.6.tar.gz"
+  sha256 "86c14da90daa0b3c09265b7b07976bf3f3a76f5b0786fecfd9fc3d9332ce0da0"
   head "https://github.com/dtschump/gmic.git"
 
   bottle do
     cellar :any
-    sha256 "09322413b52ce5865967d68dc2f5a6153a147b83a69f20a3f5b5ac9498676b6b" => :mojave
-    sha256 "13ccaf356dc8be85d6d60078c5c10ad3ae6fd515169c396b6cb1c28b2a348c15" => :high_sierra
-    sha256 "7ed192f9ad04036d236cbe9b854ea54325bb366ec392d4cb977e227167ce1ebf" => :sierra
-    sha256 "db45390cb89c9a1d1280f05543555917d161be399223e79d99f6fcacae6532bf" => :el_capitan
+    sha256 "c9833d6e57fc89d6b6c2c009e44022954d561b030f4843ac5ffde5c7fd44ed8f" => :mojave
+    sha256 "90dba8c8ab03e9dbaf7656afb38b658c19bf47c06ade329aed6035d87ed62fb4" => :high_sierra
+    sha256 "b1b2fe20e7a0a3235e66c1ad82dbe603664f0996761e775970265a4d51254e1e" => :sierra
   end
 
   depends_on "cmake" => :build
   depends_on "fftw"
   depends_on "jpeg"
   depends_on "libpng"
-  depends_on "ffmpeg" => :optional
-  depends_on "libtiff" => :optional
-  depends_on "opencv@2" => :optional
-  depends_on "openexr" => :optional
+  depends_on "libtiff"
 
   def install
-    cp "resources/CMakeLists.txt", buildpath
-    args = std_cmake_args
-    args << "-DENABLE_X=OFF"
-    args << "-DENABLE_FFMPEG=OFF" if build.without? "ffmpeg"
-    args << "-DENABLE_OPENCV=OFF" if build.without? "opencv"
-    args << "-DENABLE_OPENEXR=OFF" if build.without? "openexr"
-    args << "-DENABLE_TIFF=OFF" if build.without? "libtiff"
-    system "cmake", *args
+    system "cmake", *std_cmake_args,
+                    "-DENABLE_FFMPEG=OFF",
+                    "-DENABLE_OPENCV=OFF",
+                    "-DENABLE_OPENEXR=OFF",
+                    "-DENABLE_X=OFF"
     system "make", "install"
   end
 

@@ -1,21 +1,20 @@
 class Mesos < Formula
   desc "Apache cluster manager"
   homepage "https://mesos.apache.org"
-  url "https://www.apache.org/dyn/closer.cgi?path=mesos/1.6.1/mesos-1.6.1.tar.gz"
-  mirror "https://archive.apache.org/dist/mesos/1.6.1/mesos-1.6.1.tar.gz"
-  sha256 "96147dd665379c561ffa652f04bcefa033a7566d6ad7474ab2eb7b6c708ef48a"
+  url "https://www.apache.org/dyn/closer.cgi?path=mesos/1.8.0/mesos-1.8.0.tar.gz"
+  mirror "https://archive.apache.org/dist/mesos/1.8.0/mesos-1.8.0.tar.gz"
+  sha256 "b63f201cf68f5f170e48d8a047c7cfdb23d54cd1c75e76f661cf63d2ce55b634"
 
   bottle do
-    sha256 "3c423a61acbfa408ee0b52e73ab1a58761370808f56d7b22e5368f4f2c1d62dc" => :mojave
-    sha256 "bdb59fa6c7fc3c57bf664dd0f7419fc7a6e7c43de04257f725356286ff6fb3e3" => :high_sierra
-    sha256 "bc28b5f459fa64f6b557546a7816915d0e9d7ee17b92bbaa0070cd6ab929dd12" => :sierra
-    sha256 "92af4a0cb4c54669854d2dbbbd07509005318bbae72fff6674f2c47c9ebb596a" => :el_capitan
+    sha256 "2fe68eecb5bb478158517b7b96fa5ae605ef804fdc05b7080f9361321b3e493c" => :mojave
+    sha256 "219fdc95f2c38918842eb2e9d717b36833b6ac0085b40b17d0ba3f68540a1160" => :high_sierra
+    sha256 "176156470cab7138df681db6c0b92f92742fd288971fe790911f28e7217fde81" => :sierra
   end
 
   depends_on "maven" => :build
   depends_on "apr-util"
   depends_on :java => "1.8"
-  depends_on :macos => :mountain_lion
+
   depends_on "python@2"
   depends_on "subversion"
 
@@ -67,8 +66,6 @@ class Mesos < Formula
     sha256 "47959d0651c32102c10ad919b8a0ffe0ae85f44b8457ddcf2bdc0358fb03dc29"
   end
 
-  needs :cxx11
-
   def install
     # Disable optimizing as libc++ does not play well with optimized clang
     # builds (see https://llvm.org/bugs/show_bug.cgi?id=28469 and
@@ -81,7 +78,7 @@ class Mesos < Formula
     ENV.O0 unless DevelopmentTools.clang_build_version >= 900
 
     # work around to avoid `_clock_gettime` symbol not found error.
-    if MacOS.version == "10.11" && MacOS::Xcode.installed? && MacOS::Xcode.version >= "8.0"
+    if MacOS.version == "10.11" && MacOS::Xcode.version >= "8.0"
       ENV["ac_have_clock_syscall"] = "no"
     end
 

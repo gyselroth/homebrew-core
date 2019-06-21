@@ -1,25 +1,20 @@
 class OpensslAT11 < Formula
   desc "Cryptography and SSL/TLS Toolkit"
   homepage "https://openssl.org/"
-  url "https://www.openssl.org/source/openssl-1.1.1a.tar.gz"
-  mirror "https://dl.bintray.com/homebrew/mirror/openssl@1.1--1.1.1a.tar.gz"
-  mirror "https://www.mirrorservice.org/sites/ftp.openssl.org/source/openssl-1.1.1a.tar.gz"
-  sha256 "fc20130f8b7cbd2fb918b2f14e2f429e109c31ddd0fb38fc5d71d9ffed3f9f41"
+  url "https://www.openssl.org/source/openssl-1.1.1c.tar.gz"
+  mirror "https://dl.bintray.com/homebrew/mirror/openssl@1.1--1.1.1c.tar.gz"
+  mirror "https://www.mirrorservice.org/sites/ftp.openssl.org/source/openssl-1.1.1c.tar.gz"
+  sha256 "f6fb3079ad15076154eda9413fed42877d668e7069d9b87396d0804fdb3f4c90"
   version_scheme 1
 
   bottle do
-    sha256 "802fef5cc7072a3dc6c1f15898d9f028d7bd32c659e93a354545e719f54a2456" => :mojave
-    sha256 "29ff522cbd3509b4f881643d2dfdec78396d41f8858d7d308d59f2e3b1839aa1" => :high_sierra
-    sha256 "af76397790ce9cb571a8e0bd1014a90a47ed1c05b5ee6727a2f6796ebdb95365" => :sierra
+    sha256 "e4c85922978ded43321679e00ecb35b47d3924e604209239b99f0ff86e0a1b02" => :mojave
+    sha256 "fd7d66a43b37f5e4b558852935b84f45921da0f5bd6f12a2736b046214aed432" => :high_sierra
+    sha256 "b0ac9931918d90518992569308814040c58455aebeb0c7bc7008fc46f593c5a7" => :sierra
   end
 
   keg_only :provided_by_macos,
     "openssl/libressl is provided by macOS so don't link an incompatible version"
-
-  # Only needs 5.10 to run, but needs >5.13.4 to run the testsuite.
-  # https://github.com/openssl/openssl/blob/4b16fa791d3ad8/README.PERL
-  # The MacOS ML tag is same hack as the way we handle most :python deps.
-  depends_on "perl" if MacOS.version <= :mountain_lion
 
   # SSLv2 died with 1.1.0, so no-ssl2 no longer required.
   # SSLv3 & zlib are off by default with 1.1.0 but this may not
@@ -45,11 +40,7 @@ class OpensslAT11 < Formula
       ENV["PERL"] = Formula["perl"].opt_bin/"perl"
     end
 
-    if MacOS.prefer_64_bit?
-      arch_args = %w[darwin64-x86_64-cc enable-ec_nistp_64_gcc_128]
-    else
-      arch_args = %w[darwin-i386-cc]
-    end
+    arch_args = %w[darwin64-x86_64-cc enable-ec_nistp_64_gcc_128]
 
     ENV.deparallelize
     system "perl", "./Configure", *(configure_args + arch_args)
@@ -82,7 +73,7 @@ class OpensslAT11 < Formula
     end
 
     openssldir.mkpath
-    (openssldir/"cert.pem").atomic_write(valid_certs.join("\n"))
+    (openssldir/"cert.pem").atomic_write(valid_certs.join("\n") << "\n")
   end
 
   def caveats; <<~EOS

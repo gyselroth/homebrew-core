@@ -1,20 +1,19 @@
 class Fontforge < Formula
   desc "Command-line outline and bitmap font editor/converter"
   homepage "https://fontforge.github.io"
-  url "https://github.com/fontforge/fontforge/releases/download/20170731/fontforge-dist-20170731.tar.xz"
-  sha256 "840adefbedd1717e6b70b33ad1e7f2b116678fa6a3d52d45316793b9fd808822"
-  revision 3
+  url "https://github.com/fontforge/fontforge/releases/download/20190413/fontforge-20190413.tar.gz"
+  sha256 "6762a045aba3d6ff1a7b856ae2e1e900a08a8925ccac5ebf24de91692b206617"
+  revision 2
 
   bottle do
-    rebuild 1
-    sha256 "7917392b435917468ce7f8e4c31822ba376d901cc9303ab354c44ef8155fad49" => :mojave
-    sha256 "5a04540e69d56213fb104a968ad9ce2bc5c2ca152d5c3e0ecfccbd93981f80dc" => :high_sierra
-    sha256 "7c4e3def1ac5f5b374e773d6dd7bda60b09eb304a19c6b231a292125d4d14915" => :sierra
+    cellar :any
+    sha256 "755c0de75b7900bfbc5c2d65cad3d65ea51335694738e3bed652ff07fa0fe4cd" => :mojave
+    sha256 "50baa3d0a77de516261e0e81344aac39a40658203badc8916018701e703a2cd9" => :high_sierra
+    sha256 "e9961cd990142589ced45395a0fb676b2bd8181032ca19cd9575e3641832347b" => :sierra
   end
 
-  option "with-extra-tools", "Build with additional font tools"
-
   depends_on "pkg-config" => :build
+  depends_on "python" => [:build, :test]
   depends_on "cairo"
   depends_on "fontconfig"
   depends_on "gettext"
@@ -26,25 +25,13 @@ class Fontforge < Formula
   depends_on "libtool"
   depends_on "libuninameslist"
   depends_on "pango"
-  depends_on "python@2"
-
-  # Remove for > 20170731
-  # Fix "fatal error: 'mem.h' file not found" for --with-extra-tools
-  # Upstream PR from 22 Sep 2017 https://github.com/fontforge/fontforge/pull/3156
-  patch do
-    url "https://github.com/fontforge/fontforge/commit/9f69bd0f9.patch?full_index=1"
-    sha256 "f8afa9a6ab7a71650a3f013d9872881754e1ba4a265f693edd7ba70f2ec1d525"
-  end
 
   def install
-    ENV["PYTHON_CFLAGS"] = `python-config --cflags`.chomp
-    ENV["PYTHON_LIBS"] = `python-config --ldflags`.chomp
-
-    # Fix header includes to avoid crash at runtime:
-    # https://github.com/fontforge/fontforge/pull/3147
-    inreplace "fontforgeexe/startnoui.c", "#include \"fontforgevw.h\"", "#include \"fontforgevw.h\"\n#include \"encoding.h\""
+    ENV["PYTHON_CFLAGS"] = `python3-config --cflags`.chomp
+    ENV["PYTHON_LIBS"] = `python3-config --ldflags`.chomp
 
     system "./configure", "--prefix=#{prefix}",
+                          "--enable-python-scripting=3",
                           "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--without-x"
@@ -75,7 +62,8 @@ class Fontforge < Formula
   test do
     system bin/"fontforge", "-version"
     system bin/"fontforge", "-lang=py", "-c", "import fontforge; fontforge.font()"
-    ENV.append_path "PYTHONPATH", lib/"python2.7/site-packages"
-    system "python2.7", "-c", "import fontforge; fontforge.font()"
+    xy = Language::Python.major_minor_version "python3"
+    ENV.append_path "PYTHONPATH", lib/"python#{xy}/site-packages"
+    system "python3", "-c", "import fontforge; fontforge.font()"
   end
 end

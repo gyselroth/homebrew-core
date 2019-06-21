@@ -3,13 +3,13 @@ class Rrdtool < Formula
   homepage "https://oss.oetiker.ch/rrdtool/index.en.html"
   url "https://github.com/oetiker/rrdtool-1.x/releases/download/v1.7.0/rrdtool-1.7.0.tar.gz"
   sha256 "f97d348935b91780f2cd80399719e20c0b91f0a23537c0a85f9ff306d4c5526b"
-  revision 1
+  revision 2
 
   bottle do
-    sha256 "020924d75bcfaaedc86f6fa363c7f0e89b5ba3d6adce3dde42dc874a940ad246" => :mojave
-    sha256 "d847a62550c40b4b25a92fd1f6c4f4a18ac43390e12d27b136200a0609b83170" => :high_sierra
-    sha256 "c9baca61d56b91573699e3f69b49964286535bc2b7603f0b0eac1a4bb02aad57" => :sierra
-    sha256 "56c75e78c96c473f2872a414187cf4c5d88465854322a80bed8905952a5c7779" => :el_capitan
+    cellar :any
+    sha256 "7b3548ea861690d6507de212fe55808c9120424b6b9c73a5fc9ac960b252685a" => :mojave
+    sha256 "a93a0f09da257b0e9fd429727ad1d7afbfe8ca8b19aaa299f77f6719954b8432" => :high_sierra
+    sha256 "42323cefde415bf4d129f4a619f1a40acc517f6cfa52a584aadf286c6cf72f9d" => :sierra
   end
 
   head do
@@ -22,7 +22,6 @@ class Rrdtool < Formula
   depends_on "pkg-config" => :build
   depends_on "glib"
   depends_on "pango"
-  depends_on "lua" => :optional
 
   # Ha-ha, but sleeping is annoying when running configure a lot
   patch :DATA

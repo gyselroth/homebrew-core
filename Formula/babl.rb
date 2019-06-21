@@ -1,14 +1,13 @@
 class Babl < Formula
   desc "Dynamic, any-to-any, pixel format translation library"
-  homepage "http://www.gegl.org/babl/"
-  url "https://download.gimp.org/pub/babl/0.1/babl-0.1.56.tar.bz2"
-  sha256 "8ad26ca717ec3c74e261f454dd6bb316333a39fd1f87db4ac44706a860dc4d28"
+  homepage "https://www.gegl.org/babl/"
+  url "https://download.gimp.org/pub/babl/0.1/babl-0.1.66.tar.bz2"
+  sha256 "369dd89345489a3949e83d5ad63295029088230626f64a05e530761b176fa163"
 
   bottle do
-    sha256 "d4919702e5918f9f47b76cf9dbff294efbd26c909eea3084e0ca6991f212738e" => :mojave
-    sha256 "be17bcd75c569fe2b90f81c2b7dd8e051c07ead256eb8665c739b4abd1b86b40" => :high_sierra
-    sha256 "225d7ef87fe7dcfe9ba9134531b9d5420afc9354bf8fe7bde11bb7bbf4ecf2f0" => :sierra
-    sha256 "6aadd8934b96132fd208f0526a0caacb4df6e7c13f3507ea8078a070d5914ea6" => :el_capitan
+    sha256 "c31ce72d90cf85ffc1391edfe53cb7675c3b96de966d3e36ac02f435640dbf8d" => :mojave
+    sha256 "e000115b46eb286890c56080b429cf80a04c25e6a3462f66863e4f011a163cd6" => :high_sierra
+    sha256 "1e21ec92d5d7afc3d096929271a393b1d39fd68e6f582e004802afce6ba5f07b" => :sierra
   end
 
   head do

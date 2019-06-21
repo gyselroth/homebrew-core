@@ -1,23 +1,20 @@
 class Tbb < Formula
   desc "Rich and complete approach to parallelism in C++"
   homepage "https://www.threadingbuildingblocks.org/"
-  url "https://github.com/01org/tbb/archive/2019_U3.tar.gz"
-  version "2019_U3"
-  sha256 "b2244147bc8159cdd8f06a38afeb42f3237d3fc822555499d7ccfbd4b86f8ece"
+  url "https://github.com/01org/tbb/archive/2019_U6.tar.gz"
+  version "2019_U6"
+  sha256 "2ba197b3964fce8a84429dd15b75eba7434cb89afc54f86d5ee6f726fdbe97fd"
 
   bottle do
     cellar :any
-    sha256 "e71225b00b1600e1f5d6fb863b7e4ed2331d2f003966f7360cb2ceb5a5c62ca2" => :mojave
-    sha256 "65ab527434fae8d12d0945065ecf41ba37a5a6ebff179adceb60744a524816e1" => :high_sierra
-    sha256 "3df673cbf9c0d3b44866b5154e528e8f1a6d941a112bdccaa0b4951ae10077a1" => :sierra
+    sha256 "4bfdb3fba0523b5eeec1df616bcb441e91893655bfcadfe241dbdb2da8e8450c" => :mojave
+    sha256 "2abca6dd5b5ca417bd3052240b55cea2c59ea27dae1d53453d9885079893912f" => :high_sierra
+    sha256 "12d98641f85d39444e1f8ebcec06ce6202dc81381d652a5ae83f19daee280567" => :sierra
   end
 
   depends_on "cmake" => :build
   depends_on "swig" => :build
-  # requires malloc features first introduced in Lion
-  # https://github.com/Homebrew/homebrew/issues/32274
-  depends_on :macos => :lion
-  depends_on "python@2"
+  depends_on "python"
 
   def install
     compiler = (ENV.compiler == :clang) ? "clang" : "gcc"
@@ -32,13 +29,13 @@ class Tbb < Formula
 
     cd "python" do
       ENV["TBBROOT"] = prefix
-      system "python", *Language::Python.setup_install_args(prefix)
+      system "python3", *Language::Python.setup_install_args(prefix)
     end
 
-    system "cmake", "-DTBB_ROOT=#{prefix}",
-                    "-DTBB_OS=Darwin",
-                    "-DSAVE_TO=lib/cmake/TBB",
-                    "-P", "cmake/tbb_config_generator.cmake"
+    system "cmake", "-DINSTALL_DIR=lib/cmake/TBB",
+                    "-DSYSTEM_NAME=Darwin",
+                    "-DTBB_VERSION_FILE=#{include}/tbb/tbb_stddef.h",
+                    "-P", "cmake/tbb_config_installer.cmake"
 
     (lib/"cmake"/"TBB").install Dir["lib/cmake/TBB/*.cmake"]
   end

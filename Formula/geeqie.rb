@@ -9,13 +9,12 @@ class Geeqie < Formula
       :tag      => "v1.4",
       :revision => "7c9b41e7c9be8cfc9b4f0a2459c0a1e0e4aaea5b",
       :shallow  => false
-  revision 1
+  revision 3
 
   bottle do
-    sha256 "a559b5497adfaadb9ae785d47abf74f856ee0aa34126325a380565a0ec6836ad" => :mojave
-    sha256 "0bf35c40d3d0fc9a3bb6d69cd079e7e3f9aae4d1c050cead01aca59bea009d22" => :high_sierra
-    sha256 "54a1af6f886c7a95b3f66ea0996a6acfa1531b940d274921a84cdef57c1fc54f" => :sierra
-    sha256 "2f84465d9d6eba2db0031c71033b735d33a6d6294dd2a15fd13d65674b60783b" => :el_capitan
+    sha256 "75b33a9960e789726d0f18872afe1a75a63bf4c0d25d250a22b0ffd5f0d3de34" => :mojave
+    sha256 "028bf0b7c84969f4e5d2172deb13407904cfa878fce673767268625b825501f6" => :high_sierra
+    sha256 "c5dfe4a3af57167f2058175beb434db98acc796e21c7c3775e52f88a87d13228" => :sierra
   end
 
   depends_on "autoconf" => :build
@@ -42,6 +41,13 @@ class Geeqie < Formula
   patch do
     url "https://raw.githubusercontent.com/Homebrew/patches/9cacfd49be1db430d7a956132d6521e23fc85f77/geeqie/wexitstatus_fix.diff"
     sha256 "00bad28d46aafaaed99965a5c054bf04679c100c6f4f13ee82cf83c2782de349"
+  end
+
+  # Fix build with exiv 0.27
+  # https://github.com/BestImageViewer/geeqie/pull/655
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/9226ec07329457300c7af68986661f26f965436b/geeqie/exiv2_fix.diff?full_index=1"
+    sha256 "2627bbb3a338456a8d80eedb260931991e427b4a9c8dee093400632970dd68db"
   end
 
   def install

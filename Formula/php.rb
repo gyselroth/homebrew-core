@@ -1,13 +1,14 @@
 class Php < Formula
   desc "General-purpose scripting language"
-  homepage "https://secure.php.net/"
-  url "https://php.net/get/php-7.3.0.tar.xz/from/this/mirror"
-  sha256 "7d195cad55af8b288c3919c67023a14ff870a73e3acc2165a6d17a4850a560b5"
+  homepage "https://www.php.net/"
+  url "https://www.php.net/distributions/php-7.3.6.tar.xz"
+  sha256 "fefc8967daa30ebc375b2ab2857f97da94ca81921b722ddac86b29e15c54a164"
+  revision 1
 
   bottle do
-    sha256 "e0f95f6185738260568098b8573d0d0986326e02c4db7074387403fb224359c1" => :mojave
-    sha256 "c5e7239be04c726f64f3f0b89ae9359eb6f18db9463d868c321ebae50561027c" => :high_sierra
-    sha256 "7ff5b4ef3bdee2550837b611cd84d7fd0ef811e0d1fbb5cb88e5bc7bd897bc14" => :sierra
+    sha256 "a7bb7bea2ffee51fc67c8ba61c45c980a05f994fa4580fc4629601ed06d5c8ee" => :mojave
+    sha256 "d27bbb0e34d7bdcc4d55f43f7aff223878b3d6915335630c78696eab60d89068" => :high_sierra
+    sha256 "602ce9cb951472043180c62889d225cebbb812f60a4241dbaff957e6b3bc7b74" => :sierra
   end
 
   depends_on "httpd" => [:build, :test]
@@ -31,7 +32,6 @@ class Php < Formula
   depends_on "libzip"
   depends_on "openldap"
   depends_on "openssl"
-  depends_on "pcre"
   depends_on "sqlite"
   depends_on "tidy-html5"
   depends_on "unixodbc"
@@ -40,8 +40,6 @@ class Php < Formula
   # PHP build system incorrectly links system libraries
   # see https://github.com/php/php-src/pull/3472
   patch :DATA
-
-  needs :cxx11
 
   def install
     # Ensure that libxml2 will be detected correctly in older MacOS
@@ -172,6 +170,12 @@ class Php < Formula
     inreplace bin/"php-config", lib/"php", prefix/"pecl"
     inreplace "php.ini-development", %r{; ?extension_dir = "\./"},
       "extension_dir = \"#{HOMEBREW_PREFIX}/lib/php/pecl/#{orig_ext_dir}\""
+
+    # Use OpenSSL cert bundle
+    inreplace "php.ini-development", /; ?openssl\.cafile=/,
+      "openssl.cafile = \"#{HOMEBREW_PREFIX}/etc/openssl/cert.pem\""
+    inreplace "php.ini-development", /; ?openssl\.capath=/,
+      "openssl.capath = \"#{HOMEBREW_PREFIX}/etc/openssl/certs\""
 
     config_files = {
       "php.ini-development"   => "php.ini",

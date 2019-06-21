@@ -1,22 +1,20 @@
 class Ibex < Formula
   desc "C++ library for constraint processing over real numbers"
   homepage "http://www.ibex-lib.org/"
-  url "https://github.com/ibex-team/ibex-lib/archive/ibex-2.7.4.tar.gz"
-  sha256 "2b32a1e51766476c9baab4017001e3e9ce2b6b102e2ac7492002305483607036"
+  url "https://github.com/ibex-team/ibex-lib/archive/ibex-2.8.2.tar.gz"
+  sha256 "ad432fcb0321f7fb1d73356f9cce5a28170fbda63466228e5d2be9673249a9ec"
   head "https://github.com/ibex-team/ibex-lib.git"
 
   bottle do
     cellar :any
-    sha256 "4de28b404a43504acf29619dfc5002b2ac7b5f7285d165cf2f69670023678e58" => :mojave
-    sha256 "c0fb9de7e874f4f16c9d93c8e5aeb57c9dccdc475e95af9a46e6b92319763933" => :high_sierra
-    sha256 "c59612cbd75e27f3a996813cb6e270faf9be5fe0a096b74355533f3f5515f70c" => :sierra
+    sha256 "a4ba8be28aecc518997be03a59cbb5f4fc772747818a9cabb20b31946ef0430e" => :mojave
+    sha256 "c1e025bfeefd93e9445065c35a677ef375d5d1951bc5226eb578a66d212023f3" => :high_sierra
+    sha256 "778927fdd20960097fe3bffd27d2d905d13ffe3f0dfd30af1b3a7cca0f24dbf9" => :sierra
   end
 
   depends_on "bison" => :build
   depends_on "flex" => :build
   depends_on "pkg-config" => [:build, :test]
-
-  needs :cxx11
 
   def install
     ENV.cxx11

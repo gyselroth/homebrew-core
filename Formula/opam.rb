@@ -1,15 +1,15 @@
 class Opam < Formula
   desc "The OCaml package manager"
   homepage "https://opam.ocaml.org"
-  url "https://github.com/ocaml/opam/releases/download/2.0.2/opam-full-2.0.2.tar.gz"
-  sha256 "eeb99fdda4b10ad3467a700fa4d1dfedb30714837d18d2faf1ef9c87d94cf0bc"
+  url "https://github.com/ocaml/opam/releases/download/2.0.4/opam-full-2.0.4.tar.gz"
+  sha256 "debfb828b400fb511ca290f1bfc928db91cad74ec1ccbddcfdbfeff26f7099e5"
   head "https://github.com/ocaml/opam.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "40f80c1a90dc1bbe63cabf10979ba12353ad523a79d0162948eff886c5427fac" => :mojave
-    sha256 "f76f5362a72ff5808931b7161074fb4de9335644c0442cbb941c70a2c2deeb03" => :high_sierra
-    sha256 "904ffb1cc140dacf82d724028b341320cd9eb7b9e28d20846e5f5ecdd9deec45" => :sierra
+    sha256 "2cc668fd6a919b7bfa3b0e296d0593c94a309154c2533172a8fe745d4f93b168" => :mojave
+    sha256 "36febb1c4215e029892bda1fee4ea0414f6694328d286b19faf4283e32905015" => :high_sierra
+    sha256 "85f550a964e5dbd248bf3e7d74e5385a763bd9e3f8545c76b90c5d4c1f03ef78" => :sierra
   end
 
   depends_on "ocaml" => [:build, :test]

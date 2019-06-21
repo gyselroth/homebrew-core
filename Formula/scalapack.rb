@@ -3,30 +3,23 @@ class Scalapack < Formula
   homepage "https://www.netlib.org/scalapack/"
   url "https://www.netlib.org/scalapack/scalapack-2.0.2.tgz"
   sha256 "0c74aeae690fe5ee4db7926f49c5d0bb69ce09eea75beb915e00bba07530395c"
-  revision 11
+  revision 15
 
   bottle do
     cellar :any
-    sha256 "5bf8bbc0b68389315eded0c528b1517813e38b4d07ae3bcb6f1e81fd73150615" => :mojave
-    sha256 "b4599a8dc3909bd6849e929ba7a552de00d31a76b727dacad65fb110088fa9d8" => :high_sierra
-    sha256 "2a028b68a4dc31c1dd5c8032d80e6678bbd89ae696aecb10956f06db6c659275" => :sierra
-    sha256 "06d91fc5df52e81396eaa62fb738239463ac069e592966b96a4a8e6a335c48fb" => :el_capitan
+    sha256 "5145405aea16d22bc8aa4672fbda2cf9b5ad98a89c4704c0ab2c7d4d94af154e" => :mojave
+    sha256 "a18a1dce08bc8f7114143e35fea3aa9d3bbab7ff92c368664ae00083352ebc83" => :high_sierra
+    sha256 "0973c343b1bec8fade013a41c1ee3cf0bd4a0f6c175be43fe94f42645874998d" => :sierra
   end
 
   depends_on "cmake" => :build
   depends_on "gcc" # for gfortran
   depends_on "open-mpi"
-  depends_on "veclibfort" if build.without?("openblas")
-  depends_on "openblas" => :optional
+  depends_on "openblas"
 
   def install
-    if build.with? "openblas"
-      blas = "-L#{Formula["openblas"].opt_lib} -lopenblas"
-    else
-      blas = "-L#{Formula["veclibfort"].opt_lib} -lvecLibFort"
-    end
-
     mkdir "build" do
+      blas = "-L#{Formula["openblas"].opt_lib} -lopenblas"
       system "cmake", "..", *std_cmake_args, "-DBUILD_SHARED_LIBS=ON",
                       "-DBLAS_LIBRARIES=#{blas}", "-DLAPACK_LIBRARIES=#{blas}"
       system "make", "all"

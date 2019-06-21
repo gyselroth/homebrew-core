@@ -1,15 +1,14 @@
 class Pypy3 < Formula
   desc "Implementation of Python 3 in Python"
   homepage "https://pypy.org/"
-  url "https://bitbucket.org/pypy/pypy/downloads/pypy3-v6.0.0-src.tar.bz2"
-  sha256 "ed8005202b46d6fc6831df1d13a4613bc40084bfa42f275068edadf8954034a3"
+  url "https://bitbucket.org/pypy/pypy/downloads/pypy3.6-v7.1.1-src.tar.bz2"
+  sha256 "6a3ef876e3691a54f4cff045028ec3be94ab9beb2e99f051b83175302c1899a8"
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "a2da5d37954296140125b0d8b817c546375eeb074fe834bf3d1d933a74b369e0" => :mojave
-    sha256 "25f4b9222205b8d951cf54c771e70b0959daefb55bbe84f0c0529251d1f0a3b0" => :high_sierra
-    sha256 "2cb646b4b7bfb7b9c9f7381a376143d18e97eb570b2150bd7147b4cb06a5eacd" => :sierra
+    sha256 "92de58cd59bee0061cb61c87b09d859df41f6daddf376573dba9f9d12d3ba2f1" => :mojave
+    sha256 "9e366afcc36b9c8f5523ff1a57c349dff7827dcd43f989ee42a2b0559e5e9197" => :high_sierra
+    sha256 "47236bd7a55b497bd75f183e59402802223b06f19fef7e246c3663461f072af0" => :sierra
   end
 
   depends_on "pkg-config" => :build
@@ -23,25 +22,22 @@ class Pypy3 < Formula
   depends_on "sqlite"
   depends_on "xz"
 
-  # https://bugs.launchpad.net/ubuntu/+source/gcc-4.2/+bug/187391
-  fails_with :gcc_4_2
-
   # packaging depends on pyparsing
   resource "pyparsing" do
-    url "https://files.pythonhosted.org/packages/3c/ec/a94f8cf7274ea60b5413df054f82a8980523efd712ec55a59e7c3357cf7c/pyparsing-2.2.0.tar.gz"
-    sha256 "0832bcf47acd283788593e7a0f542407bd9550a55a8a8435214a1960e04bcb04"
+    url "https://files.pythonhosted.org/packages/5d/3a/24d275393f493004aeb15a1beae2b4a3043526e8b692b65b4a9341450ebe/pyparsing-2.4.0.tar.gz"
+    sha256 "1873c03321fc118f4e9746baf201ff990ceb915f433f23b395f5580d1840cb2a"
   end
 
   # packaging and setuptools depend on six
   resource "six" do
-    url "https://files.pythonhosted.org/packages/16/d8/bc6316cf98419719bd59c91742194c111b6f2e85abac88e496adefaf7afe/six-1.11.0.tar.gz"
-    sha256 "70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9"
+    url "https://files.pythonhosted.org/packages/dd/bf/4138e7bfb757de47d1f4b6994648ec67a51efe58fa907c1e11e350cddfca/six-1.12.0.tar.gz"
+    sha256 "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"
   end
 
   # setuptools depends on packaging
   resource "packaging" do
-    url "https://files.pythonhosted.org/packages/77/32/439f47be99809c12ef2da8b60a2c47987786d2c6c9205549dd6ef95df8bd/packaging-17.1.tar.gz"
-    sha256 "f019b770dd64e585a99714f1fd5e01c7a8f11b45635aa953fd41c689a657375b"
+    url "https://files.pythonhosted.org/packages/16/51/d72654dbbaa4a4ffbf7cb0ecd7d12222979e0a660bf3f42acc47550bf098/packaging-19.0.tar.gz"
+    sha256 "0c98a5d0be38ed775798ece1b9727178c4469d9c3b4ada66e8e6b7849f8732af"
   end
 
   # setuptools depends on appdirs
@@ -51,18 +47,20 @@ class Pypy3 < Formula
   end
 
   resource "setuptools" do
-    url "https://files.pythonhosted.org/packages/72/c2/c09362ab29338413ab687b47dab03bab4a792e2bbb727a1eb5e0a88e3b86/setuptools-39.0.1.zip"
-    sha256 "bec7badf0f60e7fc8153fac47836edc41b74e5d541d7692e614e635720d6a7c7"
+    url "https://files.pythonhosted.org/packages/1d/64/a18a487b4391a05b9c7f938b94a16d80305bf0369c6b0b9509e86165e1d3/setuptools-41.0.1.zip"
+    sha256 "a222d126f5471598053c9a77f4b5d4f26eaa1f150ad6e01dcf1a42e185d05613"
   end
 
   resource "pip" do
-    url "https://files.pythonhosted.org/packages/ae/e8/2340d46ecadb1692a1e455f13f75e596d4eab3d11a57446f08259dee8f02/pip-10.0.1.tar.gz"
-    sha256 "f2bd08e0cd1b06e10218feaf6fef299f473ba706582eb3bd9d52203fdbd7ee68"
+    url "https://files.pythonhosted.org/packages/93/ab/f86b61bef7ab14909bd7ec3cd2178feb0a1c86d451bc9bccd5a1aedcde5f/pip-19.1.1.tar.gz"
+    sha256 "44d3d7d3d30a1eb65c7e5ff1173cdf8f7467850605ac7cc3707b6064bddd0958"
   end
 
   def install
+    ENV.append "CFLAGS", "-I#{MacOS.sdk_path}/System/Library/Frameworks/Tk.framework/Versions/8.5/Headers"
+
     # Work around "dyld: Symbol not found: _utimensat"
-    if MacOS.version == :sierra && MacOS::Xcode.installed? && MacOS::Xcode.version >= "9.0"
+    if MacOS.version == :sierra && MacOS::Xcode.version >= "9.0"
       ENV.delete("SDKROOT")
     end
 
@@ -72,8 +70,6 @@ class Pypy3 < Formula
       s.gsub! "http://", "https://"
       s.gsub! "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-2.6.2.tar.gz",
               "https://mirrorservice.org/pub/OpenBSD/LibreSSL/libressl-2.6.2.tar.gz"
-      s.gsub! "https://tukaani.org/xz/xz-5.2.3.tar.gz",
-              "https://netix.dl.sourceforge.net/project/lzmautils/xz-5.2.3.tar.gz"
       s.gsub! "os.path.join(tempfile.gettempdir(), 'pypy-archives')",
               "os.path.join('#{buildpath}', 'pypy-archives')"
     end
@@ -113,7 +109,7 @@ class Pypy3 < Formula
     # we want to avoid putting PyPy's Python.h somewhere that configure
     # scripts will find it.
     bin.install_symlink libexec/"bin/pypy3"
-    bin.install_symlink libexec/"bin/pypy" => "pypy3.5"
+    bin.install_symlink libexec/"bin/pypy" => "pypy3.6"
     lib.install_symlink libexec/"lib/libpypy3-c.dylib"
   end
 
@@ -141,7 +137,7 @@ class Pypy3 < Formula
       install-scripts=#{scripts_folder}
     EOS
 
-    %w[appdirs pyparsing six packaging setuptools pip].each do |pkg|
+    %w[appdirs six packaging setuptools pyparsing pip].each do |pkg|
       resource(pkg).stage do
         system bin/"pypy3", "-s", "setup.py", "install", "--force", "--verbose"
       end

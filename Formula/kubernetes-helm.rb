@@ -2,27 +2,25 @@ class KubernetesHelm < Formula
   desc "The Kubernetes package manager"
   homepage "https://helm.sh/"
   url "https://github.com/helm/helm.git",
-      :tag      => "v2.12.0",
-      :revision => "d325d2a9c179b33af1a024cdb5a4472b6288016a"
+      :tag      => "v2.14.1",
+      :revision => "5270352a09c7e8b6e8c9593002a73535276507c0"
   head "https://github.com/helm/helm.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "91452b811fbd012b397d68428fd6b2161cb8d9993be4239312564a6d97b1006b" => :mojave
-    sha256 "5471be8bc0219781a6183c5f3d096aef9057af5fb997e7351e93e18692a4337a" => :high_sierra
-    sha256 "646643250d430206148c94a62af0d38c4c7d9c289e44bf742805f97c9208e0fd" => :sierra
+    sha256 "5baa398cf74033266bddd81709d0be52095ceab4f02d63b4f2a990545ea58c28" => :mojave
+    sha256 "4666751ce4312c38fe7fd93960e71a9a037a52dcbf6f40ea01337cab04d3308a" => :high_sierra
+    sha256 "75097e67a89f210aa8964c56768d1d87a5a18cd606e83e20030835e1fc3c57be" => :sierra
   end
 
   depends_on "glide" => :build
   depends_on "go" => :build
-  depends_on "mercurial" => :build
 
   def install
     ENV["GOPATH"] = buildpath
     ENV["GLIDE_HOME"] = HOMEBREW_CACHE/"glide_home/#{name}"
     ENV.prepend_create_path "PATH", buildpath/"bin"
-    arch = MacOS.prefer_64_bit? ? "amd64" : "x86"
-    ENV["TARGETS"] = "darwin/#{arch}"
+    ENV["TARGETS"] = "darwin/amd64"
     dir = buildpath/"src/k8s.io/helm"
     dir.install buildpath.children - [buildpath/".brew_home"]
 

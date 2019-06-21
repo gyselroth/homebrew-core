@@ -1,25 +1,20 @@
 class Postgresql < Formula
   desc "Object-relational database system"
   homepage "https://www.postgresql.org/"
-  url "https://ftp.postgresql.org/pub/source/v11.1/postgresql-11.1.tar.bz2"
-  sha256 "90815e812874831e9a4bf6e1136bf73bc2c5a0464ef142e2dfea40cda206db08"
+  url "https://ftp.postgresql.org/pub/source/v11.3/postgresql-11.3.tar.bz2"
+  sha256 "2a85e082fc225944821dfd23990e32dfcd2284c19060864b0ad4ca537d30522d"
   head "https://github.com/postgres/postgres.git"
 
   bottle do
-    sha256 "d82e5ff0b8996cd40daba78d9279c94def44e653899084bda9f218c4bafc7253" => :mojave
-    sha256 "9c9f814e08bc7a28105e326a04271031c38dd8e0e5da3781434dcca9ceb364a5" => :high_sierra
-    sha256 "eacc5bd8eac9c6f77831346095393f6ed0361d1697f0fe071927e7c556ff1a86" => :sierra
+    sha256 "f25a87e028236bda624af6f7cc0d6ad5de35266fe3bda0c64720e0fc4b103376" => :mojave
+    sha256 "791e0d014207c4195d1553a7e0bf9a5e89ccac89b6e35f06ddbdffae8a91f578" => :high_sierra
+    sha256 "cdd0a002a0d8a06a09a61520fabdf1fd7e7ba937264bc7c4c9fa03e3f1d87c91" => :sierra
   end
-
-  option "with-python", "Enable PL/Python3"
-
-  deprecated_option "with-python3" => "with-python"
 
   depends_on "pkg-config" => :build
   depends_on "icu4c"
   depends_on "openssl"
   depends_on "readline"
-  depends_on "python" => :optional
 
   conflicts_with "postgres-xc",
     :because => "postgresql and postgres-xc install the same binaries."
@@ -51,18 +46,11 @@ class Postgresql < Formula
       --with-uuid=e2fs
     ]
 
-    if build.with?("python")
-      args << "--with-python"
-      ENV["PYTHON"] = which("python3")
-    end
-
     # The CLT is required to build Tcl support on 10.7 and 10.8 because
     # tclConfig.sh is not part of the SDK
-    if MacOS.version >= :mavericks || MacOS::CLT.installed?
-      args << "--with-tcl"
-      if File.exist?("#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework/tclConfig.sh")
-        args << "--with-tclconfig=#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework"
-      end
+    args << "--with-tcl"
+    if File.exist?("#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework/tclConfig.sh")
+      args << "--with-tclconfig=#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework"
     end
 
     system "./configure", *args
@@ -76,7 +64,7 @@ class Postgresql < Formula
     (var/"log").mkpath
     (var/"postgres").mkpath
     unless File.exist? "#{var}/postgres/PG_VERSION"
-      system "#{bin}/initdb", "#{var}/postgres"
+      system "#{bin}/initdb", "--locale=C", "-E", "UTF-8", "#{var}/postgres"
     end
   end
 

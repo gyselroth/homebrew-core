@@ -1,15 +1,15 @@
 class MidnightCommander < Formula
   desc "Terminal-based visual file manager"
   homepage "https://www.midnight-commander.org/"
-  url "https://www.midnight-commander.org/downloads/mc-4.8.21.tar.xz"
-  sha256 "8f37e546ac7c31c9c203a03b1c1d6cb2d2f623a300b86badfd367e5559fe148c"
+  url "https://www.midnight-commander.org/downloads/mc-4.8.22.tar.xz"
+  sha256 "ee7868d7ba0498cf2cccefe107d7efee7f2571098806bba2aed5a159db801318"
+  revision 1
   head "https://github.com/MidnightCommander/mc.git"
 
   bottle do
-    rebuild 1
-    sha256 "f3d9cb2444cf1f8f757afe0c70a7c4b737718144bd667926f49fbbd35a7a290f" => :mojave
-    sha256 "d810c0aed2f4007b94776895822c9dd79242a10c6bd6bc6507b6f46c4bb5a9fb" => :high_sierra
-    sha256 "08bd22ecf0dd7183e36f01f44d6c5fd7c8ee759c08121ecaed1be19d87017247" => :sierra
+    sha256 "c1b8c5c6f30a67ab06e29a441e1b33f2b2f351e1cac064d005c58a2061d3fc2d" => :mojave
+    sha256 "ab2a0274dad5bdb3073e9331ea29f69179735a0ed424eb02b6723d40e074ba80" => :high_sierra
+    sha256 "5fdca1bab0f0d9b430a743041b6567da126e3bd22e0d4433df58e1afe3404d60" => :sierra
   end
 
   depends_on "pkg-config" => :build

@@ -1,13 +1,13 @@
 class Libpq < Formula
   desc "Postgres C API library"
   homepage "https://www.postgresql.org/docs/11/static/libpq.html"
-  url "https://ftp.postgresql.org/pub/source/v11.1/postgresql-11.1.tar.bz2"
-  sha256 "90815e812874831e9a4bf6e1136bf73bc2c5a0464ef142e2dfea40cda206db08"
+  url "https://ftp.postgresql.org/pub/source/v11.3/postgresql-11.3.tar.bz2"
+  sha256 "2a85e082fc225944821dfd23990e32dfcd2284c19060864b0ad4ca537d30522d"
 
   bottle do
-    sha256 "5afb0e937bf519808dffe071d58222e5fe7f36e93baa14b7bc7728078ca65845" => :mojave
-    sha256 "9c530ec6a94fcd63447daed913e38cd58027655d8a97511391e882f2b39cdc1f" => :high_sierra
-    sha256 "fcbc42add99ff7fe2f9ed9dfe2df3fd59a097fde7ee1ee41175734a3a23be294" => :sierra
+    sha256 "464e74593da2d7b8c9375d74346e7d6216c61d0d37359e78d2fc354e3e84e4d0" => :mojave
+    sha256 "ba645036b965e3e777d3c2c3b73078e67e40d4a215db26caff3e27536c7381a3" => :high_sierra
+    sha256 "825b052e67e74725c99a7539fbcfccd0111d7f288e67559f0a5c634e9d83704e" => :sierra
   end
 
   keg_only "conflicts with postgres formula"

@@ -1,41 +1,52 @@
 class CurlOpenssl < Formula
   desc "Get a file from an HTTP, HTTPS or FTP server"
   homepage "https://curl.haxx.se/"
-  url "https://curl.haxx.se/download/curl-7.62.0.tar.bz2"
-  mirror "http://curl.mirror.anstey.ca/curl-7.62.0.tar.bz2"
-  sha256 "7802c54076500be500b171fde786258579d60547a3a35b8c5a23d8c88e8f9620"
+  url "https://curl.haxx.se/download/curl-7.65.1.tar.bz2"
+  sha256 "cbd36df60c49e461011b4f3064cff1184bdc9969a55e9608bf5cadec4686e3f7"
 
   bottle do
-    sha256 "112be7d63c2abdcd39ba9f9ddf240a8bb2960ab52b5393d7e3e01ad6df17b7c8" => :mojave
-    sha256 "4e259d94c1772d30bfd0cd5941e53b4fcf065995437366d3354b1deae323c3bb" => :high_sierra
-    sha256 "f4b877589a4882431bc9394e876472e96cab07815654e880648fc74b3ed54685" => :sierra
+    sha256 "5f265df38e121f3514c2923e016b843f2062b738e3b5659d40030f4fb6b22294" => :mojave
+    sha256 "2cde93c00a3db5578bc9af336bee3d0c45255279d600d4bcfb259a9586d193fd" => :high_sierra
+    sha256 "9068eedd390a3ae63e582e4bd556c1858707d91cc77ed0f0c2b3082f199d5e6b" => :sierra
+  end
+
+  head do
+    url "https://github.com/curl/curl.git"
+
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
+    depends_on "libtool" => :build
   end
 
   keg_only :provided_by_macos
 
   depends_on "pkg-config" => :build
   depends_on "brotli"
+  depends_on "c-ares"
+  depends_on "libidn"
+  depends_on "libmetalink"
+  depends_on "libssh2"
   depends_on "nghttp2"
   depends_on "openldap"
   depends_on "openssl"
+  depends_on "rtmpdump"
 
   def install
-    # Allow to build on Lion, lowering from the upstream setting of 10.8
-    ENV.append_to_cflags "-mmacosx-version-min=10.7" if MacOS.version <= :lion
+    system "./buildconf" if build.head?
 
     args = %W[
       --disable-debug
       --disable-dependency-tracking
       --disable-silent-rules
       --prefix=#{prefix}
-      --disable-ares
+      --enable-ares=#{Formula["c-ares"].opt_prefix}
       --with-ca-bundle=#{etc}/openssl/cert.pem
       --with-ca-path=#{etc}/openssl/certs
       --with-gssapi
-      --without-libidn2
-      --without-libmetalink
-      --without-librtmp
-      --without-libssh2
+      --with-libidn2
+      --with-libmetalink
+      --with-librtmp
+      --with-libssh2
       --with-ssl=#{Formula["openssl"].opt_prefix}
     ]
 

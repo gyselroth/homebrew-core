@@ -1,26 +1,28 @@
 class Netdata < Formula
   desc "Distributed real-time performance and health monitoring"
   homepage "https://my-netdata.io/"
-  url "https://github.com/netdata/netdata/releases/download/v1.11.1/netdata-v1.11.1.tar.gz"
-  sha256 "0150b2a060da0e5cc844bd9540d6704cd352c434ea1bb9d5268131830a815736"
+  url "https://github.com/netdata/netdata/releases/download/v1.15.0/netdata-v1.15.0.tar.gz"
+  sha256 "7d2f25c62003ea96669e460ec96b69a9616c9ddd6f48a48707a79a898077d911"
 
   bottle do
-    sha256 "5c7c86d146d3d73fa791f30014242ed796a38809a3301a88f62555b8b20eb8bf" => :mojave
-    sha256 "c577f25eaf5ae01cabcb62c428a2b1806be2f55f919d2fb5fe8c26e1b4957b4a" => :high_sierra
-    sha256 "2523906ac43fe8bb4407efeee529744b5842c01113aa9f551d5f065e1376eeb7" => :sierra
+    sha256 "3e0b138f7a27872498836e0fc0a7bd32a17c2005f20ae3b98e27473794fcb537" => :mojave
+    sha256 "6250f3a0b6f5415f87243694e68e9aaba4d7bccaa94dab6aecbd9e1aade6d3e8" => :high_sierra
+    sha256 "6afd0618b54d247d7083ae3ce7fc47a1f36c62fd92483993b138ebc21f057250" => :sierra
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "pkg-config" => :build
-  depends_on "ossp-uuid"
+  depends_on "openssl" if MacOS.version <= :sierra
 
   def install
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--prefix=#{prefix}",
                           "--sysconfdir=#{etc}",
-                          "--localstatedir=#{var}"
+                          "--localstatedir=#{var}",
+                          "UUID_CFLAGS=-I/usr/include",
+                          "UUID_LIBS=-lc"
     system "make", "install"
 
     (etc/"netdata").install "system/netdata.conf"
@@ -32,6 +34,7 @@ class Netdata < Formula
       s.gsub!(/web files owner = .*/, "web files owner = #{ENV["USER"]}")
       s.gsub!(/web files group = .*/, "web files group = #{Etc.getgrgid(prefix.stat.gid).name}")
     end
+    (var/"netdata").mkpath
   end
 
   plist_options :manual => "#{HOMEBREW_PREFIX}/sbin/netdata -D"
@@ -60,6 +63,8 @@ class Netdata < Formula
   test do
     system "#{sbin}/netdata", "-W", "set", "registry", "netdata unique id file",
                               "#{testpath}/netdata.unittest.unique.id",
+                              "-W", "set", "registry", "netdata management api key file",
+                              "#{testpath}/netdata.api.key",
                               "-W", "unittest"
   end
 end

@@ -1,21 +1,18 @@
 class Ompl < Formula
   desc "Open Motion Planning Library consists of many motion planning algorithms"
   homepage "https://ompl.kavrakilab.org/"
-  url "https://bitbucket.org/ompl/ompl/downloads/ompl-1.4.1-Source.tar.gz"
-  sha256 "409b968b4174df347eeb77945adb5d03c093480c50c20add958664ad2a8ab29b"
+  url "https://bitbucket.org/ompl/ompl/downloads/ompl-1.4.2-Source.tar.gz"
+  sha256 "03d5a661061928ced63bb945055579061665634ef217559b1f47fef842e1fa85"
 
   bottle do
-    sha256 "7c24a4217f117907a8a709c6c07712612357c45b184fe2e1af58316679cb6d4a" => :mojave
-    sha256 "802ac697fd52664ed73225122a5cf9e1df38911df8d695c6fbf87d453bfae5a8" => :high_sierra
-    sha256 "5d72b5722d23b3493118974ca35d93c9d694fa73474f6aba97a26a74f38bcd8d" => :sierra
+    sha256 "265baf6e114b571afba3e29affcacda2bdd5b98f98be9cfddf9dd4966043b6d8" => :mojave
+    sha256 "75ccf7aea2c76430746126f38c04f463638a924a62884e060a90bdc915285e75" => :high_sierra
+    sha256 "68d8a29fabd7d3b9aaed23f9b9b2ab5d72eed79d1a96b6bc6978d914d84cf204" => :sierra
   end
 
   depends_on "cmake" => :build
   depends_on "boost"
   depends_on "eigen"
-  depends_on "ode" => :optional
-
-  needs :cxx11
 
   def install
     ENV.cxx11

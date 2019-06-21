@@ -1,14 +1,15 @@
 class Git < Formula
   desc "Distributed revision control system"
   homepage "https://git-scm.com"
-  url "https://www.kernel.org/pub/software/scm/git/git-2.20.0.tar.xz"
-  sha256 "bc94735073e14b138a1290cc99af3c379d544f514c43f8ebde988fc50d0ad81f"
+  url "https://www.kernel.org/pub/software/scm/git/git-2.22.0.tar.xz"
+  sha256 "159e4b599f8af4612e70b666600a3139541f8bacc18124daf2cbe8d1b934f29f"
+  revision 1
   head "https://github.com/git/git.git", :shallow => false
 
   bottle do
-    sha256 "76596d7219afaee57798f67172d4e7e36808e1dead4f6a378ccb15b0ad1dbc38" => :mojave
-    sha256 "29353bfb7faf139d761de5800f4dad0a6599bde3d7629ba8a5c398fc305c52e8" => :high_sierra
-    sha256 "0d76f163e3e1807905d1c2b609560275ee6786e25ffd08ea40118083d3691232" => :sierra
+    sha256 "38ce7760cf405112350d7f734db435b488ba224d437698c7a93cb8972f016660" => :mojave
+    sha256 "3363c946daf5f249083b7a146294dae7f89d64eadf591635d570c8da7553c522" => :high_sierra
+    sha256 "d40515ee220ae0a3f9992094873e9273c0065abc43bc703628e1feacdd83a9e0" => :sierra
   end
 
   depends_on "gettext"
@@ -17,25 +18,21 @@ class Git < Formula
   if MacOS.version < :yosemite
     depends_on "openssl"
     depends_on "curl"
-  else
-    deprecated_option "with-brewed-openssl" => "with-openssl"
-    deprecated_option "with-brewed-curl" => "with-curl"
-
-    option "with-openssl", "Build with Homebrew's OpenSSL instead of using CommonCrypto"
-    option "with-curl", "Use Homebrew's version of cURL library"
-
-    depends_on "openssl" => :optional
-    depends_on "curl" => :optional
   end
 
   resource "html" do
-    url "https://www.kernel.org/pub/software/scm/git/git-htmldocs-2.20.0.tar.xz"
-    sha256 "a9ad269dff3f8b03d9694308e82c2ea197ef59298d828e10e031bc18aae8913a"
+    url "https://www.kernel.org/pub/software/scm/git/git-htmldocs-2.22.0.tar.xz"
+    sha256 "5c7e010abfca5ff2eabf3616bf7216609cfb93dbc12b7c4e13f4ae3e539dbc79"
   end
 
   resource "man" do
-    url "https://www.kernel.org/pub/software/scm/git/git-manpages-2.20.0.tar.xz"
-    sha256 "79bdaa083528bc59b971131fec9b1ff1abbfcc943b4eb781ff4af5172b103690"
+    url "https://www.kernel.org/pub/software/scm/git/git-manpages-2.22.0.tar.xz"
+    sha256 "4e2cfda33d8e86812bfcdb907478d1144412ce472c32edd0219b3c0201c7ee3a"
+  end
+
+  resource "Net::SMTP::SSL" do
+    url "https://cpan.metacpan.org/authors/id/R/RJ/RJBS/Net-SMTP-SSL-1.04.tar.gz"
+    sha256 "7b29c45add19d3d5084b751f7ba89a8e40479a446ce21cfd9cc741e558332a00"
   end
 
   def install
@@ -52,15 +49,13 @@ class Git < Formula
 
     perl_version = Utils.popen_read("perl --version")[/v(\d+\.\d+)(?:\.\d+)?/, 1]
 
-    if MacOS.version >= :mavericks
-      ENV["PERLLIB_EXTRA"] = %W[
-        #{MacOS.active_developer_dir}
-        /Library/Developer/CommandLineTools
-        /Applications/Xcode.app/Contents/Developer
-      ].uniq.map do |p|
-        "#{p}/Library/Perl/#{perl_version}/darwin-thread-multi-2level"
-      end.join(":")
-    end
+    ENV["PERLLIB_EXTRA"] = %W[
+      #{MacOS.active_developer_dir}
+      /Library/Developer/CommandLineTools
+      /Applications/Xcode.app/Contents/Developer
+    ].uniq.map do |p|
+      "#{p}/Library/Perl/#{perl_version}/darwin-thread-multi-2level"
+    end.join(":")
 
     unless quiet_system ENV["PERL_PATH"], "-e", "use ExtUtils::MakeMaker"
       ENV["NO_PERL_MAKEMAKER"] = "1"
@@ -74,7 +69,7 @@ class Git < Formula
       LDFLAGS=#{ENV.ldflags}
     ]
 
-    if build.with?("openssl") || MacOS.version < :yosemite
+    if MacOS.version < :yosemite
       openssl_prefix = Formula["openssl"].opt_prefix
       args += %W[NO_APPLE_COMMON_CRYPTO=1 OPENSSLDIR=#{openssl_prefix}]
     else
@@ -131,10 +126,14 @@ class Git < Formula
     chmod 0644, Dir["#{share}/doc/git-doc/**/*.{html,txt}"]
     chmod 0755, Dir["#{share}/doc/git-doc/{RelNotes,howto,technical}"]
 
-    # To avoid this feature hooking into the system OpenSSL, remove it.
-    # If you need it, install git --with-openssl.
-    if MacOS.version >= :yosemite && build.without?("openssl")
+    # To avoid this feature hooking into the system OpenSSL, remove it
+    if MacOS.version >= :yosemite
       rm "#{libexec}/git-core/git-imap-send"
+    end
+
+    # git-send-email needs Net::SMTP::SSL
+    resource("Net::SMTP::SSL").stage do
+      (share/"perl5").install "lib/Net"
     end
 
     # This is only created when building against system Perl, but it isn't
@@ -158,5 +157,14 @@ class Git < Formula
     system bin/"git", "add", "haunted", "house"
     system bin/"git", "commit", "-a", "-m", "Initial Commit"
     assert_equal "haunted\nhouse", shell_output("#{bin}/git ls-files").strip
+
+    # Check Net::SMTP::SSL was installed correctly.
+    %w[foo bar].each { |f| touch testpath/f }
+    system bin/"git", "add", "foo", "bar"
+    system bin/"git", "commit", "-a", "-m", "Second Commit"
+    assert_match "Authentication Required", shell_output(
+      "#{bin}/git send-email --to=dev@null.com --smtp-server=smtp.gmail.com " \
+      "--smtp-encryption=tls --confirm=never HEAD^ 2>&1", 255
+    )
   end
 end

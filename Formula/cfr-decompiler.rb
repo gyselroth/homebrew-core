@@ -1,17 +1,16 @@
 class CfrDecompiler < Formula
   desc "Yet Another Java Decompiler"
   homepage "https://www.benf.org/other/cfr/"
-  url "https://www.benf.org/other/cfr/cfr_0_132.jar"
-  sha256 "e10b1667835cf5b73f09cf37eb122192ce29583c29f5c3a4e134a43e7669f5ba"
+  url "https://www.benf.org/other/cfr/cfr-0.144.jar"
+  sha256 "29a5d4fd4c70fb9d24f1013725a54a7ee2a61dc672ab2b948602c91cffd90df4"
 
   bottle :unneeded
 
   depends_on :java => "1.6+"
 
   def install
-    jar_version = version.to_s.tr(".", "_")
-    libexec.install "cfr_#{jar_version}.jar"
-    bin.write_jar_script libexec/"cfr_#{jar_version}.jar", "cfr-decompiler"
+    libexec.install "cfr-#{version}.jar"
+    bin.write_jar_script libexec/"cfr-#{version}.jar", "cfr-decompiler"
   end
 
   test do

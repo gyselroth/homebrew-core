@@ -1,34 +1,34 @@
 class Node < Formula
   desc "Platform built on V8 to build network applications"
   homepage "https://nodejs.org/"
-  url "https://nodejs.org/dist/v11.4.0/node-v11.4.0.tar.gz"
-  sha256 "4dd9c7983d38bf373ab4e768645ae6887ccf50e284c7a44c279d6f190e607cab"
+  url "https://nodejs.org/dist/v12.4.0/node-v12.4.0.tar.gz"
+  sha256 "cf39befb8ea486363cac6f297d8f451fd0d5dd8ad21dca51e9c2ea86b242baa0"
   head "https://github.com/nodejs/node.git"
 
   bottle do
     cellar :any
-    sha256 "1f7a260d7bfe690fa40e10e43c4ed36b0291e4893a2e8d2b3106c4e15b85cd26" => :mojave
-    sha256 "1db69a080c9c7d7956f8d002365457f7563d4433f241e0e31ea56f9265e474f8" => :high_sierra
-    sha256 "7a7659dd7227f157b6a6e6a32dd046a4754f099020cb74c107105e303e99c728" => :sierra
+    rebuild 1
+    sha256 "f1172f2ee2e6f3bce711e9213ee31c7ff9d87cb0d624a0ed32d86df8c7028acd" => :mojave
+    sha256 "e8abcacc00ff1b153b635a1119cdbdb02cbe07c3addd1fda97f1a7d0de115c31" => :high_sierra
+    sha256 "ae5116f85404b5a829ea561c7c4986937dea79c93fa52a8b3456cb55b87899d3" => :sierra
   end
 
   depends_on "pkg-config" => :build
   depends_on "python@2" => :build
   depends_on "icu4c"
 
-  # Per upstream - "Need g++ 4.8 or clang++ 3.4".
-  fails_with :clang if MacOS.version <= :snow_leopard
-  fails_with :gcc_4_0
-  fails_with :gcc_4_2
-  ("4.3".."4.7").each do |n|
-    fails_with :gcc => n
-  end
-
   # We track major/minor from upstream Node releases.
   # We will accept *important* npm patch releases when necessary.
   resource "npm" do
-    url "https://registry.npmjs.org/npm/-/npm-6.4.1.tgz"
-    sha256 "a48e0b4471d72936afb598ebde0e07076598ac8647c2e9ebe891db5d6fbf2952"
+    url "https://registry.npmjs.org/npm/-/npm-6.9.0.tgz"
+    sha256 "d6194c36bf612f1b2a6fbe351a7cb6f44dfb9a87a1d5336b1303dc1c07e87276"
+  end
+
+  # Fixes detecting Apple clang 11.
+  # This is an upstream patch and will be in the next release.
+  patch do
+    url "https://github.com/nodejs/node/commit/1f143b8625c2985b4317a40f279232f562417077.patch?full_index=1"
+    sha256 "12d8af6647e9a5d81f68f610ad0ed17075bf14718f4d484788baac37a0d3f842"
   end
 
   def install

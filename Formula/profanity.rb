@@ -1,15 +1,15 @@
 class Profanity < Formula
   desc "Console based XMPP client"
   homepage "http://www.profanity.im/"
-  url "http://www.profanity.im/profanity-0.5.1.tar.gz"
-  sha256 "e3513713e74ec3363fbdbac2919bdc17e249988780cc5a4589d1425807a7feb8"
-  revision 1
+  url "http://www.profanity.im/profanity-0.6.0.tar.gz"
+  # checksum change reported upstream at https://github.com/profanity-im/profanity/issues/1094
+  sha256 "f1b2773b79eb294297686f3913e9489c20effae5e3a335c8956db18f6ee2f660"
+  revision 2
 
   bottle do
-    sha256 "51cfcfe6bd1cbada4749999ae0dd26a9285b8f8c7e756dc7e38ca879394792b4" => :mojave
-    sha256 "c97ecd459069c638acb346488507b3f216c485d5667f3999875b8166e2e36fef" => :high_sierra
-    sha256 "50e1f4970c62dfd02c0c0fe5f439d87d18d6de276fdc2982c7713b74a57e38d9" => :sierra
-    sha256 "90d81d6a2f308a5ae8a0ed69abcea2e4ed531f3d237600b51d41406c705f6443" => :el_capitan
+    sha256 "57d4299cc773dedb5a01221b414e97be579f025f50d8355bc965ae1750f9726b" => :mojave
+    sha256 "407aeeb2f9f3faf5633814b3900f5f4d79888f6ad1a94e0b75be894bc061e0a1" => :high_sierra
+    sha256 "7c3d5013c2b0c3ae7d4e1c56bc7a9552815feef3f19adaef0ec8de67d036b3b0" => :sierra
   end
 
   head do
@@ -28,7 +28,6 @@ class Profanity < Formula
   depends_on "libotr"
   depends_on "libstrophe"
   depends_on "openssl"
-  depends_on "ossp-uuid"
   depends_on "readline"
   depends_on "terminal-notifier"
 

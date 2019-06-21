@@ -1,13 +1,15 @@
 class Osquery < Formula
   desc "SQL powered operating system instrumentation and analytics"
   homepage "https://osquery.io"
-  url "https://github.com/facebook/osquery/archive/3.3.0.tar.gz"
-  sha256 "b633b41bd9ec7a8569eb03060cc22dd53a36d3ba4ca7fb66a976d7f9f800bf52"
-  revision 1
+  url "https://github.com/facebook/osquery/archive/3.3.2.tar.gz"
+  sha256 "74280181f45046209053a3e15114d93adc80929a91570cc4497931cfb87679e4"
+  revision 4
 
   bottle do
     cellar :any
-    sha256 "271d3f05c7af8f27c27eccd5243c61cc655a68cbd1134cb7d8b9a8fa48c1796a" => :sierra
+    sha256 "47f491ca2a096b1f1478672389293ed506b3bd7e08b07ec9d54fc3e697039713" => :mojave
+    sha256 "206baf23f17ca77db064c5576e655874055fa00312ec3e87d7e6ccb21c6cae3e" => :high_sierra
+    sha256 "27aa7591cff131398915cd954798a4c304a5f327f5af311bb5b63d7ef4ee9445" => :sierra
   end
 
   depends_on "bison" => :build
@@ -51,15 +53,15 @@ class Osquery < Formula
   end
 
   resource "aws-sdk-cpp" do
-    url "https://github.com/aws/aws-sdk-cpp/archive/1.3.30.tar.gz"
-    sha256 "7b5f9b6d4215069fb75d31db2c8ab06081ab27f59ee33d5bb428fec3e30723f1"
+    url "https://github.com/aws/aws-sdk-cpp/archive/1.4.55.tar.gz"
+    sha256 "0a70c2998d29cc4d8a4db08aac58eb196d404073f6586a136d074730317fe408"
   end
 
-  # Upstream fix for boost 1.68, remove in next version
-  # https://github.com/facebook/osquery/issues/5069
+  # Upstream fix for boost 1.69, remove in next version
+  # https://github.com/facebook/osquery/pull/5496
   patch do
-    url "https://github.com/facebook/osquery/commit/512f775c.diff?full_index=1"
-    sha256 "8bfafabf51c1b22dcab1a2a49d7d2a6583c49409def0876c79191839ccf23d53"
+    url "https://github.com/facebook/osquery/commit/130b3b3324e2.diff?full_index=1"
+    sha256 "46bce0c62f1a8f0df506855049991e6fceb6d1cc4e1113a2f657e76b5c5bdd14"
   end
 
   def install

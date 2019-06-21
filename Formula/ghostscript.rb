@@ -1,13 +1,13 @@
 class Ghostscript < Formula
   desc "Interpreter for PostScript and PDF"
   homepage "https://www.ghostscript.com/"
-  url "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs926/ghostpdl-9.26.tar.xz"
-  sha256 "9c586554c653bb92ef5d271b12ad76ac6fabc05193173cb9e2b799bb069317fe"
+  url "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs927/ghostpdl-9.27.tar.gz"
+  sha256 "9e089546624296bf4aca14c2adcb0762b323ca77ae14176d21127b749baac8d6"
 
   bottle do
-    sha256 "86c29a6fa41790503302ff07f4d8c5dc92b029f37974c0007943fc69c5f0ddbb" => :mojave
-    sha256 "223907f7e42d7c1525a40550590c9f4a46ccb6a06bee087593df3dc4789b3565" => :high_sierra
-    sha256 "6e0d98a2b7889213ac2dd8feee5a3557e0c4f9e49b815066864b073798c7870f" => :sierra
+    sha256 "4ba703a1dc6cdc5f41ef354afd5073ec83fd26eb2683973c34da36159bc1dd2e" => :mojave
+    sha256 "6db33437048f3268643c5e8fb873746409022fd914962262e960096562a8a277" => :high_sierra
+    sha256 "ff291bf76719b9e30973342d98600183056898590ab3b0d3945c63de621c004f" => :sierra
   end
 
   head do
@@ -21,7 +21,6 @@ class Ghostscript < Formula
 
   depends_on "pkg-config" => :build
   depends_on "libtiff"
-  depends_on :x11 => :optional
 
   # https://sourceforge.net/projects/gs-fonts/
   resource "fonts" do
@@ -40,14 +39,20 @@ class Ghostscript < Formula
       --disable-fontconfig
       --without-libidn
       --with-system-libtiff
+      --without-x
     ]
-    args << "--without-x" if build.without? "x11"
 
     if build.head?
       system "./autogen.sh", *args
     else
       system "./configure", *args
     end
+
+    # Fix for shared library bug https://bugs.ghostscript.com/show_bug.cgi?id=701211
+    # Can be removed in next version, and possibly replaced by passing
+    # --enable-gpdl to configure
+    inreplace "Makefile", "PCL_XPS_TARGETS=$(PCL_TARGET) $(XPS_TARGET)",
+                          "PCL_XPS_TARGETS=$(PCL_TARGET) $(XPS_TARGET) $(GPDL_TARGET)"
 
     # Install binaries and libraries
     system "make", "install"

@@ -1,15 +1,14 @@
 class Treefrog < Formula
   desc "High-speed C++ MVC Framework for Web Application"
   homepage "http://www.treefrogframework.org/"
-  url "https://github.com/treefrogframework/treefrog-framework/archive/v1.22.0.tar.gz"
-  sha256 "0b9d79d0e17266ff603c1ff812289e8d2500d8f758d3c700ccc3aaad51e3751d"
+  url "https://github.com/treefrogframework/treefrog-framework/archive/v1.24.0.tar.gz"
+  sha256 "4060736e96bb3c84fe3d0a251cf140baf29724d4cb50212cee4dbf1d491982ed"
   head "https://github.com/treefrogframework/treefrog-framework.git"
 
   bottle do
-    rebuild 1
-    sha256 "48c4597ce3646a2481946824dcb6aee5b1bcec9f7449c1054c265b70f66800d9" => :mojave
-    sha256 "5c271befbf580381e9676937716a4c215b09b83ea75416cf6229d495956ce5d3" => :high_sierra
-    sha256 "04a85f1d383d87e7d37be11b91360341c0686c758a4eda6b0185121f88824684" => :sierra
+    sha256 "bbf06535ab64a86ae25ddaf3e2ac066ec48143aa44dc358cd63651c60d9d5cb3" => :mojave
+    sha256 "22653f1d3be2a7dfae678d4d8d9be1b14be167ffc1f3d1cc040e9c3cf1368475" => :high_sierra
+    sha256 "19cc929312e7be589ec943cc4d12a1a34bd4f0b37a008202ff4e551df5c076b1" => :sierra
   end
 
   depends_on :xcode => ["8.0", :build]

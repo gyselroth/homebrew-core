@@ -1,14 +1,15 @@
 class KnotResolver < Formula
   desc "Minimalistic, caching, DNSSEC-validating DNS resolver"
   homepage "https://www.knot-resolver.cz"
-  url "https://secure.nic.cz/files/knot-resolver/knot-resolver-3.1.0.tar.xz"
-  sha256 "8f3deba4695784a666cde317bc6af80ecf42ce1047b01f4b9c582fdc021c7492"
+  url "https://secure.nic.cz/files/knot-resolver/knot-resolver-3.2.1.tar.xz"
+  sha256 "d1396888ec3a63f19dccdf2b7dbcb0d16a5d8642766824b47f4c21be90ce362b"
+  revision 1
   head "https://gitlab.labs.nic.cz/knot/knot-resolver.git"
 
   bottle do
-    sha256 "7757312aae0148e35c7ad3d89841375c685ae89cb95ee282d539cd96b9374524" => :mojave
-    sha256 "9661b8a1cecb40712f4a853409c2bd2e69affff3fa3628d242a7179fc7c7904a" => :high_sierra
-    sha256 "1ab5d636ca42d5dd4e3c0eb731b303704537a1c3dbff36a3e9fc0916e151377c" => :sierra
+    sha256 "d10e18db53db4a96db665cb04a04d84d9050e8f2cd4989420bab6dbb13a1f6be" => :mojave
+    sha256 "c6d685f41c1ce47998c825c89c228013e4303fd14271c3a204a13b6ac9008bdc" => :high_sierra
+    sha256 "527254894d8ffb9c97a9e00dfbe19a6509c009d901e4e3be2410ee80636e0991" => :sierra
   end
 
   depends_on "cmocka" => :build
@@ -44,7 +45,6 @@ class KnotResolver < Formula
 
   # DNSSEC root anchor published by IANA (https://www.iana.org/dnssec/files)
   def root_keys; <<~EOS
-    . IN DS 19036 8 2 49aac11d7b6f6446702e54a1607371607a1a41855200fd2ce1cdde32f24e8fb5
     . IN DS 20326 8 2 e06d44b80b8f1d39a95c0b0d7c65d08458e880409bbc683457104237c7f8ec8d
   EOS
   end
@@ -67,6 +67,8 @@ class KnotResolver < Formula
         <string>#{sbin}/kresd</string>
         <string>-c</string>
         <string>#{etc}/kresd/config</string>
+        <string>-f</string>
+        <string>1</string>
       </array>
       <key>StandardInPath</key>
       <string>/dev/null</string>

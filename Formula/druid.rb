@@ -1,19 +1,17 @@
 class Druid < Formula
   desc "High-performance, column-oriented, distributed data store"
-  homepage "http://druid.io"
-  url "http://static.druid.io/artifacts/releases/druid-0.12.2-bin.tar.gz"
-  sha256 "951fffe2026cb2c7e219add5f4be15c993f34347f8af0873d19c72ccbb606f77"
+  homepage "https://druid.apache.org/"
+  url "http://static.druid.io/artifacts/releases/druid-0.12.3-bin.tar.gz"
+  sha256 "807581d54fa4c5a90eec2a230e2a7fc4c6daf18eb8136009bf36a775d793d6f6"
 
   bottle :unneeded
-
-  option "with-mysql", "Build with mysql-metadata-storage plugin"
 
   depends_on :java => "1.8"
   depends_on "zookeeper"
 
   resource "mysql-metadata-storage" do
-    url "http://static.druid.io/artifacts/releases/mysql-metadata-storage-0.12.2.tar.gz"
-    sha256 "b1122c037929633f89903948f8e11d19b8e1c1cb2949e93acc8dee2bcb2046b0"
+    url "http://static.druid.io/artifacts/releases/mysql-metadata-storage-0.12.3.tar.gz"
+    sha256 "8ee27e3c7906abcd401cfd59072602bd1f83828b66397ae2cf2c3ff0e1860162"
   end
 
   def install
@@ -37,13 +35,8 @@ class Druid < Formula
       s.gsub! ":=var/druid/pids", ":=#{var}/druid/pids"
     end
 
-    if build.with? "mysql"
-      resource("mysql-metadata-storage").stage do
-        (libexec/"extensions/mysql-metadata-storage").install Dir["*"]
-      end
-    else
-      inreplace libexec/"conf/druid/_common/common.runtime.properties",
-                ", \"mysql-metadata-storage\"", ""
+    resource("mysql-metadata-storage").stage do
+      (libexec/"extensions/mysql-metadata-storage").install Dir["*"]
     end
 
     bin.install Dir["#{libexec}/bin/*.sh"]

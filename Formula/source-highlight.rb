@@ -5,17 +5,15 @@ class SourceHighlight < Formula
   mirror "https://ftpmirror.gnu.org/src-highlite/source-highlight-3.1.8.tar.gz"
   mirror "https://fossies.org/linux/www/source-highlight-3.1.8.tar.gz"
   sha256 "01336a7ea1d1ccc374201f7b81ffa94d0aecb33afc7d6903ebf9fbf33a55ada3"
-  revision 10
+  revision 12
 
   bottle do
-    sha256 "9277cf220d941d23e2f8aa6fabc49e546d5d2141e10d86533ca0ab308f036552" => :mojave
-    sha256 "e9cee3e1adb85f4342db18e9eb058cb1e890ab4787e2d80c7657379c59db0cf4" => :high_sierra
-    sha256 "ac02e274218e45a543fca0478086bc3fed67d07deff990bf51065586c59602a9" => :sierra
+    sha256 "688ef215f8f36547792ac63e3ece3e84e0a9e9606a19f24d19183c880c5e56bb" => :mojave
+    sha256 "df9fd53dc9cfaba19cea8d95c807ee14424dfc5f557a19366d905104c95ed6d5" => :high_sierra
+    sha256 "7c36028c9728b35dbb20ed0d19e064e5f29c4929d01c95c87d8945e664d13e23" => :sierra
   end
 
   depends_on "boost"
-
-  needs :cxx11
 
   def install
     system "./configure", "--disable-dependency-tracking",

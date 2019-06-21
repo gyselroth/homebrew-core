@@ -1,46 +1,59 @@
 class Pygobject3 < Formula
   desc "GNOME Python bindings (based on GObject Introspection)"
   homepage "https://wiki.gnome.org/Projects/PyGObject"
-  url "https://download.gnome.org/sources/pygobject/3.30/pygobject-3.30.4.tar.xz"
-  sha256 "2dc1a1a444b82955e65b81c2a2511ecf8032404beba4ef1d48144168f2f64c43"
+  url "https://download.gnome.org/sources/pygobject/3.32/pygobject-3.32.1.tar.xz"
+  sha256 "32c99def94b8dea5ce9e4bc99576ef87591ea779b4db77cfdca7af81b76d04d8"
 
   bottle do
-    sha256 "c4004732688326f968423751c18861a21297e36bd628bd19e0c410747d60f07a" => :mojave
-    sha256 "342769a9ab3cbb29bd30368cb4ef7024821f45032f185c952dfdc9b32ccb4b39" => :high_sierra
-    sha256 "34cb3f702e580475d18bb44652fdcfb02041a1a7153246e2b710df17576b93e4" => :sierra
+    cellar :any
+    sha256 "cf2738f0f61ac488ac4b2a67f10c2740b3249728e807b5169c531d14357f08de" => :mojave
+    sha256 "ab1cde8cc940917da59401934c8f3a0b3f65c41efc8fdb02816a9bc3f668b91a" => :high_sierra
+    sha256 "7b8c52ed0c05cefe12583337129192fa21aba265ad88bc16c8ef4316655cf713" => :sierra
   end
-
-  option "without-python", "Build without python3 support"
-  option "with-python@2", "Build with python2 support"
 
   depends_on "meson" => :build
   depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "python" => [:build, :recommended]
   depends_on "gobject-introspection"
-  depends_on "py3cairo" if build.with? "python"
-  depends_on "python@2" => :optional
-  depends_on "py2cairo" if build.with? "python@2"
+  depends_on "py2cairo"
+  depends_on "py3cairo"
+  depends_on "python"
+  depends_on "python@2"
 
   def install
-    Language::Python.each_python(build) do |python, version|
-      mkdir "build#{version}" do
-        system "meson", "--prefix=#{prefix}",
-                        "-Dpycairo=true",
-                        "-Dpython=#{python}",
-                        ".."
-        system "ninja", "-v"
-        system "ninja", "install"
-      end
+    mkdir "buildpy2" do
+      system "meson", "--prefix=#{prefix}",
+                      "-Dpycairo=true",
+                      "-Dpython=python2.7",
+                      ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
+    end
+
+    mkdir "buildpy3" do
+      system "meson", "--prefix=#{prefix}",
+                      "-Dpycairo=true",
+                      "-Dpython=python3",
+                      ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
     end
   end
 
   test do
     Pathname("test.py").write <<~EOS
       import gi
+      gi.require_version("GLib", "2.0")
       assert("__init__" in gi.__file__)
+      from gi.repository import GLib
+      assert(31 == GLib.Date.get_days_in_month(GLib.DateMonth.JANUARY, 2000))
     EOS
-    Language::Python.each_python(build) do |python, pyversion|
+    pythons = [
+      Formula["python@2"].opt_bin/"python2",
+      Formula["python"].opt_bin/"python3",
+    ]
+    pythons.each do |python|
+      pyversion = Language::Python.major_minor_version(python)
       ENV.prepend_path "PYTHONPATH", lib/"python#{pyversion}/site-packages"
       system python, "test.py"
     end

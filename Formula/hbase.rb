@@ -1,13 +1,14 @@
 class Hbase < Formula
   desc "Hadoop database: a distributed, scalable, big data store"
   homepage "https://hbase.apache.org"
-  url "https://www.apache.org/dyn/closer.cgi?path=hbase/hbase-1.2.8/hbase-1.2.8-bin.tar.gz"
-  sha256 "3286c67b847c2185ed046143eb8212db454c4aa83e9efbaf2a0032f18ce1ebfd"
+  url "https://www.apache.org/dyn/closer.cgi?path=hbase/hbase-1.3.4/hbase-1.3.4-bin.tar.gz"
+  mirror "https://archive.apache.org/dist/hbase/1.3.4/hbase-1.3.4-bin.tar.gz"
+  sha256 "cb4a90101d77b369e79f5c816b2c04be2e25d77c954560139608ae3cbf0c629f"
 
   bottle do
-    sha256 "e5f6e0622f678f298531ef3fa7e91647a7ceda2b23475fcd89548112f3f57085" => :mojave
-    sha256 "7dab0c1a2cbe939ac251a4020f551990224ffb771bc27df04720627035df76b7" => :high_sierra
-    sha256 "608f15b4b563292d84d44a97f09ca8c6863c5150ec7e47ad79422ac89b07117e" => :sierra
+    sha256 "e1327223be7395aeb678ebc1d6984bbe5a5e4dfaefdab2522089458cb8e13204" => :mojave
+    sha256 "fa047bafe2cb95a57703eea0b15287cf0aefe384a4c07d2f579d75de73769e12" => :high_sierra
+    sha256 "450dcab9bd5639f0fc516e7ab293d049e4c3c0295986f25a18e9fe5ff7d25ab8" => :sierra
   end
 
   depends_on "ant" => :build
@@ -18,7 +19,6 @@ class Hbase < Formula
   depends_on :arch => :x86_64
   depends_on :java => "1.8"
   depends_on "lzo"
-  depends_on "hadoop" => :optional
 
   resource "hadoop-lzo" do
     url "https://github.com/cloudera/hadoop-lzo/archive/0.4.14.tar.gz"
@@ -75,7 +75,7 @@ class Hbase < Formula
         <configuration>
           <property>
             <name>hbase.rootdir</name>
-            <value>#{build.with?("hadoop") ? "hdfs://localhost:9000" : "file://"+var}/hbase</value>
+            <value>file://#{var}/hbase</value>
           </property>
           <property>
             <name>hbase.zookeeper.property.clientPort</name>
@@ -113,7 +113,7 @@ class Hbase < Formula
     <plist version="1.0">
     <dict>
       <key>KeepAlive</key>
-      #{build.without?("hadoop") ? "<true/>" : "<dict>\n        <key>OtherJobEnabled</key>\n        <string>"+Formula["hadoop"].plist_name+"</string>\n      </dict>"}
+      <true/>
       <key>Label</key>
       <string>#{plist_name}</string>
       <key>EnvironmentVariables</key>

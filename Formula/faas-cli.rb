@@ -2,21 +2,21 @@ class FaasCli < Formula
   desc "CLI for templating and/or deploying FaaS functions"
   homepage "https://docs.get-faas.com/"
   url "https://github.com/openfaas/faas-cli.git",
-      :tag      => "0.8.1",
-      :revision => "5b36c50280d961d3aa248bd17f901f4ef2774447"
+      :tag      => "0.8.14",
+      :revision => "25cada08609e00bed526790a6bdd19e49ca9aa63"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "def0f4374e118bcbcaab5916825c8d598a3dd421f589c6dd83df14b03995a213" => :mojave
-    sha256 "02ddada528e5d7b5872d364c1636059d6da0eb673920238b7e4162935940d8ee" => :high_sierra
-    sha256 "e114ef38b87d32f0637c24f2bbee425201c01f2edfb016a44d5601327faf1bbb" => :sierra
+    sha256 "79a2ee6e8a5da391e2ce5946e69c24af7b9c97cc79af3e3e0a56c0050ef77f0c" => :mojave
+    sha256 "78ffe82ac217301acf1f18ecc74df8ed032e881fa6fba3856d333112b6ed9021" => :high_sierra
+    sha256 "c6aedc8217375593f7eb9a8b09db1e434b23eb1607db15221be30d2d1677eadc" => :sierra
   end
 
   depends_on "go" => :build
 
   def install
     ENV["XC_OS"] = "darwin"
-    ENV["XC_ARCH"] = MacOS.prefer_64_bit? ? "amd64" : "386"
+    ENV["XC_ARCH"] = "amd64"
     ENV["GOPATH"] = buildpath
     (buildpath/"src/github.com/openfaas/faas-cli").install buildpath.children
     cd "src/github.com/openfaas/faas-cli" do
@@ -61,14 +61,6 @@ class FaasCli < Formula
           image: dummy_image
     EOS
 
-    expected = <<~EOS
-      Deploying: dummy_function.
-      Function dummy_function already exists, attempting rolling-update.
-
-      Deployed. 200 OK.
-      URL: http://localhost:#{port}/function/dummy_function
-    EOS
-
     begin
       output = shell_output("#{bin}/faas-cli deploy -yaml test.yml 2>&1", 1)
       assert_match "stat ./template/python/template.yml", output
@@ -77,7 +69,8 @@ class FaasCli < Formula
       assert_match "node", shell_output("#{bin}/faas-cli new --list")
 
       output = shell_output("#{bin}/faas-cli deploy -yaml test.yml")
-      assert_equal expected, output.chomp
+      assert_match "Function dummy_function already exists, attempting rolling-update", output
+      assert_match "Deployed. 200 OK", output
 
       stable_resource = stable.instance_variable_get(:@resource)
       commit = stable_resource.instance_variable_get(:@specs)[:revision]

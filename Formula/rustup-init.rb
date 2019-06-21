@@ -1,25 +1,17 @@
 class RustupInit < Formula
   desc "The Rust toolchain installer"
   homepage "https://github.com/rust-lang/rustup.rs"
-  url "https://github.com/rust-lang/rustup.rs/archive/1.16.0.tar.gz"
-  sha256 "8c4ffeda2088dbdd5ea2eac8acef5ddd57dfcfe1f06a503e3da790f93161e1a6"
+  url "https://github.com/rust-lang/rustup.rs/archive/1.18.3.tar.gz"
+  sha256 "9a2ae2c85bbbfc838b25d86d049bc677532950d78765725beabb8a61df1c2710"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "f31fea6610b20aeace8c1462c838a1edff41bb5fb4442b0259a8fc68cd8bafbc" => :mojave
-    sha256 "f8f40d63b06b58e8f8a138e957e3e1c9e567518278e53c9fa03bea3f428b79ac" => :high_sierra
-    sha256 "f7bb37881a60eab7b7f001db2fc82784b43ce9fb5d061b9465b5b1d502fb67b4" => :sierra
+    sha256 "d9e405380444bb5afc9edd9f0938558c9acaa0f15c8a01d88f85834801e59100" => :mojave
+    sha256 "8e302783ad37e7f272161b9ae7e6f45dd4e86eb1267fa0d29c873e4fe0c039d0" => :high_sierra
+    sha256 "c26c7c239ce0db72e2e079165e811a5065fa4f6448eac61d6147c6b3e46a6f8e" => :sierra
   end
 
   depends_on "rust" => :build
-
-  # Fixes `rustup-init` not working when it is relative symlink.
-  # https://github.com/rust-lang/rustup.rs/issues/1512
-  # https://github.com/rust-lang/rustup.rs/pull/1521
-  patch do
-    url "https://github.com/rust-lang/rustup.rs/pull/1521/commits/ebbfced7ee4aeb5be4c775f8f85e351093d5818f.diff?full_index=1"
-    sha256 "34dc006d75d747b99dd9fe49bdde396a8bf5443d1e3df1a47c4776c06ec3f3c7"
-  end
 
   def install
     cargo_home = buildpath/"cargo_home"

@@ -3,15 +3,14 @@ class AstrometryNet < Formula
 
   desc "Automatic identification of astronomical images"
   homepage "https://github.com/dstndstn/astrometry.net"
-  url "https://github.com/dstndstn/astrometry.net/releases/download/0.76/astrometry.net-0.76.tar.gz"
-  sha256 "244355ef9716a9e062eb19e8547e8b50434c7df52a8b96f9d0a254bc646d1f0d"
-  revision 1
+  url "https://github.com/dstndstn/astrometry.net/releases/download/0.78/astrometry.net-0.78.tar.gz"
+  sha256 "9eda1b6cab5269b0a0e5d610aec86866cb8b08fb8f56254dc12f1690d69bc649"
 
   bottle do
     cellar :any
-    sha256 "fd35625dfe33791d24b73bac1dab5f5845e62655d953271f1c1802d95e342d6c" => :mojave
-    sha256 "c7ee05767b1629f3233245121aa20ed951c6e8b8a8d55d38d3f44abe2de0c7ba" => :high_sierra
-    sha256 "813cf48bb6f0554a4a32f9b2923ea6bca420e2f124c91879dafdc022f3ff5bc6" => :sierra
+    sha256 "fd3465686537dc232e41210aefb0d87ef55de4db8d9668c9bf0efd332076dee8" => :mojave
+    sha256 "8aee281a7b451606ae8d5efcc9bd3b053395c48e8321ba1ee58f0cc742106a56" => :high_sierra
+    sha256 "5003a768a1b49f8d835f5b2b2ffd2a79dd0bbcb0fef4f10efbd94c87599e418e" => :sierra
   end
 
   depends_on "pkg-config" => :build

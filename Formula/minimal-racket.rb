@@ -1,14 +1,14 @@
 class MinimalRacket < Formula
   desc "Modern programming language in the Lisp/Scheme family"
   homepage "https://racket-lang.org/"
-  url "https://mirror.racket-lang.org/installers/7.0/racket-minimal-7.0-src-builtpkgs.tgz"
-  sha256 "dab411d76ed5b1accbba9c7e934737e0a984099542c6df57cf55e9c96247d0fe"
+  url "https://mirror.racket-lang.org/installers/7.3/racket-minimal-7.3-src-builtpkgs.tgz"
+  sha256 "40286b2de8aaeed70d2dbebcbbb89f1be55be00fd55f4522635b7a51a58d6dc2"
 
   bottle do
-    sha256 "578ffb5e2f423a044f8f7f1917bdf23436f2731df83b11f34081e60fb1ff9f0c" => :mojave
-    sha256 "03db9d43fa5d5cdb784007de7495531379973cff9a6d9dbae14af8667a67b30c" => :high_sierra
-    sha256 "56eb6622bcc55384d4dd50e560b00acd4a5c479968e644795fd8fb85fa8c8d01" => :sierra
-    sha256 "5bce9d80b25c2cf1d709ea564fc94f289845a2dc0e6a3905612d6f272f2a165f" => :el_capitan
+    cellar :any
+    sha256 "54682774edc9d7818bb3f13b24b782c351876c2f44573a1d5c0b042d1b17c5c9" => :mojave
+    sha256 "b88127d2552cf2d11ade45f6e7deffd871cd27c1bf5937dae571dc8ba931c98b" => :high_sierra
+    sha256 "e76979bfea6f2c0549e4393af622a6d73b174b6323320d253873022643bab4c2" => :sierra
   end
 
   # these two files are amended when (un)installing packages
@@ -24,8 +24,6 @@ class MinimalRacket < Formula
         --man=#{man}
         --sysconfdir=#{etc}
       ]
-
-      args << "--disable-mac64" unless MacOS.prefer_64_bit?
 
       system "./configure", *args
       system "make"

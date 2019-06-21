@@ -1,7 +1,7 @@
 class Upscaledb < Formula
   desc "Database for embedded devices"
   homepage "https://upscaledb.com/"
-  revision 10
+  revision 12
 
   stable do
     url "http://files.upscaledb.com/dl/upscaledb-2.2.0.tar.gz"
@@ -18,9 +18,9 @@ class Upscaledb < Formula
 
   bottle do
     cellar :any
-    sha256 "5795b13d05e078ccc9e8474cad0af6f4f4bdaf689b5e85142548dd0c02a79482" => :mojave
-    sha256 "ad0b6887fa34cfc4c5176bae916d93328e051e2446965889543062785569bf90" => :high_sierra
-    sha256 "3c171ea5437d86b084663145ab8ef0135d85a8032e98f94f945ee3300156f31c" => :sierra
+    sha256 "fa357c83b845d76c242a7c10bd59c7ec9d9d7a3f539098b5e97dc0378e9072d4" => :mojave
+    sha256 "9e509efa7f8d97a661dc24ee58ed01e1135b5c7e4c03938fbcaf3e8397162f1f" => :high_sierra
+    sha256 "809ef6834e3b71efb921646efa43a752fb9486680e91125700033f6c6e34651d" => :sierra
   end
 
   head do
@@ -36,11 +36,6 @@ class Upscaledb < Formula
   depends_on :java
   depends_on "openssl"
   depends_on "protobuf"
-
-  fails_with :clang do
-    build 503
-    cause "error: member access into incomplete type 'const std::type_info"
-  end
 
   resource "libuv" do
     url "https://github.com/libuv/libuv/archive/v0.10.37.tar.gz"

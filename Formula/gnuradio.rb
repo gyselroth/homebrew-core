@@ -3,13 +3,13 @@ class Gnuradio < Formula
   homepage "https://gnuradio.org/"
   url "https://gnuradio.org/releases/gnuradio/gnuradio-3.7.13.4.tar.gz"
   sha256 "c536c268b1e9c24f1206bbc881a5819ac46e662f4e8beaded6f3f441d3502f0d"
-  revision 2
+  revision 7
   head "https://github.com/gnuradio/gnuradio.git"
 
   bottle do
-    sha256 "f9c4b21cc6206281d2c4e6f5c0c40fce1e315fbf01bb63f9c9bfbdd1c6bf7a17" => :mojave
-    sha256 "3ef3be5b051616ed25fc5a12715efb0c372120ff9093a8d5f1455278f264e980" => :high_sierra
-    sha256 "daf38b6219922663313acea54eb8ca8c25ca02bac49b08fcc153282756ef3256" => :sierra
+    sha256 "ba3188bb21d5dd894b7ef824fd5cea7d2e8a27a844387ce7901b0fe8831c5c9e" => :mojave
+    sha256 "9b03ea3191853d19b648a40015276df2acf9b9f41b9149f126a33d614667798a" => :high_sierra
+    sha256 "28933336791e5aa42620fdcac1660d6cb8d2cbc59192b51fa67523fd3e989fd0" => :sierra
   end
 
   depends_on "cmake" => :build
@@ -25,10 +25,6 @@ class Gnuradio < Formula
   depends_on "python@2"
   depends_on "uhd"
   depends_on "zeromq"
-  depends_on "jack" => :optional
-  depends_on "pygtk" => :optional
-  depends_on "sdl" => :optional
-  depends_on "wxpython" => :optional
 
   # cheetah starts here
   resource "Markdown" do
@@ -67,6 +63,12 @@ class Gnuradio < Formula
     sha256 "964031c0944f913933f55ad1610938105a6657a69d1ac5a6dd50e16a679104d5"
   end
 
+  # patch for boost 1.70.0, remove after next release
+  patch do
+    url "https://github.com/gnuradio/gnuradio/commit/6dc8229fd0dda25c054c2194ee2c9b28affe92d8.patch?full_index=1"
+    sha256 "9836235ea69b3d66b5cd4b2cdc89f80d010797d2bd59dc5c6631a96af921db8c"
+  end
+
   def install
     ENV.prepend_path "PATH", "/System/Library/Frameworks/Python.framework/Versions/2.7/bin"
 
@@ -93,20 +95,17 @@ class Gnuradio < Formula
 
     resource("cppzmq").stage include.to_s
 
-    args = std_cmake_args
-    args << "-DGR_PKG_CONF_DIR=#{etc}/gnuradio/conf.d"
-    args << "-DGR_PREFSDIR=#{etc}/gnuradio/conf.d"
-    args << "-DENABLE_DEFAULT=OFF"
+    args = std_cmake_args + %W[
+      -DGR_PKG_CONF_DIR=#{etc}/gnuradio/conf.d
+      -DGR_PREFSDIR=#{etc}/gnuradio/conf.d
+      -DENABLE_DEFAULT=OFF
+    ]
 
     enabled = %w[GR_ANALOG GR_FFT VOLK GR_FILTER GNURADIO_RUNTIME
                  GR_BLOCKS GR_PAGER GR_NOAA GR_CHANNELS GR_AUDIO
                  GR_FCD GR_VOCODER GR_FEC GR_DIGITAL GR_DTV GR_ATSC
                  GR_TRELLIS GR_ZEROMQ GR_WAVELET GR_UHD DOXYGEN SPHINX
                  PYTHON GR_UTILS]
-    enabled << "GRC" if build.with? "pygtk"
-    enabled << "GR_WXGUI" if build.with? "wxpython"
-    enabled << "GR_VIDEO_SDL" if build.with? "sdl"
-
     enabled.each do |c|
       args << "-DENABLE_#{c}=ON"
     end

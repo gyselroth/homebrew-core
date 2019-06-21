@@ -1,13 +1,13 @@
 class Scrcpy < Formula
   desc "Display and control your Android device"
   homepage "https://github.com/Genymobile/scrcpy"
-  url "https://github.com/Genymobile/scrcpy/archive/v1.5.tar.gz"
-  sha256 "9eef28d352d064320b8a2b9cc1000d478fb617a99807f2456a54af855b39ecf9"
+  url "https://github.com/Genymobile/scrcpy/archive/v1.9.tar.gz"
+  sha256 "905fe62e2825310eeb77187f8974763c3ae2f08ca1f649bcaf4721f1fd14a764"
 
   bottle do
-    sha256 "3f1fc3cb5964c4f94383531dca5a548e24680fc3698d33bf65a90c1edf4a9346" => :mojave
-    sha256 "457937e11c5eff7accd216cf8cb0b1ace90f1eec22171c1b2e90edc590d6b383" => :high_sierra
-    sha256 "1b2d6071d5afb0d583a8a7bcd2fd277f364e67c41766f59865764d668f4d3071" => :sierra
+    sha256 "6b3c73d844f2e03884494b5ef35ae61e954d61deaabee3dc2c6890ea59f2c8d9" => :mojave
+    sha256 "3ede1d5379b523fa49bafded248216359461d5f469f31f487317dd6b975fe2d4" => :high_sierra
+    sha256 "894321121f744ff2e39557ebd913a6ba208f6f61eeb3578e8e61854091b63992" => :sierra
   end
 
   depends_on "meson" => :build
@@ -17,19 +17,25 @@ class Scrcpy < Formula
   depends_on "sdl2"
 
   resource "prebuilt-server" do
-    url "https://github.com/Genymobile/scrcpy/releases/download/v1.5/scrcpy-server-v1.5.jar"
-    sha256 "c827f566172a5c5946e63b8378ac93d374dff9e229083e5cd9980df57536947b"
+    url "https://github.com/Genymobile/scrcpy/releases/download/v1.9/scrcpy-server-v1.9.jar"
+    sha256 "ad7e539f100e48259b646f26982bc63e0a60a81ac87ae135e242855bef69bd1a"
   end
 
+  # include the commit that fixes non portable build
+  patch do
+    url "https://github.com/Genymobile/scrcpy/commit/bcd0a876f7bf52642330410812a6b7100cdeda91.patch?full_index=1"
+    sha256 "86444cd3e26b73cf1c48e442c7aeabc748140b3422c860ac7ebbb05a374c1405"
+  end
   def install
     r = resource("prebuilt-server")
-    r.verify_download_integrity(r.fetch)
+    r.fetch
     cp r.cached_download, buildpath/"prebuilt-server.jar"
 
     mkdir "build" do
       system "meson", "--prefix=#{prefix}",
                       "--buildtype=release",
                       "-Dprebuilt_server=#{buildpath}/prebuilt-server.jar",
+                      "-Dportable=false",
                       ".."
 
       system "ninja", "install"

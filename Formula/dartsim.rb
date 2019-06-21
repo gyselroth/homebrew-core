@@ -1,14 +1,13 @@
 class Dartsim < Formula
   desc "Dynamic Animation and Robotics Toolkit"
   homepage "https://dartsim.github.io/"
-  url "https://github.com/dartsim/dart/archive/v6.6.2.tar.gz"
-  sha256 "3ac648fdac0633a2ea4dac37f78e37e5ced6edc2d82c3e2e9b7d8b7793df0845"
-  revision 2
+  url "https://github.com/dartsim/dart/archive/v6.9.0.tar.gz"
+  sha256 "8351c3fe53bd5251235d28ce15cc2796e529125b7990e49a715f4f567021aaed"
 
   bottle do
-    sha256 "83f2ebcce524c618f43c405bd2510320101cd70024181b3abe8f4840fcc119a0" => :mojave
-    sha256 "f85e3a4f32ef05e0209baa9d8c17de918718430891afe48cc41033270f99dd83" => :high_sierra
-    sha256 "042184ad7aeb294016ca89cb7e606c44c6e2bc10111e36a52242cd146b394e33" => :sierra
+    sha256 "37df8adbabfd3f9675eb484de13c8a04285e0dc8628b6ebcde76f856f6b65810" => :mojave
+    sha256 "3acde88f851ff977d4bbcdfe9c5671bc3b213cd184e22e10ef0b2b7305f873ee" => :high_sierra
+    sha256 "8b9c430cc7530aabef01cdfb756a398bf82c42b020a84ef1ed70f8689a4e345f" => :sierra
   end
 
   depends_on "cmake" => :build
@@ -26,8 +25,6 @@ class Dartsim < Formula
   depends_on "tinyxml2"
   depends_on "urdfdom"
 
-  needs :cxx11
-
   def install
     ENV.cxx11
 
@@ -35,18 +32,6 @@ class Dartsim < Formula
     system "cmake", ".", "-DGLUT_glut_LIBRARY=/System/Library/Frameworks/GLUT.framework",
                          *std_cmake_args
     system "make", "install"
-
-    # Avoid revision bumps whenever fcl's or libccd's Cellar paths change
-    inreplace share/"dart/cmake/dart_dartTargets.cmake" do |s|
-      s.gsub! Formula["fcl"].prefix.realpath, Formula["fcl"].opt_prefix
-      s.gsub! Formula["libccd"].prefix.realpath, Formula["libccd"].opt_prefix
-    end
-
-    # Avoid revision bumps whenever urdfdom's or urdfdom_headers's Cellar paths change
-    inreplace share/"dart/cmake/dart_utils-urdfTargets.cmake" do |s|
-      s.gsub! Formula["urdfdom"].prefix.realpath, Formula["urdfdom"].opt_prefix
-      s.gsub! Formula["urdfdom_headers"].prefix.realpath, Formula["urdfdom_headers"].opt_prefix
-    end
   end
 
   test do
@@ -62,7 +47,7 @@ class Dartsim < Formula
                     "-I#{include}", "-L#{lib}", "-ldart",
                     "-L#{Formula["assimp"].opt_lib}", "-lassimp",
                     "-L#{Formula["boost"].opt_lib}", "-lboost_system",
-                    "-std=c++11", "-o", "test"
+                    "-std=c++14", "-o", "test"
     system "./test"
   end
 end

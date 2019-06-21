@@ -3,12 +3,12 @@ class LibbitcoinExplorer < Formula
   homepage "https://github.com/libbitcoin/libbitcoin-explorer"
   url "https://github.com/libbitcoin/libbitcoin-explorer/archive/v3.5.0.tar.gz"
   sha256 "630cffd577c0d10345b44ce8160f4604519b0ca69bf201f524f104c207b930aa"
-  revision 4
+  revision 6
 
   bottle do
-    sha256 "52ff8c254ed415d258201f8373d74ff173c2aded1d90cfe2943c7ec99b3c30e7" => :mojave
-    sha256 "af697a44b15eb010ddda3c971d4178a8f0816930968241328fe233cf7d6f7dc5" => :high_sierra
-    sha256 "bd30fcbe24c6386a5d63828ba7281a3b61416a909dd978e6dd2b89dad0b02415" => :sierra
+    sha256 "8a44eea6fbfb1b45d06cba1a54aa9560e0d12f0e6e265b91642588173a873186" => :mojave
+    sha256 "fe6ef65b66f372d7a2ae9df58cc88156fdaed65cef8acf12f3cdb11c86f8b2b4" => :high_sierra
+    sha256 "867902d0a841eea59ddf26e582bd0f552153dc8bdb3d4fbd9e8bf6d721a9c4eb" => :sierra
   end
 
   depends_on "autoconf" => :build

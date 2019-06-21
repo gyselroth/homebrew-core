@@ -1,20 +1,18 @@
 class BoostMpi < Formula
   desc "C++ library for C++/MPI interoperability"
   homepage "https://www.boost.org/"
-  url "https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.tar.bz2"
-  sha256 "7f6130bc3cf65f56a618888ce9d5ea704fa10b462be126ad053e80e553d6d8b7"
+  url "https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.bz2"
+  sha256 "430ae8354789de4fd19ee52f3b1f739e1fba576f0aded0897c3c2bc00fb38778"
   head "https://github.com/boostorg/boost.git"
 
   bottle do
-    sha256 "f3530194eb7aa995cb9d02fbbd2bbc31ac8f6d985a2930e6a255af356933c4e8" => :mojave
-    sha256 "7b7870cdfd90c9bd3fbe165ed6b8a7b9c0d201df12e6b9e1a46ec96eff7a37b7" => :high_sierra
-    sha256 "78c183f2594864fdf99c7780c00323a667fb54e6ca10421951bb9cac498ed9bc" => :sierra
+    sha256 "603f0842184b4c50e9352e382ca2c3429795ee2b3c94e9a5a1a937d3b18c3795" => :mojave
+    sha256 "24a521cbfcce615e0afbc461f58e10255e8f1119034977ba0f0de7f905ab2e51" => :high_sierra
+    sha256 "58fa6cab2806605b3b172220734f0190f10ae0ad8da80f967e8d5fc5df955b7b" => :sierra
   end
 
   depends_on "boost"
   depends_on "open-mpi"
-
-  needs :cxx11
 
   def install
     # "layout" should be synchronized with boost
@@ -22,7 +20,9 @@ class BoostMpi < Formula
             "--libdir=#{lib}",
             "-d2",
             "-j#{ENV.make_jobs}",
-            "--layout=tagged",
+            "--layout=tagged-1.66",
+            # --no-cmake-config should be dropped if possible in next version
+            "--no-cmake-config",
             "--user-config=user-config.jam",
             "threading=multi,single",
             "link=shared,static"]

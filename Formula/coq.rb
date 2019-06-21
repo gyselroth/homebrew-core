@@ -1,14 +1,14 @@
 class Coq < Formula
   desc "Proof assistant for higher-order logic"
   homepage "https://coq.inria.fr/"
-  url "https://github.com/coq/coq/archive/V8.8.2.tar.gz"
-  sha256 "f9f843b21fda18195fbf80c706bce8ac70ccb43cbd82f6916747dc6c22d05044"
+  url "https://github.com/coq/coq/archive/V8.9.1.tar.gz"
+  sha256 "87251327e8a1e25c6b08b5c0ae8e7cdf3a91a5f30832bbe74ccc4f0bde9618ea"
   head "https://github.com/coq/coq.git"
 
   bottle do
-    sha256 "45d2d54d36f617c14ba51b947b1b018d53c035d03adfc0025e69972560301136" => :mojave
-    sha256 "07db19453e504dcc0ec4ea96e54c4b7bcbee6fd9126dd2da0c0ad179ede6237e" => :high_sierra
-    sha256 "5598f52047139121c42cea869f01ed54b6f66e787918664f173e36bae5963e43" => :sierra
+    sha256 "4154be5e0ad0cfd0aedab90e08cd4b10c414463be65a83ebcffa1572ecfdc2f0" => :mojave
+    sha256 "fc27156212ecad4d36cf01e394b767b1d6e94c35618b544a931ecf17ff99e22e" => :high_sierra
+    sha256 "48b6101a91cbefdb0a758e82018ddf404145e8f79f31af31f81512722dee7d36" => :sierra
   end
 
   depends_on "ocaml-findlib" => :build
@@ -19,7 +19,6 @@ class Coq < Formula
   def install
     system "./configure", "-prefix", prefix,
                           "-mandir", man,
-                          "-emacslib", elisp,
                           "-coqdocdir", "#{pkgshare}/latex",
                           "-coqide", "no",
                           "-with-doc", "no"

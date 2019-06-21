@@ -1,14 +1,13 @@
 class Ruby < Formula
   desc "Powerful, clean, object-oriented scripting language"
   homepage "https://www.ruby-lang.org/"
-  url "https://cache.ruby-lang.org/pub/ruby/2.5/ruby-2.5.3.tar.xz"
-  sha256 "1cc9d0359a8ea35fc6111ec830d12e60168f3b9b305a3c2578357d360fcf306f"
-  revision 1
+  url "https://cache.ruby-lang.org/pub/ruby/2.6/ruby-2.6.3.tar.xz"
+  sha256 "11a83f85c03d3f0fc9b8a9b6cad1b2674f26c5aaa43ba858d4b0fcc2b54171e1"
 
   bottle do
-    sha256 "2e605dc994aa86afc8b4c0c8f91c719afb37d803d3cb4bd3f5cdad9b67c84855" => :mojave
-    sha256 "f625fc4cb13e68d346731d6a557a79f70b725fc28cb2d00e522201099d8ef165" => :high_sierra
-    sha256 "0ddd3a90b3518b8c5fe8c6b7e97b81c14391f5a6b5875cba325aa23de947e7d0" => :sierra
+    sha256 "56630571e08b65c422073d54458db4f338be7a707a572173f51e964fcc611f3c" => :mojave
+    sha256 "52face1cf238072f1964cb6ace624510008857c645dee162ad0b60a138b6c136" => :high_sierra
+    sha256 "e43742f0a29eff33122a484ee06d58b9ac236a7013fd972b1e4c47dc3acb9e82" => :sierra
   end
 
   head do
@@ -27,8 +26,8 @@ class Ruby < Formula
   # The exception is Rubygem security fixes, which mandate updating this
   # formula & the versioned equivalents and bumping the revisions.
   resource "rubygems" do
-    url "https://rubygems.org/rubygems/rubygems-2.7.7.tgz"
-    sha256 "4cb2c9a36c0e4a3d5c20eb6795638632858fd72236d281963140221946ab55cb"
+    url "https://rubygems.org/rubygems/rubygems-3.0.3.tgz"
+    sha256 "be3a7abc31e91de667406e84cd15265b73fc502268a1dd09404214a49b4acb2c"
   end
 
   def api_version

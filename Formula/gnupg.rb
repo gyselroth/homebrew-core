@@ -1,13 +1,14 @@
 class Gnupg < Formula
   desc "GNU Pretty Good Privacy (PGP) package"
   homepage "https://gnupg.org/"
-  url "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-2.2.11.tar.bz2"
-  sha256 "496c3e123ef53f35436ddccca58e82acaa901ca4e21174e77386c0cea0c49cd9"
+  url "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-2.2.16.tar.bz2"
+  sha256 "6cbe8d454bf5dc204621eed3016d721b66298fa95363395bb8eeceb1d2fd14cb"
+  revision 1
 
   bottle do
-    sha256 "96fed47873d43556d02e50ae30507db87ee99756667903a8b580140be1d289c1" => :mojave
-    sha256 "f4d023bce034fd3048894189c9a84156fbcef7d748905b6bbbeefcf030e6fec1" => :high_sierra
-    sha256 "ad74386e76f74636cd0c15a09c21b63d90b5f58bfeec7d8e267cb73a6a9735c9" => :sierra
+    sha256 "2b0472114407f0b8d9e87addc5365593a003e87730538b7830a867d55d7656d9" => :mojave
+    sha256 "fb1bdbc7295dbd7595cd0c15edbd8813428f319c79fa40dcd674c67a02972731" => :high_sierra
+    sha256 "06c9fd498dddb5b88366e1d7cbd0624964d662705d520ddd7490db7ce8ac02f6" => :sierra
   end
 
   depends_on "pkg-config" => :build
@@ -40,17 +41,6 @@ class Gnupg < Formula
   def post_install
     (var/"run").mkpath
     quiet_system "killall", "gpg-agent"
-  end
-
-  def caveats; <<~EOS
-    Once you run this version of gpg you may find it difficult to return to using
-    a prior 1.4.x or 2.0.x. Most notably the prior versions will not automatically
-    know about new secret keys created or imported by this version. We recommend
-    creating a backup of your `~/.gnupg` prior to first use.
-
-    For full details on each change and how it could impact you please see
-      https://www.gnupg.org/faq/whats-new-in-2.1.html
-  EOS
   end
 
   test do

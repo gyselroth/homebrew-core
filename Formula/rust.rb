@@ -3,13 +3,13 @@ class Rust < Formula
   homepage "https://www.rust-lang.org/"
 
   stable do
-    url "https://static.rust-lang.org/dist/rustc-1.31.0-src.tar.gz"
-    sha256 "9ad54dc0baf1db5fc6a79d54e71c439c82aff85cd96778978456f2958211ef06"
+    url "https://static.rust-lang.org/dist/rustc-1.35.0-src.tar.gz"
+    sha256 "5a4d637a716bac18d085f44dd87ef48b32195f71b967d872d80280b38cff712d"
 
     resource "cargo" do
       url "https://github.com/rust-lang/cargo.git",
-          :tag      => "0.32.0",
-          :revision => "339d9f9c8f400010df3282ae5582bf3a0f739004"
+          :tag      => "0.36.0",
+          :revision => "6f3e9c367abb497c64f360c3839dab5e74928d5c"
     end
 
     resource "racer" do
@@ -22,9 +22,9 @@ class Rust < Formula
 
   bottle do
     cellar :any
-    sha256 "6738f72cc59ed2bf1ac44b761165ea0bd0629b1833837925017a78a5a1ce6030" => :mojave
-    sha256 "7813d3be36f412fe3bf4d08b4a14b83c9a9a670cf3972b4db586e12ef7808f25" => :high_sierra
-    sha256 "32c7fffdfa58ed1e98e0303585c584f01a8b9371fdc1e562307298048fa9a822" => :sierra
+    sha256 "263d805d5220eb9f7c21ee0a737b933001e66ea9e2853eb0a20b05cc0b8f5547" => :mojave
+    sha256 "84b687f6229875ff5f917567e50969019fe725bc7e7b881849bed3e9fed9f4d4" => :high_sierra
+    sha256 "49f3e0adb8678b4ca434c6cd04f1bb92b3ef5b688209b5a24a1c30c1f9153ce0" => :sierra
   end
 
   head do
@@ -44,17 +44,10 @@ class Rust < Formula
   depends_on "openssl"
   depends_on "pkg-config"
 
-  # According to the official readme, GCC 4.7+ is required
-  fails_with :gcc_4_0
-  fails_with :gcc_4_2
-  ("4.3".."4.6").each do |n|
-    fails_with :gcc => n
-  end
-
   resource "cargobootstrap" do
     # From https://github.com/rust-lang/rust/blob/#{version}/src/stage0.txt
-    url "https://static.rust-lang.org/dist/2018-10-25/cargo-0.31.0-x86_64-apple-darwin.tar.gz"
-    sha256 "2b8fd336db9f98b778e4ed44186066952f02670cc1e49ade4e00fd55cef5e9f9"
+    url "https://static.rust-lang.org/dist/2019-05-14/cargo-0.35.0-x86_64-apple-darwin.tar.gz"
+    sha256 "e16d48fff7fc9907bb38f06b5cc496b7e3c3de803615604405591bdfbc4aec94"
   end
 
   def install
@@ -104,7 +97,7 @@ class Rust < Formula
     end
 
     # Remove any binary files; as Homebrew will run ranlib on them and barf.
-    rm_rf Dir["src/{llvm,llvm-emscripten,test,librustdoc,etc/snapshot.pyc}"]
+    rm_rf Dir["src/{llvm-project,llvm-emscripten,test,librustdoc,etc/snapshot.pyc}"]
     (pkgshare/"rust_src").install Dir["src/*"]
 
     rm_rf prefix/"lib/rustlib/uninstall.sh"

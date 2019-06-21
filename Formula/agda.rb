@@ -7,20 +7,20 @@ class Agda < Formula
   homepage "https://wiki.portal.chalmers.se/agda/"
 
   stable do
-    url "https://hackage.haskell.org/package/Agda-2.5.4.2/Agda-2.5.4.2.tar.gz"
-    sha256 "f645add8a47a35da3f37757204fa9c80aeb0993d628fc2057fa343e92e579b1f"
+    url "https://hackage.haskell.org/package/Agda-2.6.0.1/Agda-2.6.0.1.tar.gz"
+    sha256 "7bb88a9cd4a556259907ccc71d54e2acc9d3e9ce05486ffdc83f721c7c06c0e8"
 
     resource "stdlib" do
       url "https://github.com/agda/agda-stdlib.git",
-          :tag      => "v0.17",
-          :revision => "5819a4dd9c965296224944f05b1481805649bdc2"
+          :tag      => "v1.0.1",
+          :revision => "442abf2b3418d4d488381a2f8ca4e99bbf8cfc8e"
     end
   end
 
   bottle do
-    sha256 "c663b789d6441cd487295b819fec34741cb742e428305a1253ac8649afde973f" => :mojave
-    sha256 "8c5277d95907ab1ba2825c910cf5b3310d5a34fe3152cdefd1144c55440b780e" => :high_sierra
-    sha256 "ee42b8e6a1a0b739f4240e23e0f37c6833c6df6a1008ad4bd731dc4a22091ad9" => :sierra
+    sha256 "2242488b489bab93900cc477d8ec29f39730c963f4792608abd9c6ad7aca2527" => :mojave
+    sha256 "4e9b23b72fafdab0da1278ece9cec725a45c3ca107ab5b7623971b7eda497404" => :high_sierra
+    sha256 "9500f95942f583183b2cfec2469b810cd3cfd121350132a9d23bc9d83d530104" => :sierra
   end
 
   head do
@@ -32,8 +32,8 @@ class Agda < Formula
   end
 
   depends_on "cabal-install" => [:build, :test]
+  depends_on "emacs"
   depends_on "ghc"
-  depends_on "emacs" => :recommended
 
   def install
     # install Agda core
@@ -56,10 +56,8 @@ class Agda < Formula
     end
 
     # compile the included Emacs mode
-    if build.with? "emacs"
-      system bin/"agda-mode", "compile"
-      elisp.install_symlink Dir["#{share}/*/Agda-#{version}/emacs-mode/*"]
-    end
+    system bin/"agda-mode", "compile"
+    elisp.install_symlink Dir["#{share}/*/Agda-#{version}/emacs-mode/*"]
   end
 
   def caveats; <<~EOS
@@ -118,7 +116,7 @@ class Agda < Formula
       postulate
         return : ∀ {A : Set} → A → IO A
 
-      {-# COMPILED return (\\_ -> return) #-}
+      {-# COMPILE GHC return = \\_ -> return #-}
 
       main : _
       main = return tt

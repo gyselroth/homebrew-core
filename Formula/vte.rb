@@ -3,13 +3,12 @@ class Vte < Formula
   homepage "https://developer.gnome.org/vte/"
   url "https://download.gnome.org/sources/vte/0.28/vte-0.28.2.tar.xz"
   sha256 "86cf0b81aa023fa93ed415653d51c96767f20b2d7334c893caba71e42654b0ae"
-  revision 2
+  revision 4
 
   bottle do
-    sha256 "73a55b1ddc926786641989613b15635d9ba9a04c0c241c5b085ee0c8c6d17911" => :mojave
-    sha256 "39b6a674facccd03a24f040ae3a6b7d3426280332e0a2908355a89a9d35d7a38" => :high_sierra
-    sha256 "41ba9567a2cfa0fa8838d0331fba21aa620362677d90eca4446922bc4ef0382e" => :sierra
-    sha256 "f57ca7c969e677208d1df618243a7fc453ae49660d114de05365467b51d97adc" => :el_capitan
+    sha256 "970e3a7f50240656be1c1ab6b9c7feb0e810712ce8ca72ec5ea6202c845661f2" => :mojave
+    sha256 "315ddf424e92e44f061b0abf3e76d28eb0fcca269892b284b5e7bdb0759c084f" => :high_sierra
+    sha256 "e0c6d478e7b46ace61c6a29a7389de8e13618e744575004a0a895a2b80be3e3c" => :sierra
   end
 
   depends_on "intltool" => :build

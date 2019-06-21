@@ -2,16 +2,16 @@
 class Macvim < Formula
   desc "GUI for vim, made for macOS"
   homepage "https://github.com/macvim-dev/macvim"
-  url "https://github.com/macvim-dev/macvim/archive/snapshot-153.tar.gz"
-  version "8.1-153"
-  sha256 "c8c18209d5dbfeaeeb69bd15723840a54507ba181a5fb790093fdfaed04846eb"
+  url "https://github.com/macvim-dev/macvim/archive/snapshot-156.tar.gz"
+  version "8.1-156"
+  sha256 "c2420dddd2e2527a516685206fb7d4053fe5a872ab7069f10f95bbe990cc43f8"
   head "https://github.com/macvim-dev/macvim.git"
 
   bottle do
     cellar :any
-    sha256 "c2872f6c8bdbdf22c2ba0bf1258b6afa2193ba91db2b0f4fa4f9bae003e0c5a3" => :mojave
-    sha256 "6f02b5bba24fc00329511b6865e0e869c4dd02091d1531475f12ed08858dd093" => :high_sierra
-    sha256 "a5b06c8ae8b671aaf476be78f30053c998794b437979cea5e0a6af0816834434" => :sierra
+    sha256 "0ae9784f9fb5afc98628250e542b8d128945165989f958d1b8b656136c5c3aba" => :mojave
+    sha256 "a28ea17c67713702b00309c93e23adbb787bddb842ed70009c27b32241dc60ef" => :high_sierra
+    sha256 "a87b8553efce30f97c23665d7b1a539209005e4b98308ba5c98ce4c3f4c51e3c" => :sierra
   end
 
   depends_on :xcode => :build
@@ -31,8 +31,8 @@ class Macvim < Formula
     # MacVim doesn't have or require any Python package, so unset PYTHONPATH
     ENV.delete("PYTHONPATH")
 
-    # If building for OS X 10.7 or up, make sure that CC is set to "clang"
-    ENV.clang if MacOS.version >= :lion
+    # make sure that CC is set to "clang"
+    ENV.clang
 
     system "./configure", "--with-features=huge",
                           "--enable-multibyte",

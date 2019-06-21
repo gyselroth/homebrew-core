@@ -1,32 +1,25 @@
 class Opencolorio < Formula
   desc "Color management solution geared towards motion picture production"
-  homepage "http://opencolorio.org/"
-  url "https://github.com/imageworks/OpenColorIO/archive/v1.1.0.tar.gz"
-  sha256 "228589879e1f11e455a555304007748a8904057088319ebbf172d9384b93c079"
+  homepage "https://opencolorio.org/"
+  url "https://github.com/imageworks/OpenColorIO/archive/v1.1.1.tar.gz"
+  sha256 "c9b5b9def907e1dafb29e37336b702fff22cc6306d445a13b1621b8a754c14c8"
   head "https://github.com/imageworks/OpenColorIO.git"
 
   bottle do
     cellar :any
-    sha256 "4058e3194f1d1667165af7af8592ac008768a82a7aea905a01db468daf83ccac" => :mojave
-    sha256 "4025f926a9061c72ebbecf1b5bbcb23d27c0ba6d8e2f578deb4cea45c60f409c" => :high_sierra
-    sha256 "18bf9288a4103a8f57f1869a884d3d1b697305e952eb977bd46f608d7d0695b3" => :sierra
-    sha256 "9eac0c648be323730035b3885b376db665408f02290efa9dd1263655029a914f" => :el_capitan
+    sha256 "c672c422e3d7b9559acf9925c0c6529fee5caee63083d74c78e9ac70b64a1b31" => :mojave
+    sha256 "ebc3541bd070af3a7c5ccee3b858fa37e20ef10ffec611130e24bb3676c180d4" => :high_sierra
+    sha256 "86e47674809e5fdf265312d309428d18a5d0cdd808af173a1abf5ed44f67a0f8" => :sierra
   end
-
-  deprecated_option "with-python" => "with-python@2"
 
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
   depends_on "little-cms2"
-  depends_on "python@2" => :optional
+  depends_on "python@2"
 
   def install
     args = std_cmake_args
     args << "-DCMAKE_VERBOSE_MAKEFILE=OFF"
-
-    # OCIO's PyOpenColorIO.so doubles as a shared library. So it lives in lib, rather
-    # than the usual HOMEBREW_PREFIX/lib/python2.7/site-packages per developer choice.
-    args << "-DOCIO_BUILD_PYGLUE=OFF" if build.without? "python@2"
 
     mkdir "macbuild" do
       system "cmake", *args, ".."
@@ -39,17 +32,14 @@ class Opencolorio < Formula
     <<~EOS
       OpenColorIO requires several environment variables to be set.
       You can source the following script in your shell-startup to do that:
-
-          #{HOMEBREW_PREFIX}/share/ocio/setup_ocio.sh
+        #{HOMEBREW_PREFIX}/share/ocio/setup_ocio.sh
 
       Alternatively the documentation describes what env-variables need set:
-
-          http://opencolorio.org/installation.html#environment-variables
+        https://opencolorio.org/installation.html#environment-variables
 
       You will require a config for OCIO to be useful. Sample configuration files
       and reference images can be found at:
-
-          http://opencolorio.org/downloads.html
+        https://opencolorio.org/downloads.html
     EOS
   end
 

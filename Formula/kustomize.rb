@@ -2,39 +2,41 @@ class Kustomize < Formula
   desc "Template-free customization of Kubernetes YAML manifests"
   homepage "https://github.com/kubernetes-sigs/kustomize"
   url "https://github.com/kubernetes-sigs/kustomize.git",
-      :tag      => "v1.0.11",
-      :revision => "8f701a00417a812558a7b785e8354957afa469ae"
+      :tag      => "v2.1.0",
+      :revision => "af67c893d87c5fb8200f8a3edac7fdafd61ec0bd"
+  head "https://github.com/kubernetes-sigs/kustomize.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "bfb8ff7ddaa9d038da491acdb44235f607f428c39a80faa8d855afc303f24530" => :mojave
-    sha256 "0e27b2962f70aec8432ec69e4102f0c39c6ba11ade93221f10ae4b6833189c77" => :high_sierra
-    sha256 "af177ce8c7781711d8857fe987246a88a0f1d86bc42275d4940c6275a05e71be" => :sierra
+    sha256 "cd50a743957a1b3f15b6ebd887f0f7c39f248d6b9d75f6182e960a4e5e1715b2" => :mojave
+    sha256 "80e464ef646f293212bcace956de93804c9556ac45697bb7f5bf75a276261fc9" => :high_sierra
+    sha256 "2c7ede4c483f6072a35d098778e32dba19550f93d8268c49c9210222daca08e7" => :sierra
   end
 
   depends_on "go" => :build
 
   def install
     ENV["GOPATH"] = buildpath
-    ENV["CGO_ENABLED"] = "0"
+    ENV["GO111MODULE"] = "on"
 
     revision = Utils.popen_read("git", "rev-parse", "HEAD").strip
-    tag = Utils.popen_read("git", "describe", "--tags").strip
-    dir = buildpath/"src/sigs.k8s.io/kustomize"
-    dir.install buildpath.children - [buildpath/".brew_home"]
+
+    dir = buildpath/"src/kubernetes-sigs/kustomize"
+    dir.install buildpath.children
+
     cd dir do
       ldflags = %W[
-        -s -X sigs.k8s.io/kustomize/pkg/commands.kustomizeVersion=#{tag}
-        -X sigs.k8s.io/kustomize/pkg/commands.gitCommit=#{revision}
+        -s -X sigs.k8s.io/kustomize/pkg/commands/misc.kustomizeVersion=#{version}
+        -X sigs.k8s.io/kustomize/pkg/commands/misc.gitCommit=#{revision}
+        -X sigs.k8s.io/kustomize/pkg/commands/misc.buildDate=#{Time.now.iso8601}
       ]
-      system "go", "install", "-ldflags", ldflags.join(" ")
-      bin.install buildpath/"bin/kustomize"
+      system "go", "build", "-ldflags", ldflags.join(" "), "-o", bin/"kustomize", "cmd/kustomize/main.go"
       prefix.install_metafiles
     end
   end
 
   test do
-    assert_match "KustomizeVersion:", shell_output("#{bin}/kustomize version")
+    assert_match version.to_s, shell_output("#{bin}/kustomize version")
 
     (testpath/"kustomization.yaml").write <<~EOS
       resources:

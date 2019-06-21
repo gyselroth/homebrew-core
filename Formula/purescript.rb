@@ -5,15 +5,15 @@ class Purescript < Formula
 
   desc "Strongly typed programming language that compiles to JavaScript"
   homepage "http://www.purescript.org"
-  url "https://hackage.haskell.org/package/purescript-0.12.1/purescript-0.12.1.tar.gz"
-  sha256 "81ab67e994a85e4ee455d35a5023b5ee2f191c83e9de2be65a8cd2892e302454"
+  url "https://hackage.haskell.org/package/purescript-0.12.5/purescript-0.12.5.tar.gz"
+  sha256 "692815eb8b35db7b4880b1627d43426e1d8a2ab10ad3877f6aff5110ca06f636"
   head "https://github.com/purescript/purescript.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "6d93184292a93f8b9b7f142b949bf8d6b4c32cbb2cc61b531cee3ae1c11f1d36" => :mojave
-    sha256 "1c9541e29396f4779653874705b70081d1b7ecbfd03504c075d6592eac1a64b7" => :high_sierra
-    sha256 "d22668820085862153e81213b2e127b9162b6ea337aaa6c09b3b988e33f3a49c" => :sierra
+    sha256 "ffe0e6ec4234b1c57ed36f6a5de31bb06e05b7c01a25a4667880a7295837cc7d" => :mojave
+    sha256 "c68dc6a3d29335c469dd96649f490a3f8b8af267e86ba0740ceb5da3556a8122" => :high_sierra
+    sha256 "587f83a8e1ba6acd493bb82b75413d155cd7e8afd22d355c539eafe7b7bc2958" => :sierra
   end
 
   depends_on "cabal-install" => :build

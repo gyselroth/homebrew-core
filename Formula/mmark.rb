@@ -1,35 +1,17 @@
-require "language/go"
-
 class Mmark < Formula
   desc "Powerful markdown processor in Go geared towards the IETF"
   homepage "https://mmark.nl/"
-  url "https://github.com/mmarkdown/mmark/archive/v2.0.7.tar.gz"
-  sha256 "8ab83495b21d0b05fd763f3a79aeaf983c6905eccfbcca48f63c169ef3705639"
+  url "https://github.com/mmarkdown/mmark/archive/v2.0.46.tar.gz"
+  sha256 "fa64a7321ff8cc531a0caa36af2a72057c5bebd634b623407b9d6415e7184003"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "4f44a848ea631eb30d12a0268056f6a43aa4b19c12a03498dc3819e8abd6e4cd" => :mojave
-    sha256 "6f8482d9d2c05aab64664281af2dd617637eadf61762b40e6b8bd284495b193d" => :high_sierra
-    sha256 "195b590522d39c6ca3e298615e5b21112c0cbe7b33db367565d67268ae3a4fe4" => :sierra
-    sha256 "062eca50beb44f55e4940edb11ae3c1e9a0c4360b5d770f4c7ee0f37631543b9" => :el_capitan
+    sha256 "64668c943a366014740e8fb017fc7e6735454c1ba8d0314f8f618725d8d8a531" => :mojave
+    sha256 "a77f99cc9523aeef1d1c0b55dccd094e5afa81e32444339a00432ef2c0029fce" => :high_sierra
+    sha256 "13b0d3608fb714ebcd8fa34f5534e687921b24af764fd3348e7a9fc5f03b8491" => :sierra
   end
 
   depends_on "go" => :build
-
-  go_resource "github.com/BurntSushi/toml" do
-    url "https://github.com/BurntSushi/toml.git",
-        :revision => "3012a1dbe2e4bd1391d42b32f0577cb7bbc7f005"
-  end
-
-  go_resource "github.com/gomarkdown/markdown" do
-    url "https://github.com/gomarkdown/markdown.git",
-        :revision => "6fda95a9e93f739db582f4a3514309830fd47354"
-  end
-
-  go_resource "github.com/mmarkdown/markdown" do
-    url "https://github.com/mmarkdown/markdown.git",
-        :revision => "6fda95a9e93f739db582f4a3514309830fd47354"
-  end
 
   resource "test" do
     url "https://raw.githubusercontent.com/mmarkdown/mmark/v2.0.7/rfc/2100.md"
@@ -38,13 +20,14 @@ class Mmark < Formula
 
   def install
     ENV["GOPATH"] = buildpath
-    mkdir_p buildpath/"src/github.com/mmarkdown/"
-    ln_sf buildpath, buildpath/"src/github.com/mmarkdown/mmark"
-    Language::Go.stage_deps resources, buildpath/"src"
+    ENV["GO111MODULE"] = "on"
 
-    system "go", "build", "-o", bin/"mmark"
-    man1.install "mmark.1"
-    doc.install "Syntax.md"
+    (buildpath/"src/github.com/mmarkdown/mmark").install buildpath.children
+    cd "src/github.com/mmarkdown/mmark" do
+      system "go", "build", "-o", bin/"mmark"
+      man1.install "mmark.1"
+      prefix.install_metafiles
+    end
   end
 
   test do

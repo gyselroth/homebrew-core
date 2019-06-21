@@ -1,8 +1,8 @@
 class Igv < Formula
   desc "Interactive Genomics Viewer"
   homepage "https://www.broadinstitute.org/software/igv"
-  url "https://data.broadinstitute.org/igv/projects/downloads/2.4/IGV_2.4.14.zip"
-  sha256 "0c6e466736ac08b2aba28f1ffa4c9f136b3948dcbb61b04a89afcdcf0298307d"
+  url "https://data.broadinstitute.org/igv/projects/downloads/2.5/IGV_2.5.1.zip"
+  sha256 "568d56300ebca72297db9fbc5c0169817dc9d94f7411b6e2b12ad156d39c89dc"
 
   bottle :unneeded
 
@@ -15,7 +15,11 @@ class Igv < Formula
   end
 
   test do
-    (testpath/"script").write "exit"
-    assert_match "Version", shell_output("#{bin}/igv -b script")
+    assert_match "org/broad/igv/ui/IGV.class", shell_output("jar tf #{libexec}/lib/igv.jar")
+    # Fails on Jenkins with Unhandled exception: java.awt.HeadlessException
+    unless ENV["CI"]
+      (testpath/"script").write "exit"
+      assert_match "Version", shell_output("#{bin}/igv -b script")
+    end
   end
 end

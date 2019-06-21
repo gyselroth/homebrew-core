@@ -1,24 +1,21 @@
 class Hydra < Formula
   desc "Network logon cracker which supports many services"
   homepage "https://github.com/vanhauser-thc/thc-hydra"
-  url "https://github.com/vanhauser-thc/thc-hydra/archive/8.6.tar.gz"
-  sha256 "05a87eb018507b24afca970081f067e64441460319fb75ca1e64c4a1f322b80b"
-  revision 2
+  url "https://github.com/vanhauser-thc/thc-hydra/archive/v9.0.tar.gz"
+  sha256 "56672e253c128abaa6fb19e77f6f59ba6a93762a9ba435505a009ef6d58e8d0e"
   head "https://github.com/vanhauser-thc/thc-hydra.git"
 
   bottle do
     cellar :any
-    sha256 "53a99c685662301197e3fc43696f7da59b408947055a94786874e413546a3c81" => :mojave
-    sha256 "d49e7d0dd322ece528244fa888edc4f98e945e8b88a6c30f2f70b449e0d637b1" => :high_sierra
-    sha256 "bae23f8f760bc421dbc27877a2433f69189d17cce3a9153d74de3140a4d8ee5f" => :sierra
-    sha256 "ebeb58bc9aaf69d80552337c6f8adbe923390a8cc1d694dbef51c0a9d42699a6" => :el_capitan
+    sha256 "7c5982a29e085723482af4e20852f243542f83d8b4f7c2f697c5522442a8e9d9" => :mojave
+    sha256 "bb88b58e028a3b2498da0eaae5fa1030cce8103336fc90ce813ebdd7a77f933f" => :high_sierra
+    sha256 "e2cf5b672b4f6328ce24264e5f0f17c5d78de9711878bc0bc9e1d1fe34efd916" => :sierra
   end
 
   depends_on "pkg-config" => :build
+  depends_on "libssh"
   depends_on "mysql-client"
   depends_on "openssl"
-  depends_on "gtk+" => :optional
-  depends_on "libssh" => :optional
 
   def install
     inreplace "configure" do |s|
@@ -29,8 +26,6 @@ class Hydra < Formula
       s.gsub! "/opt/*ssl/include", Formula["openssl"].opt_include
       # Avoid opportunistic linking of subversion
       s.gsub! "libsvn", "oh_no_you_dont"
-      # Avoid opportunistic linking of libssh
-      s.gsub! "libssh", "certainly_not" if build.without? "libssh"
     end
 
     # Having our gcc in the PATH first can cause issues. Monitor this.

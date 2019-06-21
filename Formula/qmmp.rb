@@ -3,12 +3,13 @@ class Qmmp < Formula
   homepage "http://qmmp.ylsoftware.com/"
   url "http://qmmp.ylsoftware.com/files/qmmp-1.2.4.tar.bz2"
   sha256 "224904f073e3921a080dca008e6c99e3d606f5442d1df08835cba000a069ae66"
-  head "http://svn.code.sf.net/p/qmmp-dev/code/branches/qmmp-1.2/"
+  revision 2
+  head "https://svn.code.sf.net/p/qmmp-dev/code/branches/qmmp-1.2/"
 
   bottle do
-    sha256 "e8f99667d65835bdca131b967a1f49329431bc1665b92195349ece4938f8fdd4" => :mojave
-    sha256 "4ae653f15662ef557431588ec2a2174ec09185a9d6351a99c66690e7df6b6b29" => :high_sierra
-    sha256 "5e51e8e463d0dd9f4074d08ffb46f62862771d790cc4d5cab00fbdf276f3cb4e" => :sierra
+    sha256 "7c1b47197fe2ac57e24412a1b98ab6566d45ef84693c48ba5b9c5da3d6b4a501" => :mojave
+    sha256 "5e24216b88f75d6542d6be523ee9ebbad1fd6cda199b3790c2e2db81fb0e89cc" => :high_sierra
+    sha256 "119ac7be32b53b1bc2b40ebf291d0a044d7a8e0fddc7ed109d0a4aee28c399ad" => :sierra
   end
 
   depends_on "cmake" => :build
@@ -33,6 +34,17 @@ class Qmmp < Formula
   def install
     system "cmake", "./", "-USE_SKINNED", "-USE_ENCA", "-USE_QMMP_DIALOG", *std_cmake_args
     system "make", "install"
+
+    # fix linkage
+    cd (lib.to_s) do
+      Dir["*.dylib", "qmmp/*/*.so"].select { |f| File.ftype(f) == "file" }.each do |f|
+        MachO::Tools.dylibs(f).select { |d| d.start_with?("/tmp") }.each do |d|
+          bname = File.dirname(d)
+          d_new = d.sub(bname, opt_lib.to_s)
+          MachO::Tools.change_install_name(f, d, d_new)
+        end
+      end
+    end
   end
 
   test do

@@ -1,23 +1,23 @@
 class Openssh < Formula
   desc "OpenBSD freely-licensed SSH connectivity tools"
   homepage "https://www.openssh.com/"
-  url "https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-7.9p1.tar.gz"
-  mirror "https://mirror.vdms.io/pub/OpenBSD/OpenSSH/portable/openssh-7.9p1.tar.gz"
-  version "7.9p1"
-  sha256 "6b4b3ba2253d84ed3771c8050728d597c91cfce898713beb7b64a305b6f11aad"
+  url "https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.0p1.tar.gz"
+  mirror "https://mirror.vdms.io/pub/OpenBSD/OpenSSH/portable/openssh-8.0p1.tar.gz"
+  version "8.0p1"
+  sha256 "bd943879e69498e8031eb6b7f44d08cdc37d59a7ab689aa0b437320c3481fd68"
 
   bottle do
-    sha256 "a7a42f0528213d1d5491031420b57c5039950db9c849e50d61f8bb818188743f" => :mojave
-    sha256 "a1834148334d13d7a3f65bd7a9621727b81e3e524a4a94a80c404677f1b3d08f" => :high_sierra
-    sha256 "b9cf8444d8920df4e54f35931502c58333d01f888738819b2233d9b1afe1bd00" => :sierra
+    sha256 "205e6e27d530dea1c47423dea5f4d0197a708a8b66d82974220c39afa4862c40" => :mojave
+    sha256 "5b6a4b5ab220e6e77895c7abbd2194332bfc9f8f5d973059b851bc23546aa643" => :high_sierra
+    sha256 "c8d466551529ebcb1c4d17da2d389cec164c5eee45a7174325f830fbfcc6fdd6" => :sierra
   end
 
   # Please don't resubmit the keychain patch option. It will never be accepted.
   # https://github.com/Homebrew/homebrew-dupes/pull/482#issuecomment-118994372
 
+  depends_on "pkg-config" => :build
+  depends_on "ldns"
   depends_on "openssl"
-  depends_on "ldns" => :optional
-  depends_on "pkg-config" => :build if build.with? "ldns"
 
   resource "com.openssh.sshd.sb" do
     url "https://opensource.apple.com/source/OpenSSH/OpenSSH-209.50.1/com.openssh.sshd.sb"
@@ -43,15 +43,14 @@ class Openssh < Formula
     inreplace "sandbox-darwin.c", "@PREFIX@/share/openssh", etc/"ssh"
 
     args = %W[
-      --with-libedit
-      --with-kerberos5
       --prefix=#{prefix}
       --sysconfdir=#{etc}/ssh
+      --with-ldns
+      --with-libedit
+      --with-kerberos5
       --with-pam
       --with-ssl-dir=#{Formula["openssl"].opt_prefix}
     ]
-
-    args << "--with-ldns" if build.with? "ldns"
 
     system "./configure", *args
     system "make"

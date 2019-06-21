@@ -2,15 +2,15 @@ class GitlabRunner < Formula
   desc "The official GitLab CI runner written in Go"
   homepage "https://gitlab.com/gitlab-org/gitlab-runner"
   url "https://gitlab.com/gitlab-org/gitlab-runner.git",
-      :tag      => "v11.5.1",
-      :revision => "7f00c780e2a2411ce04d0d55979490918255ea76"
+      :tag      => "v11.11.2",
+      :revision => "ac2a293c2aa25418a9973f546627c334f02fd487"
   head "https://gitlab.com/gitlab-org/gitlab-runner.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "9e6ac5ee7121e07456c1c0f7f3946724cbd2339a79803044d47f98a5c2037c85" => :mojave
-    sha256 "4fabaaf4f414287aa6ab440e1f19a237e04434f3854758131842ad48859390dd" => :high_sierra
-    sha256 "3d1d08dfe594d4f66834ec19625166a6eab39b59d2b3f45bc5bb8ecd95695830" => :sierra
+    sha256 "83f43ba86ee4361220757c2bddfe2bfd190c8616551cfcd87b5e1d56100030b7" => :mojave
+    sha256 "b39daf11005f7245bec35f76bb018eb6fbc46e959252252ceba7026b256db541" => :high_sierra
+    sha256 "84364e47568a0e77b96e3a834c07a70f8532b5edc09960cbe26844d7211e1a6f" => :sierra
   end
 
   depends_on "go" => :build
@@ -63,6 +63,11 @@ class GitlabRunner < Formula
           <string>gitlab-runner</string>
           <string>--syslog</string>
         </array>
+        <key>EnvironmentVariables</key>
+          <dict>
+            <key>PATH</key>
+            <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        </dict>
       </dict>
     </plist>
   EOS

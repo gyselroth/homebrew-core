@@ -1,51 +1,50 @@
 class Cataclysm < Formula
   desc "Fork/variant of Cataclysm Roguelike"
   homepage "https://github.com/CleverRaven/Cataclysm-DDA"
-  url "https://github.com/CleverRaven/Cataclysm-DDA/archive/0.C.tar.gz"
-  version "0.C"
-  sha256 "69e947824626fffb505ca4ec44187ec94bba32c1e5957ba5c771b3445f958af6"
+  url "https://github.com/CleverRaven/Cataclysm-DDA/archive/0.D.tar.gz"
+  version "0.D"
+  sha256 "6cc97b3e1e466b8585e8433a6d6010931e9a073f6ec060113161b38052d82882"
   revision 1
   head "https://github.com/CleverRaven/Cataclysm-DDA.git"
 
   bottle do
     cellar :any
-    sha256 "1c28c1bc74e941c741f682d9460af8ff2200a6189bc3cae5467f4b461e5a918e" => :mojave
-    sha256 "c7bbaff919572a6c1bc00fb30b5038c567106de67c8a41d5b84f7c2acec8555a" => :high_sierra
-    sha256 "305fe2048d73af85ae4d7cfbb71f23532ec66de88d75959648c1186d8f8da035" => :sierra
-    sha256 "436d0b956cd5c0470926a416dc22e98ad0b846172c7ab58737665eb0e62eecfa" => :el_capitan
+    sha256 "24454f33d052b39afe8dbe1e82498e939754f45c8b370385485070b2efbed20c" => :mojave
+    sha256 "f885e61b707330bf1346e215156a22956b3da5016e645ba3ef5d00829aac984a" => :high_sierra
+    sha256 "f96c3b668439311126dc8064d0b3590aebb6e21ecd5bcba01303e78dca9c4a7c" => :sierra
   end
 
   depends_on "pkg-config" => :build
   depends_on "gettext"
   depends_on "libogg"
   depends_on "libvorbis"
-  depends_on "lua"
+  depends_on "lua" unless build.head?
   depends_on "sdl2"
   depends_on "sdl2_image"
   depends_on "sdl2_mixer"
   depends_on "sdl2_ttf"
 
-  needs :cxx11
-
   def install
-    ENV.cxx11
-
     args = %W[
       NATIVE=osx
       RELEASE=1
       OSX_MIN=#{MacOS.version}
-      LUA=1
       USE_HOME_DIR=1
       TILES=1
       SOUND=1
+      RUNTESTS=0
+      ASTYLE=0
+      LINTJSON=0
     ]
 
     args << "CLANG=1" if ENV.compiler == :clang
+    args << "LUA=1" if build.stable?
 
     system "make", *args
 
     # no make install, so we have to do it ourselves
-    libexec.install "cataclysm-tiles", "data", "gfx", "lua"
+    libexec.install "cataclysm-tiles", "data", "gfx"
+    libexec.install "lua" if build.stable?
 
     inreplace "cataclysm-launcher" do |s|
       s.change_make_var! "DIR", libexec

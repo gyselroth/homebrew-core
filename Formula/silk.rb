@@ -1,14 +1,14 @@
 class Silk < Formula
   desc "Collection of traffic analysis tools"
   homepage "https://tools.netsa.cert.org/silk/"
-  url "https://tools.netsa.cert.org/releases/silk-3.17.2.tar.gz"
-  sha256 "70b74eceafce7b724ceccd9e801909f4bd28985406eb8c42a94c8d25e7d58194"
+  url "https://tools.netsa.cert.org/releases/silk-3.18.1.tar.gz"
+  sha256 "0900a5a0d08c786be280d97e5bb6d9ec09e8aec69f4495a91b32e254014ef8e9"
+  revision 1
 
   bottle do
-    rebuild 1
-    sha256 "4e308eeaef5f1be5c4be0ac6ba57616cd2dc945e2edf9f0916127e8ca6118616" => :mojave
-    sha256 "6465b56369992120281899c1d43bb7163958c976ad50630cbcc1c19284bca0ae" => :high_sierra
-    sha256 "7c50646eddfea6779a412d8a17dc2e80a258ab7fee136c5bc43f9613ec4ba213" => :sierra
+    sha256 "5bc6286c86c29a9e3004e5023796a7c5dcbc43951541a290f9433f141dd8e207" => :mojave
+    sha256 "a678ade8fabca1d56a30053aea11beeeb7daa6e4e1e75bd7a88ee8adc4608a3f" => :high_sierra
+    sha256 "c60a4cca87007b777dc4d18343475e0cacb5a5e92c4b81e345542283465910e7" => :sierra
   end
 
   depends_on "pkg-config" => :build

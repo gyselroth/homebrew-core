@@ -1,8 +1,8 @@
 class Plantuml < Formula
   desc "Draw UML diagrams"
   homepage "https://plantuml.com/"
-  url "https://downloads.sourceforge.net/project/plantuml/1.2018.12/plantuml.1.2018.12.jar"
-  sha256 "44177405dcd123cc8524a776bc45c9c8f3bcf46637b5df28343839fef927b1f9"
+  url "https://downloads.sourceforge.net/project/plantuml/1.2019.6/plantuml.1.2019.6.jar"
+  sha256 "8b06e31e16c649cf505e599869867b01d49781fec238da80e37b2893ec99b76b"
   version_scheme 1
 
   bottle :unneeded
@@ -15,7 +15,10 @@ class Plantuml < Formula
     libexec.install "plantuml.#{version}.jar" => jar
     (bin/"plantuml").write <<~EOS
       #!/bin/bash
-      GRAPHVIZ_DOT="#{Formula["graphviz"].opt_bin}/dot" exec java -jar #{libexec}/#{jar} "$@"
+      if [[ "$*" != *"-gui"* ]]; then
+        VMARGS="-Djava.awt.headless=true"
+      fi
+      GRAPHVIZ_DOT="#{Formula["graphviz"].opt_bin}/dot" exec java $VMARGS -jar #{libexec}/#{jar} "$@"
     EOS
     chmod 0555, bin/"plantuml"
   end

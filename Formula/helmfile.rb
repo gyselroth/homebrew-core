@@ -1,14 +1,14 @@
 class Helmfile < Formula
   desc "Deploy Kubernetes Helm Charts"
   homepage "https://github.com/roboll/helmfile"
-  url "https://github.com/roboll/helmfile/archive/v0.41.0.tar.gz"
-  sha256 "9f06fd4c092abd11c301fac6edf1880d50b5194cbea3da47bda575d367c627bf"
+  url "https://github.com/roboll/helmfile/archive/v0.79.1.tar.gz"
+  sha256 "93fbd9bab028e647b5664708923357571867862b9ab09b3bc730ac3bed14f749"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "fc7316f6c406d9d119855e62083e8c4b6985834b3a64a22afac7b008ca53cd06" => :mojave
-    sha256 "d521ac5e1a4d9c5ed012afc9cc9e64c9c5780a2b64f1fd55d308117f2e429a0d" => :high_sierra
-    sha256 "4a410c2ed586ef605814786d38bbe215f23a381246679e47dd57a4d557ee446a" => :sierra
+    sha256 "769422fb1bf29bfa2113db32a2eaf7239266392e3289977f5c6d53002b957613" => :mojave
+    sha256 "e86a1cd56475dc27ab35fe46c346619cd5c567ae06620a4e6560026e3fd018ef" => :high_sierra
+    sha256 "98444367e47bb8a8b2be682702f33def705631a2aefb6fab32d8b893faefa7da" => :sierra
   end
 
   depends_on "go" => :build
@@ -16,6 +16,8 @@ class Helmfile < Formula
 
   def install
     ENV["GOPATH"] = buildpath
+    ENV["GO111MODULE"] = "on"
+
     (buildpath/"src/github.com/roboll/helmfile").install buildpath.children
     cd "src/github.com/roboll/helmfile" do
       system "go", "build", "-ldflags", "-X main.Version=v#{version}",
@@ -34,7 +36,8 @@ class Helmfile < Formula
     - name: test
     EOS
     system Formula["kubernetes-helm"].opt_bin/"helm", "init", "--client-only"
-    output = '"stable" has been added to your repositories'
-    assert_match output, shell_output("#{bin}/helmfile -f helmfile.yaml repos")
+    output = "Adding repo stable https://kubernetes-charts.storage.googleapis.com"
+    assert_match output, shell_output("#{bin}/helmfile -f helmfile.yaml repos 2>&1")
+    assert_match version.to_s, shell_output("#{bin}/helmfile -v")
   end
 end

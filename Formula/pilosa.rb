@@ -1,24 +1,23 @@
 class Pilosa < Formula
   desc "Distributed bitmap index that queries across data sets"
   homepage "https://www.pilosa.com"
-  url "https://github.com/pilosa/pilosa/archive/v1.1.0.tar.gz"
-  sha256 "1129cb41bb653dd93d170a6b23caf0aca8f02d56efe56f6c966eb663d3b49d3a"
+  url "https://github.com/pilosa/pilosa/archive/v1.3.1.tar.gz"
+  sha256 "5e0040b7605cae3ebf2b617d472e7c104ad026982ba52e83f8b0593b32b6fa05"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "a7e431a20b9e90a0dc0e22218956bba6bbbd2e1c8c99ccbbb65b527f1fe06442" => :mojave
-    sha256 "e63c7d2de244ca57b2b6032901ff9a99eb6a0335f1738d6e832d8f03ceb85ea7" => :high_sierra
-    sha256 "0dad658a2c78686af07c7012870541ca193b1d2189f3a0122a1356076f23614b" => :sierra
-    sha256 "fe22b919c424b81169929e3be5f675f53a337ab52c5d47bd762dfadb5b130b34" => :el_capitan
+    sha256 "36b8c8e39db4de4e18698e139d709166ef5ff09ef64c0e007f63b31bf11ce14f" => :mojave
+    sha256 "45ed3cc1e4ce0d1d30b4492bf1f997eb21f31c074ef4d59ac46728d0563e23bc" => :high_sierra
+    sha256 "32c6572b34fe9c85b9dfa26da8dd84b26f811b3cd67d9fcf0be64f0cccbc9bb7" => :sierra
   end
 
-  depends_on "dep" => :build
   depends_on "go" => :build
 
   def install
     ENV["GOPATH"] = buildpath
-    (buildpath/"src/github.com/pilosa/pilosa").install buildpath.children
+    ENV["GO111MODULE"] = "on"
 
+    (buildpath/"src/github.com/pilosa/pilosa").install buildpath.children
     cd "src/github.com/pilosa/pilosa" do
       system "make", "build", "FLAGS=-o #{bin}/pilosa", "VERSION=v#{version}"
       prefix.install_metafiles

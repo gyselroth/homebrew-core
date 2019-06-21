@@ -1,15 +1,15 @@
 class Gammu < Formula
   desc "Command-line utility to control a phone"
   homepage "https://wammu.eu/gammu/"
-  url "https://dl.cihar.com/gammu/releases/gammu-1.39.0.tar.xz"
-  sha256 "66d1d991d7a993fdf254d4c425f0fdd38c9cca15b1735936695a486067a6a9f8"
+  url "https://dl.cihar.com/gammu/releases/gammu-1.40.0.tar.xz"
+  sha256 "a760a3520d9f3a16a4ed73cefaabdbd86125bec73c6fa056ca3f0a4be8478dd6"
+  revision 1
   head "https://github.com/gammu/gammu.git"
 
   bottle do
-    sha256 "89c6abf8223d40d556f4e68954fd87513e27173accbbb1e0474153b8556b3768" => :mojave
-    sha256 "d18ac85aafe7b0808af71def3812d623223234d17ce2f8281a3c673079e6509a" => :high_sierra
-    sha256 "eeb48b7fe0b0b97f96aa3580c92b76e0cd59ece002eb1bc076efa30c85327ce8" => :sierra
-    sha256 "abe55374ac1e3898e321af01126d0da4ad436be24ea2bd14e44cf61a386f4692" => :el_capitan
+    sha256 "024da26d637286903f0456997dc4d0231f8163163106d23fae95085e33cb7862" => :mojave
+    sha256 "1cb822252b422c771c13a5283cd6a1ea3283cb6d897adc730e7631ad1a788cfa" => :high_sierra
+    sha256 "2da2dba2c832236e0c2ef1bb43fdd4fa96dd3862868b0ef7cf009c62986f8390" => :sierra
   end
 
   depends_on "cmake" => :build

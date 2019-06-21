@@ -1,36 +1,54 @@
 class Bind < Formula
   desc "Implementation of the DNS protocols"
   homepage "https://www.isc.org/downloads/bind/"
-  url "https://ftp.isc.org/isc/bind9/9.12.3/bind-9.12.3.tar.gz"
-  sha256 "0e80762631258e1c193552efa7c56c05ec5e8c2f98e4b2a3b91a61fd8d96b938"
+
+  # BIND releases with even minor version numbers (9.14.x, 9.16.x, etc) are
+  # stable. Odd-numbered minor versions are for testing, and can be unstable
+  # or buggy. They are not suitable for general deployment. We have to use
+  # "version_scheme" because someone upgraded to 9.15.0, and required a
+  # downgrade.
+
+  url "https://ftp.isc.org/isc/bind/9.14.3/bind-9.14.3.tar.gz"
+  sha256 "ce878aabcf01b61ed114522c32fff9e268b02da55b3c248349860bc3d0c8bdfa"
+  version_scheme 1
   head "https://gitlab.isc.org/isc-projects/bind9.git"
 
   bottle do
-    sha256 "ea7c774094ff642788c460e1d8f938f62f45b0a0b61576984a491cfa6970f569" => :mojave
-    sha256 "a4011cad7b46fa077b1b6e9058b5178a2fbcced0ceab8122e90dfa81f36a01ab" => :high_sierra
-    sha256 "59c17273bdb7c3a8a74e4bd8330b4b98519ce24ffa247962e63046dc2aae2c3b" => :sierra
+    sha256 "632ddca79a45e3d2b2ffbaeae3385a96fd5356b325adb9e5979210180f955dd6" => :mojave
+    sha256 "87903a9bd6fdd752f992d5e14cb96eec50fc30dd469c90094f3dcb7977330581" => :high_sierra
+    sha256 "0b12a1a1560ac598fee8381ac9e2aff5215a65be919d647cf1fc7dcd89ab9c30" => :sierra
   end
 
   depends_on "json-c"
   depends_on "openssl"
+  depends_on "python"
+
+  resource "ply" do
+    url "https://files.pythonhosted.org/packages/e5/69/882ee5c9d017149285cab114ebeab373308ef0f874fcdac9beb90e0ac4da/ply-3.11.tar.gz"
+    sha256 "00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3"
+  end
 
   def install
+    xy = Language::Python.major_minor_version "python3"
+    vendor_site_packages = libexec/"vendor/lib/python#{xy}/site-packages"
+    ENV.prepend_create_path "PYTHONPATH", vendor_site_packages
+    resources.each do |r|
+      r.stage do
+        system "python3", *Language::Python.setup_install_args(libexec/"vendor")
+      end
+    end
+
     # Fix "configure: error: xml2-config returns badness"
     if MacOS.version == :sierra || MacOS.version == :el_capitan
       ENV["SDKROOT"] = MacOS.sdk_path
     end
 
-    # enable DNSSEC signature chasing in dig
-    ENV["STD_CDEFINES"] = "-DDIG_SIGCHASE=1"
-
     system "./configure", "--prefix=#{prefix}",
-                          "--enable-threads",
-                          "--enable-ipv6",
                           "--with-openssl=#{Formula["openssl"].opt_prefix}",
-                          "--with-libjson=#{Formula["json-c"].opt_prefix}"
+                          "--with-libjson=#{Formula["json-c"].opt_prefix}",
+                          "--with-python=#{Formula["python"].opt_bin}/python3",
+                          "--with-python-install-dir=#{vendor_site_packages}"
 
-    # From the bind9 README: "Do not use a parallel "make"
-    ENV.deparallelize
     system "make"
     system "make", "install"
 

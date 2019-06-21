@@ -1,26 +1,21 @@
 class PostgresqlAT10 < Formula
   desc "Object-relational database system"
   homepage "https://www.postgresql.org/"
-  url "https://ftp.postgresql.org/pub/source/v10.6/postgresql-10.6.tar.bz2"
-  sha256 "68a8276f08bda8fbefe562faaf8831cb20664a7a1d3ffdbbcc5b83e08637624b"
+  url "https://ftp.postgresql.org/pub/source/v10.9/postgresql-10.9.tar.bz2"
+  sha256 "958b317fb007e94f3bef7e2a6641875db8f7f9d73db9f283324f3d6e8f5b0f54"
 
   bottle do
-    sha256 "11ef89aadb1a8446c2b5f2ab80c9e7b08be256ee83ad358b71abd687f477cf1e" => :mojave
-    sha256 "ec63d333a8363645cd5e62d6ff8486eb0875d2d9404925971544bccd3bb963a9" => :high_sierra
-    sha256 "4474f061c11832651e1fe0426396219358f8e585bd503d0b7fecb8773c9c8658" => :sierra
+    sha256 "c8ed8b8f9eb72d0da20bd4e45a9caa14b429a02366e5794b74e78be6ba236625" => :mojave
+    sha256 "78574c605b262965bdcb781ebd56c481603b5bef75acc560cab586a726b36278" => :high_sierra
+    sha256 "a7528fb1f165f3a83fc3afff6c86b138d0edf3cfc009f7dbfc9d58eaac9aab10" => :sierra
   end
 
   keg_only :versioned_formula
-
-  option "with-python", "Enable PL/Python3"
-
-  deprecated_option "with-python3" => "with-python"
 
   depends_on "pkg-config" => :build
   depends_on "icu4c"
   depends_on "openssl"
   depends_on "readline"
-  depends_on "python" => :optional
 
   def install
     # avoid adding the SDK library directory to the linker search path
@@ -49,18 +44,11 @@ class PostgresqlAT10 < Formula
       --with-uuid=e2fs
     ]
 
-    if build.with?("python")
-      args << "--with-python"
-      ENV["PYTHON"] = which("python3")
-    end
-
     # The CLT is required to build Tcl support on 10.7 and 10.8 because
     # tclConfig.sh is not part of the SDK
-    if MacOS.version >= :mavericks || MacOS::CLT.installed?
-      args << "--with-tcl"
-      if File.exist?("#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework/tclConfig.sh")
-        args << "--with-tclconfig=#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework"
-      end
+    args << "--with-tcl"
+    if File.exist?("#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework/tclConfig.sh")
+      args << "--with-tclconfig=#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework"
     end
 
     # As of Xcode/CLT 10.x the Perl headers were moved from /System
@@ -94,9 +82,9 @@ class PostgresqlAT10 < Formula
 
   def post_install
     (var/"log").mkpath
-    (var/"postgres").mkpath
-    unless File.exist? "#{var}/postgres/PG_VERSION"
-      system "#{bin}/initdb", "#{var}/postgres"
+    (var/name).mkpath
+    unless File.exist? "#{var}/#{name}/PG_VERSION"
+      system "#{bin}/initdb", "#{var}/#{name}"
     end
   end
 
@@ -106,7 +94,7 @@ class PostgresqlAT10 < Formula
   EOS
   end
 
-  plist_options :manual => "pg_ctl -D #{HOMEBREW_PREFIX}/var/postgres@10 start"
+  plist_options :manual => "pg_ctl -D #{HOMEBREW_PREFIX}/var/postgresql@10 start"
 
   def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
@@ -121,16 +109,16 @@ class PostgresqlAT10 < Formula
       <array>
         <string>#{opt_bin}/postgres</string>
         <string>-D</string>
-        <string>#{var}/postgres</string>
+        <string>#{var}/#{name}</string>
       </array>
       <key>RunAtLoad</key>
       <true/>
       <key>WorkingDirectory</key>
       <string>#{HOMEBREW_PREFIX}</string>
       <key>StandardOutPath</key>
-      <string>#{var}/log/postgres.log</string>
+      <string>#{var}/log/#{name}.log</string>
       <key>StandardErrorPath</key>
-      <string>#{var}/log/postgres.log</string>
+      <string>#{var}/log/#{name}.log</string>
     </dict>
     </plist>
   EOS

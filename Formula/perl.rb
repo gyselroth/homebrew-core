@@ -1,18 +1,15 @@
 class Perl < Formula
   desc "Highly capable, feature-rich programming language"
   homepage "https://www.perl.org/"
-  url "https://www.cpan.org/src/5.0/perl-5.28.0.tar.xz"
-  sha256 "059b3cb69970d8c8c5964caced0335b4af34ac990c8e61f7e3f90cd1c2d11e49"
+  url "https://www.cpan.org/src/5.0/perl-5.30.0.tar.gz"
+  sha256 "851213c754d98ccff042caa40ba7a796b2cee88c5325f121be5cbb61bbf975f2"
   head "https://perl5.git.perl.org/perl.git", :branch => "blead"
 
   bottle do
-    sha256 "c5357179155c25061e34b2c7e6a1abbc5f5516cfe53641ccf8e5dcf7732b38ce" => :mojave
-    sha256 "c8e7f61c69fcbd16146f85dde1bf90996bd2d9c182b449fbd466d24ebb55333d" => :high_sierra
-    sha256 "7fc5042a68f4e4b68f0d9abd025c3a5d4629868222cabbef30f6e860b6c294c0" => :sierra
-    sha256 "e755049a030476dd12fcdbc22488392dcb0ee92be80edbf74ec3d19008ce789c" => :el_capitan
+    sha256 "c0d17d9af9a950c65c7ac39f5d5bcdc2932ab281455107a5c55d1eda7d792f0d" => :mojave
+    sha256 "8529587433c3bf6985dd92d39808c01d9d421eeef8e25dc5b2921729d253c346" => :high_sierra
+    sha256 "086995758ea8f80844c3acb75ac8c177421560b382d22f63d128668f31918b0e" => :sierra
   end
-
-  option "with-dtrace", "Build with DTrace probes"
 
   # Prevent site_perl directories from being removed
   skip_clean "lib/perl5/site_perl"
@@ -33,24 +30,12 @@ class Perl < Formula
       -Dusethreads
     ]
 
-    args << "-Dusedtrace" if build.with? "dtrace"
     args << "-Dusedevel" if build.head?
 
     system "./Configure", *args
 
-    # macOS's SIP feature prevents DYLD_LIBRARY_PATH from being passed to child
-    # processes, which causes the `make test` step to fail.
-    # https://rt.perl.org/Ticket/Display.html?id=126706
-    # https://github.com/Homebrew/legacy-homebrew/issues/41716
-    # As of perl 5.28.0 `make` fails, too, so work around it with a symlink.
-    # Reported 25 Jun 2018 https://rt.perl.org/Ticket/Display.html?id=133306
-    (lib/"perl5/#{version}/darwin-thread-multi-2level/CORE").install_symlink buildpath/"libperl.dylib"
-
     system "make"
-    system "make", "test" if build.bottle?
-
-    # Remove the symlink so the library actually gets installed.
-    rm lib/"perl5/#{version}/darwin-thread-multi-2level/CORE/libperl.dylib"
+    system "make", "test"
 
     system "make", "install"
   end

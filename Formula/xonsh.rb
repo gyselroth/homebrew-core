@@ -3,15 +3,15 @@ class Xonsh < Formula
 
   desc "Python-ish, BASHwards-compatible shell language and command prompt"
   homepage "https://xon.sh/"
-  url "https://github.com/xonsh/xonsh/archive/0.8.3.tar.gz"
-  sha256 "f91a9b5a71a82a6450e5a3dbeacc11ff0a9faceea4fbb241aaa3a18f7a6e6437"
+  url "https://github.com/xonsh/xonsh/archive/0.9.6.tar.gz"
+  sha256 "1b4d4a28e307a2536ce7e9e74c7bf7e42e2393a4ea34a6f2c7ba67b824029579"
   head "https://github.com/xonsh/xonsh.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "6a121eda90468568fe6fa6ca31ea976371cc1f97e52aacf04bfb4216bb71697c" => :mojave
-    sha256 "30e5d3c0da7df3e4df25fc57cf93c427e1de4348f577744ec951bbea09e3a8cb" => :high_sierra
-    sha256 "5ddb3623d0d413652937ed7721ad2764506a2388f7cdf4b6de6450867235c23c" => :sierra
+    sha256 "216f021c99c8ae463985be24cc262ae5ee71eaf6d957831dfc6ba795e6bcc640" => :mojave
+    sha256 "1d0472fd552dd4258d4e435188ef1ebbfcc2b692b93d71ae6eab9a6c70d6bde5" => :high_sierra
+    sha256 "0ba30ee4fc8355b5c3607e82f8fee902f8656428ce5406e62ecc5df6785b0dae" => :sierra
   end
 
   depends_on "python"
@@ -20,13 +20,13 @@ class Xonsh < Formula
   # See https://xon.sh/osx.html#dependencies
 
   resource "prompt_toolkit" do
-    url "https://files.pythonhosted.org/packages/d9/a5/4b2dd1a05403e34c3ba0d9c00f237c01967c0a4f59a427c9b241129cdfe4/prompt_toolkit-2.0.7.tar.gz"
-    sha256 "fd17048d8335c1e6d5ee403c3569953ba3eb8555d710bfc548faf0712666ea39"
+    url "https://files.pythonhosted.org/packages/94/a0/57dc47115621d9b3fcc589848cdbcbb6c4c130186e8fc4c4704766a7a699/prompt_toolkit-2.0.9.tar.gz"
+    sha256 "2519ad1d8038fd5fc8e770362237ad0364d16a7650fb5724af6997ed5515e3c1"
   end
 
   resource "Pygments" do
-    url "https://files.pythonhosted.org/packages/71/2a/2e4e77803a8bd6408a2903340ac498cb0a2181811af7c9ec92cb70b0308a/Pygments-2.2.0.tar.gz"
-    sha256 "dbae1046def0efb574852fab9e90209b23f556367b5a320c0bcb871c77c3e8cc"
+    url "https://files.pythonhosted.org/packages/7e/ae/26808275fc76bf2832deb10d3a3ed3107bc4de01b85dcccbe525f2cd6d1e/Pygments-2.4.2.tar.gz"
+    sha256 "881c4c157e45f30af185c1ffe8d549d48ac9127433f2c380c24b84572ad66297"
   end
 
   resource "setproctitle" do
@@ -35,8 +35,8 @@ class Xonsh < Formula
   end
 
   resource "six" do
-    url "https://files.pythonhosted.org/packages/16/d8/bc6316cf98419719bd59c91742194c111b6f2e85abac88e496adefaf7afe/six-1.11.0.tar.gz"
-    sha256 "70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9"
+    url "https://files.pythonhosted.org/packages/dd/bf/4138e7bfb757de47d1f4b6994648ec67a51efe58fa907c1e11e350cddfca/six-1.12.0.tar.gz"
+    sha256 "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"
   end
 
   resource "wcwidth" do

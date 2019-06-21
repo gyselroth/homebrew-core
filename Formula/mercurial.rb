@@ -3,13 +3,13 @@
 class Mercurial < Formula
   desc "Scalable distributed version control system"
   homepage "https://mercurial-scm.org/"
-  url "https://mercurial-scm.org/release/mercurial-4.8.1.tar.gz"
-  sha256 "48a45f5cde9104fbc2daf310d710d4ebf286d879b89fa327d24b005434b0fa21"
+  url "https://www.mercurial-scm.org/release/mercurial-5.0.1.tar.gz"
+  sha256 "4c98a8e4cd5595feaa5ef7385ee2ac6b78bb4599353d3851c0823bd5543e62ce"
 
   bottle do
-    sha256 "a6a68bd355532a0684bc489bb873371cda8960f22a662330f28613b3419fc555" => :mojave
-    sha256 "45f5bf54d3c0ca324a3ae5cc8718e9d0de67410df767cb0ead5e586a951587b1" => :high_sierra
-    sha256 "f2f8e6ab878eb250f784cdacbece8b2d8a6f1a9639fa7ad3fd956750636dca89" => :sierra
+    sha256 "6dfff5ad74443459e92834d817c585ab7ab5a24a18e5ac00b2d8851a16d95c6a" => :mojave
+    sha256 "f119bac9d0955b574cfe7e2317b3714b660588a0f56c8c1968b7b3e802c7b00c" => :high_sierra
+    sha256 "237a05434f083c5bfda82bbf93c1a65064682519171f99420479ecf115bf1bcb" => :sierra
   end
 
   depends_on "python@2" # does not support Python 3
@@ -45,8 +45,10 @@ class Mercurial < Formula
 
   def caveats
     return unless (opt_bin/"hg").exist?
+
     cacerts_configured = `#{opt_bin}/hg config web.cacerts`.strip
     return if cacerts_configured.empty?
+
     <<~EOS
       Homebrew has detected that Mercurial is configured to use a certificate
       bundle file as its trust store for TLS connections instead of using the

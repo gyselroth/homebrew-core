@@ -3,15 +3,15 @@ class Ykman < Formula
 
   desc "Tool for managing your YubiKey configuration"
   homepage "https://developers.yubico.com/yubikey-manager/"
-  url "https://developers.yubico.com/yubikey-manager/Releases/yubikey-manager-1.0.1.tar.gz"
-  sha256 "1f915d8899dbcf85b6b9879f5664953ce1edcd5a503a00d03b9c6298900bfc44"
+  url "https://developers.yubico.com/yubikey-manager/Releases/yubikey-manager-2.1.1.tar.gz"
+  sha256 "3adc107539dda43cf0d1d7f9c649e2fb6252e7d5b14782d79f091893cdfcacca"
   head "https://github.com/Yubico/yubikey-manager.git"
 
   bottle do
     cellar :any
-    sha256 "d0f7bb3507e7c4f14a8d125e189a3789a7eb2b7febd0965699449b3596dfa75e" => :mojave
-    sha256 "69fba1dbbe9208d29eb6cdc77aa3d4e34cb617e6d1975e9893d55e856581c6ed" => :high_sierra
-    sha256 "a4c492c37bec49144c5d93575d0822f3702a91f4316d1bcbe770e71510c9a97c" => :sierra
+    sha256 "055e25be3727d09d5ec16b96fd1ef552c0093c0425f5279fae684c0ef22b6f4a" => :mojave
+    sha256 "c4d2e505ba05d388fa879accbb6a033e896ac858305020284a929748a4649fdf" => :high_sierra
+    sha256 "b3fe1500d829128b6739e68bf1bc3a716aafe20c41b363bc5321e30a36f63c6a" => :sierra
   end
 
   depends_on "swig" => :build
@@ -26,28 +26,28 @@ class Ykman < Formula
   end
 
   resource "cffi" do
-    url "https://files.pythonhosted.org/packages/e7/a7/4cd50e57cc6f436f1cc3a7e8fa700ff9b8b4d471620629074913e3735fb2/cffi-1.11.5.tar.gz"
-    sha256 "e90f17980e6ab0f3c2f3730e56d1fe9bcba1891eeea58966e89d352492cc74f4"
+    url "https://files.pythonhosted.org/packages/93/1a/ab8c62b5838722f29f3daffcc8d4bd61844aa9b5f437341cc890ceee483b/cffi-1.12.3.tar.gz"
+    sha256 "041c81822e9f84b1d9c401182e174996f0bae9991f33725d059b771744290774"
   end
 
   resource "click" do
-    url "https://files.pythonhosted.org/packages/95/d9/c3336b6b5711c3ab9d1d3a80f1a3e2afeb9d8c02a7166462f6cc96570897/click-6.7.tar.gz"
-    sha256 "f15516df478d5a56180fbf80e68f206010e6d160fc39fa508b65e035fd75130b"
+    url "https://files.pythonhosted.org/packages/f8/5c/f60e9d8a1e77005f664b76ff8aeaee5bc05d0a91798afd7f53fc998dbc47/Click-7.0.tar.gz"
+    sha256 "5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7"
   end
 
   resource "cryptography" do
-    url "https://files.pythonhosted.org/packages/22/21/233e38f74188db94e8451ef6385754a98f3cad9b59bedf3a8e8b14988be4/cryptography-2.3.1.tar.gz"
-    sha256 "8d10113ca826a4c29d5b85b2c4e045ffa8bad74fb525ee0eceb1d38d4c70dfd6"
+    url "https://files.pythonhosted.org/packages/c2/95/f43d02315f4ec074219c6e3124a87eba1d2d12196c2767fadfdc07a83884/cryptography-2.7.tar.gz"
+    sha256 "e6347742ac8f35ded4a46ff835c60e68c22a536a8ae5c4422966d06946b6d4c6"
   end
 
   resource "fido2" do
-    url "https://files.pythonhosted.org/packages/58/0d/655ef526ab14b8eecc70f773294f15b23402d5184da290c4f23d5d893048/fido2-0.4.0.tar.gz"
-    sha256 "f8d84aef5b54cccfb5558f399f196d540f8dcba458862214c14f7f66c22a4488"
+    url "https://files.pythonhosted.org/packages/10/37/c75c78221a5adc0b2ae1500afea82cff0287b98e7577850ed765894a1857/fido2-0.6.0.tar.gz"
+    sha256 "7541edad31967d23f5006ffeccc54536ab9934dd981d65d29620d9dfb54566bf"
   end
 
   resource "idna" do
-    url "https://files.pythonhosted.org/packages/65/c4/80f97e9c9628f3cac9b98bfca0402ede54e0563b56482e3e6e45c43c4935/idna-2.7.tar.gz"
-    sha256 "684a38a6f903c1d71d6d5fac066b58d7768af4de2b832e426ec79c30daa94a16"
+    url "https://files.pythonhosted.org/packages/ad/13/eb56951b6f7950cadb579ca166e448ba77f9d24efc03edd7e55fa57d04b7/idna-2.8.tar.gz"
+    sha256 "c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407"
   end
 
   resource "ipaddress" do
@@ -61,13 +61,13 @@ class Ykman < Formula
   end
 
   resource "pyOpenSSL" do
-    url "https://files.pythonhosted.org/packages/9b/7c/ee600b2a9304d260d96044ab5c5e57aa489755b92bbeb4c0803f9504f480/pyOpenSSL-18.0.0.tar.gz"
-    sha256 "6488f1423b00f73b7ad5167885312bb0ce410d3312eb212393795b53c8caa580"
+    url "https://files.pythonhosted.org/packages/40/d0/8efd61531f338a89b4efa48fcf1972d870d2b67a7aea9dcf70783c8464dc/pyOpenSSL-19.0.0.tar.gz"
+    sha256 "aeca66338f6de19d1aa46ed634c3b9ae519a64b458f8468aec688e7e3c20f200"
   end
 
   resource "pyscard" do
-    url "https://files.pythonhosted.org/packages/17/f3/e6e52e3dab39b26450d9fb6385c4a40f883180d6f1ee26ad4567dd243edc/pyscard-1.9.7.tar.gz"
-    sha256 "412c74c83e7401566e9d3d7b8b5ca965e74582a1f33179b3c1fabf1da73ebf80"
+    url "https://files.pythonhosted.org/packages/a9/00/a7cc393234db5c9aafb8305c22c4470c794b5b43c28adf6a80ebeb3b5a2d/pyscard-1.9.8.tar.gz"
+    sha256 "f59dc7ee467b210094e64c923e1c7f5e8e9501a672fc0c8f2cd958153e00d095"
   end
 
   resource "pyusb" do
@@ -76,8 +76,8 @@ class Ykman < Formula
   end
 
   resource "six" do
-    url "https://files.pythonhosted.org/packages/16/d8/bc6316cf98419719bd59c91742194c111b6f2e85abac88e496adefaf7afe/six-1.11.0.tar.gz"
-    sha256 "70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9"
+    url "https://files.pythonhosted.org/packages/dd/bf/4138e7bfb757de47d1f4b6994648ec67a51efe58fa907c1e11e350cddfca/six-1.12.0.tar.gz"
+    sha256 "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"
   end
 
   def install

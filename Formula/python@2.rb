@@ -1,16 +1,15 @@
 class PythonAT2 < Formula
   desc "Interpreted, interactive, object-oriented programming language"
   homepage "https://www.python.org/"
-  url "https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tar.xz"
-  sha256 "22d9b1ac5b26135ad2b8c2901a9413537e08749a753356ee913c84dbd2df5574"
-  revision 1
+  url "https://www.python.org/ftp/python/2.7.16/Python-2.7.16.tar.xz"
+  sha256 "f222ef602647eecb6853681156d32de4450a2c39f4de93bd5b20235f2e660ed7"
   head "https://github.com/python/cpython.git", :branch => "2.7"
 
   bottle do
-    rebuild 7
-    sha256 "a54499e1c8e85bb7f30f72fdb9870e77864bd45024cc738cb6f82a79dd786081" => :mojave
-    sha256 "b4c0326f997351bb5d5f5e044a2b58ff4466117bf93f002f87c137a6dc54b908" => :high_sierra
-    sha256 "d31db54e8ae8e6aaa164787be935bc3e75a6c8690c0e10507dcb3dcb3186c43f" => :sierra
+    rebuild 3
+    sha256 "8c801a1685a9a58dc703cfa76930e5766ce54b78a1a405750b8a965c1d1f150e" => :mojave
+    sha256 "ac3953f9842743f8a837e017b0a1132789974e93906192fa1a3a8b6daf5d591a" => :high_sierra
+    sha256 "fd39e60a7cc578d0946818913a5f222f50b05964e7c9a4d504a26a3a1f831ad5" => :sierra
   end
 
   # setuptools remembers the build flags python is built with and uses them to
@@ -25,25 +24,31 @@ class PythonAT2 < Formula
   end
 
   depends_on "pkg-config" => :build
-  depends_on "sphinx-doc" => :build if MacOS.version > :snow_leopard
   depends_on "gdbm"
   depends_on "openssl"
   depends_on "readline"
   depends_on "sqlite"
 
   resource "setuptools" do
-    url "https://files.pythonhosted.org/packages/6e/9c/6a003320b00ef237f94aa74e4ad66c57a7618f6c79d67527136e2544b728/setuptools-40.4.3.zip"
-    sha256 "acbc5740dd63f243f46c2b4b8e2c7fd92259c2ddb55a4115b16418a2ed371b15"
+    url "https://files.pythonhosted.org/packages/1d/64/a18a487b4391a05b9c7f938b94a16d80305bf0369c6b0b9509e86165e1d3/setuptools-41.0.1.zip"
+    sha256 "a222d126f5471598053c9a77f4b5d4f26eaa1f150ad6e01dcf1a42e185d05613"
   end
 
   resource "pip" do
-    url "https://files.pythonhosted.org/packages/69/81/52b68d0a4de760a2f1979b0931ba7889202f302072cc7a0d614211bc7579/pip-18.0.tar.gz"
-    sha256 "a0e11645ee37c90b40c46d607070c4fd583e2cd46231b1c06e389c5e814eed76"
+    url "https://files.pythonhosted.org/packages/93/ab/f86b61bef7ab14909bd7ec3cd2178feb0a1c86d451bc9bccd5a1aedcde5f/pip-19.1.1.tar.gz"
+    sha256 "44d3d7d3d30a1eb65c7e5ff1173cdf8f7467850605ac7cc3707b6064bddd0958"
   end
 
   resource "wheel" do
-    url "https://files.pythonhosted.org/packages/68/f0/545cbeae75f248c4ad7c2d062672cd7e046dd325a81b74fc02c62450d133/wheel-0.32.0.tar.gz"
-    sha256 "a26bc27230baaec9039972b7cb43db94b17c13e4d66a9ff6a4d46a0344c55c9a"
+    url "https://files.pythonhosted.org/packages/1d/b0/f478e80aeace42fe251225a86752799174a94314c4a80ebfc5bf0ab1153a/wheel-0.33.4.tar.gz"
+    sha256 "62fcfa03d45b5b722539ccbc07b190e4bfff4bb9e3a4d470dd9f6a0981002565"
+  end
+
+  # Fixes finding zlib from within the CLT SDK.
+  # https://bugs.python.org/issue37285
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/519bb6f33c6d5948b1dbae0964599028b9a3a995/python%402/clt-sdk-path-lookup.patch"
+    sha256 "b8b82f7ef45054aca02ce5e24b0f8dd0b6d5cbc4142707ffd1d720ff6ace2162"
   end
 
   def lib_cellar
@@ -168,13 +173,6 @@ class PythonAT2 < Formula
     (libexec/"setuptools").install resource("setuptools")
     (libexec/"pip").install resource("pip")
     (libexec/"wheel").install resource("wheel")
-
-    if MacOS.version > :snow_leopard
-      cd "Doc" do
-        system "make", "html"
-        doc.install Dir["build/html/*"]
-      end
-    end
   end
 
   def post_install
