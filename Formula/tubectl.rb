@@ -1,9 +1,9 @@
 class Tubectl < Formula
   desc "The tubectl for OS X"
   homepage "https://github.com/gyselroth/tubee-client-cli"
-  url "https://github.com/gyselroth/tubee-client-cli/releases/download/v1.0.0/tubectl-osx-x64"
-  sha256 "0882a5186c9c51b5fd6f0c601caa8fe712125dce0df0f08a7fbbb85d15094cbd"
-  version "1.0.0"
+  url "https://github.com/gyselroth/tubee-client-cli/releases/download/v1.1.0/tubectl-osx-x64"
+  sha256 "a529b0e744b9bfdc49fde36d8149fed8e8391697437972636f1847c4a5c52ad8"
+  version "1.1.0"
 
   bottle :unneeded
 
