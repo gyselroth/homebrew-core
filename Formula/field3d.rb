@@ -1,32 +1,38 @@
 class Field3d < Formula
   desc "Library for storing voxel data on disk and in memory"
   homepage "https://sites.google.com/site/field3d/"
-  url "https://github.com/imageworks/Field3D/archive/v1.7.2.tar.gz"
-  sha256 "8f7c33ecb4489ed626455cf3998d911a079b4f137f86814d9c37c5765bf4b020"
-  revision 9
+  url "https://github.com/imageworks/Field3D/archive/v1.7.3.tar.gz"
+  sha256 "b6168bc27abe0f5e9b8d01af7794b3268ae301ac72b753712df93125d51a0fd4"
+  license "BSD-3-Clause"
+  revision 5
 
   bottle do
-    cellar :any
-    sha256 "5a309ce2f4638c73a6de3739bdfebcf95d1dc58b35ea3e788a7fd2aef86202c5" => :mojave
-    sha256 "46dd1e449ac494a9fe2b16eee139915151aee504293492120b2d1bf4b8a74490" => :high_sierra
-    sha256 "59d48d1f4975d7f86214169f3dad2c0fa5bfc3168ce659275518ff5c48504f9f" => :sierra
+    sha256 cellar: :any, arm64_monterey: "88a905e0624b4258f3a2b72c188b71f408e3494ef84ea7106439ceea4e173f2e"
+    sha256 cellar: :any, arm64_big_sur:  "1129fd4858d6c9ba9535bc758681d8092fa2e1c53f638994db9f8d4c6aad7346"
+    sha256 cellar: :any, monterey:       "96e373ed802ef6e5668f838557ba4ae81fab51fd2542b94b7b8f885b3697be26"
+    sha256 cellar: :any, big_sur:        "9feff08c2928f0fee3944143abe5225ce33441a9ca4455caeea4553d3edc81ef"
+    sha256 cellar: :any, catalina:       "ddbd16a395b93503bea2554c5f99a4afe79b526f2877172ed990c67fb84da204"
   end
 
-  depends_on "scons" => :build
+  depends_on "cmake" => :build
   depends_on "boost"
   depends_on "hdf5"
   depends_on "ilmbase"
 
   def install
-    system "scons"
-    include.install Dir["install/**/**/release/include/*"]
-    lib.install Dir["install/**/**/release/lib/*"]
+    ENV.cxx11
+    ENV.prepend "CXXFLAGS", "-DH5_USE_110_API"
+
+    mkdir "build" do
+      system "cmake", "..", *std_cmake_args, "-DMPI_FOUND=OFF"
+      system "make", "install"
+    end
     man1.install "man/f3dinfo.1"
     pkgshare.install "contrib", "test", "apps/sample_code"
   end
 
   test do
-    system ENV.cxx, "-I#{include}", "-L#{lib}", "-lField3D",
+    system ENV.cxx, "-std=c++11", "-I#{include}", "-L#{lib}", "-lField3D",
            "-I#{Formula["boost"].opt_include}",
            "-L#{Formula["boost"].opt_lib}", "-lboost_system",
            "-I#{Formula["hdf5"].opt_include}",

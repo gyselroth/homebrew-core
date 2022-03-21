@@ -1,28 +1,27 @@
 class GstPluginsGood < Formula
   desc "GStreamer plugins (well-supported, under the LGPL)"
   homepage "https://gstreamer.freedesktop.org/"
-  revision 3
+  url "https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-1.20.0.tar.xz"
+  sha256 "2d119c15ab8c9e79f8cd3c6bf582ff7a050b28ccae52ab4865e1a1464991659c"
+  license "LGPL-2.0-or-later"
+  head "https://gitlab.freedesktop.org/gstreamer/gst-plugins-good.git", branch: "master"
 
-  stable do
-    url "https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-1.16.0.tar.xz"
-    sha256 "654adef33380d604112f702c2927574cfc285e31307b79e584113858838bb0fd"
+  livecheck do
+    url "https://gstreamer.freedesktop.org/src/gst-plugins-good/"
+    regex(/href=.*?gst-plugins-good[._-]v?(\d+\.\d*[02468](?:\.\d+)*)\.t/i)
   end
 
   bottle do
-    sha256 "a9dc8aef05b51b314f41943c64169040dc9429ac6ff2820e5fb027b139d69bf7" => :mojave
-    sha256 "0d9d3043eed877bba628888bdc4ed60c89b0157514fb41966937ab84c412597c" => :high_sierra
-    sha256 "f67edc267783cb9fa6dac9cbe74295a1c11cf849aa91c89ea0631eb17312e360" => :sierra
+    sha256 arm64_monterey: "7d2790a1aba560658c50d64d490a0ddfef4800b99f16f0c5ebd5efbd34204c3f"
+    sha256 arm64_big_sur:  "3cae4fe6bc10778b7b42eee8c9f31012e9e035d1e332ec5e430d732aa07d15b3"
+    sha256 monterey:       "d0363016d67dbdab5ca609ff5007b6bc9dd99ec792e088f95c6e42273e50156e"
+    sha256 big_sur:        "2ef811d155295ffc30b54d9e7da5fb2910d233044119bbd9aaa85ca182e3f168"
+    sha256 catalina:       "b94a12c0b0b3405130fa19439b2b1e956de4a41ce595aa15229157479880e314"
+    sha256 x86_64_linux:   "1a32f18f3c3a471602573567fa3ad6de99e7b5927c0ff555e92ddd42261616c0"
   end
 
-  head do
-    url "https://anongit.freedesktop.org/git/gstreamer/gst-plugins-good.git"
-
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
-    depends_on "check"
-  end
-
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "cairo"
   depends_on "flac"
@@ -30,6 +29,7 @@ class GstPluginsGood < Formula
   depends_on "gst-plugins-base"
   depends_on "gtk+3"
   depends_on "jpeg"
+  depends_on "lame"
   depends_on "libpng"
   depends_on "libshout"
   depends_on "libsoup"
@@ -39,25 +39,16 @@ class GstPluginsGood < Formula
   depends_on "taglib"
 
   def install
-    args = %W[
-      --prefix=#{prefix}
-      --disable-gtk-doc
-      --disable-goom
-      --with-default-videosink=ximagesink
-      --disable-debug
-      --disable-dependency-tracking
-      --disable-silent-rules
-      --disable-x
+    args = std_meson_args + %w[
+      -Dgoom=disabled
+      -Dximagesrc=disabled
     ]
 
-    if build.head?
-      ENV["NOCONFIGURE"] = "yes"
-      system "./autogen.sh"
+    mkdir "build" do
+      system "meson", *args, ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
     end
-
-    system "./configure", *args
-    system "make"
-    system "make", "install"
   end
 
   test do

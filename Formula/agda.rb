@@ -1,26 +1,26 @@
-require "language/haskell"
-
 class Agda < Formula
-  include Language::Haskell::Cabal
-
   desc "Dependently typed functional programming language"
   homepage "https://wiki.portal.chalmers.se/agda/"
+  license "BSD-3-Clause"
+  revision 1
 
   stable do
-    url "https://hackage.haskell.org/package/Agda-2.6.0.1/Agda-2.6.0.1.tar.gz"
-    sha256 "7bb88a9cd4a556259907ccc71d54e2acc9d3e9ce05486ffdc83f721c7c06c0e8"
+    url "https://hackage.haskell.org/package/Agda-2.6.2.1/Agda-2.6.2.1.tar.gz"
+    sha256 "3c4146539e1f2561a05896e3c18a7d0262d98a28f5c5adcc8cce8d8c9d3cbc0d"
 
     resource "stdlib" do
-      url "https://github.com/agda/agda-stdlib.git",
-          :tag      => "v1.0.1",
-          :revision => "442abf2b3418d4d488381a2f8ca4e99bbf8cfc8e"
+      url "https://github.com/agda/agda-stdlib/archive/v1.7.1.tar.gz"
+      sha256 "6f92ae14664e5d1217e8366c647eb23ca88bc3724278f22dc6b80c23cace01df"
     end
   end
 
   bottle do
-    sha256 "2242488b489bab93900cc477d8ec29f39730c963f4792608abd9c6ad7aca2527" => :mojave
-    sha256 "4e9b23b72fafdab0da1278ece9cec725a45c3ca107ab5b7623971b7eda497404" => :high_sierra
-    sha256 "9500f95942f583183b2cfec2469b810cd3cfd121350132a9d23bc9d83d530104" => :sierra
+    sha256 arm64_monterey: "3aff0b4a7cb5062864d999416cf1b2814297bccb935cd44f45cf4d397149205b"
+    sha256 arm64_big_sur:  "5d8c712a38333e2b9d8cee0e21ea3d16b6348932f10a287b9a1d7968f03aefed"
+    sha256 monterey:       "d8b18de2004d73f22bd346adad788fe8f8b8799246e49ed4156c390265c1564e"
+    sha256 big_sur:        "d5309b4d6a56c0516f481d9ad8bcf84fec59fdbbb5764951a2128cf4a9fd1a8c"
+    sha256 catalina:       "2744d4d4d78295c15616e34404f0507f307d562ba30cca2e10ce767ef4dcf057"
+    sha256 x86_64_linux:   "b0bef7c84ea884d2abbb8718fa86010447c9b47185e9a168e4e6a80601902a06"
   end
 
   head do
@@ -31,41 +31,55 @@ class Agda < Formula
     end
   end
 
-  depends_on "cabal-install" => [:build, :test]
+  depends_on "cabal-install"
   depends_on "emacs"
   depends_on "ghc"
 
+  uses_from_macos "zlib"
+
+  resource "alex" do
+    url "https://hackage.haskell.org/package/alex-3.2.7.1/alex-3.2.7.1.tar.gz"
+    sha256 "9bd2f1a27e8f1b2ffdb5b2fbd3ed82b6f0e85191459a1b24ffcbef4e68a81bec"
+  end
+
+  resource "cpphs" do
+    url "https://hackage.haskell.org/package/cpphs-1.20.9.1/cpphs-1.20.9.1.tar.gz"
+    sha256 "7f59b10bc3374004cee3c04fa4ee4a1b90d0dca84a3d0e436d5861a1aa3b919f"
+  end
+
+  resource "happy" do
+    url "https://hackage.haskell.org/package/happy-1.20.0/happy-1.20.0.tar.gz"
+    sha256 "3b1d3a8f93a2723b554d9f07b2cd136be1a7b2fcab1855b12b7aab5cbac8868c"
+  end
+
   def install
-    # install Agda core
-    install_cabal_package :using => ["alex", "happy", "cpphs"]
+    ENV["CABAL_DIR"] = prefix/"cabal"
+    system "cabal", "v2-update"
+    cabal_args = std_cabal_v2_args.reject { |s| s["installdir"] }
 
-    resource("stdlib").stage lib/"agda"
+    # happy must be installed before alex
+    %w[happy alex cpphs].each do |r|
+      r_installdir = libexec/r/"bin"
+      ENV.prepend_path "PATH", r_installdir
 
-    # generate the standard library's bytecode
-    cd lib/"agda" do
-      cabal_sandbox :home => buildpath, :keep_lib => true do
-        cabal_install "--only-dependencies"
-        cabal_install
-        system "GenerateEverything"
+      resource(r).stage do
+        mkdir r_installdir
+        system "cabal", "v2-install", *cabal_args, "--installdir=#{r_installdir}"
       end
     end
 
+    system "cabal", "v2-install", "-f", "cpphs", *std_cabal_v2_args
+
     # generate the standard library's documentation and vim highlighting files
+    resource("stdlib").stage lib/"agda"
     cd lib/"agda" do
+      system "cabal", "v2-install", *cabal_args, "--installdir=#{lib}/agda"
+      system "./GenerateEverything"
       system bin/"agda", "-i", ".", "-i", "src", "--html", "--vim", "README.agda"
     end
 
-    # compile the included Emacs mode
-    system bin/"agda-mode", "compile"
-    elisp.install_symlink Dir["#{share}/*/Agda-#{version}/emacs-mode/*"]
-  end
-
-  def caveats; <<~EOS
-    To use the Agda standard library by default:
-      mkdir -p ~/.agda
-      echo #{HOMEBREW_PREFIX}/lib/agda/standard-library.agda-lib >>~/.agda/libraries
-      echo standard-library >>~/.agda/defaults
-  EOS
+    # Clean up references to Homebrew shims
+    rm_rf "#{lib}/agda/dist-newstyle/cache"
   end
 
   test do
@@ -122,38 +136,26 @@ class Agda < Formula
       main = return tt
     EOS
 
-    stdlibiotest = testpath/"StdlibIOTest.agda"
-    stdlibiotest.write <<~EOS
-      module StdlibIOTest where
-
-      open import IO
-
-      main : _
-      main = run (putStr "Hello, world!")
-    EOS
+    # we need a test-local copy of the stdlib as the test writes to
+    # the stdlib directory
+    resource("stdlib").stage testpath/"lib/agda"
 
     # typecheck a simple module
     system bin/"agda", simpletest
 
     # typecheck a module that uses the standard library
-    system bin/"agda", "-i", lib/"agda"/"src", stdlibtest
+    system bin/"agda", "-i", testpath/"lib/agda/src", stdlibtest
 
     # compile a simple module using the JS backend
     system bin/"agda", "--js", simpletest
 
     # test the GHC backend
-    cabal_sandbox do
-      cabal_install "text", "ieee754"
-      dbpath = Dir["#{testpath}/.cabal-sandbox/*-packages.conf.d"].first
-      dbopt = "--ghc-flag=-package-db=#{dbpath}"
+    cabal_args = std_cabal_v2_args.reject { |s| s["installdir"] }
+    system "cabal", "v2-update"
+    system "cabal", "v2-install", "ieee754", "--lib", *cabal_args
 
-      # compile and run a simple program
-      system bin/"agda", "-c", dbopt, iotest
-      assert_equal "", shell_output(testpath/"IOTest")
-
-      # compile and run a program that uses the standard library
-      system bin/"agda", "-c", "-i", lib/"agda"/"src", dbopt, stdlibiotest
-      assert_equal "Hello, world!", shell_output(testpath/"StdlibIOTest")
-    end
+    # compile and run a simple program
+    system bin/"agda", "-c", iotest
+    assert_equal "", shell_output(testpath/"IOTest")
   end
 end

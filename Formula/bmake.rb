@@ -1,13 +1,22 @@
 class Bmake < Formula
   desc "Portable version of NetBSD make(1)"
-  homepage "http://www.crufty.net/help/sjg/bmake.html"
-  url "http://www.crufty.net/ftp/pub/sjg/bmake-20181221.tar.gz"
-  sha256 "fc0948b4eb0cf21fcec4f89660c0295150c55bf070d4b7445858947f84f7e67e"
+  homepage "https://www.crufty.net/help/sjg/bmake.html"
+  url "https://www.crufty.net/ftp/pub/sjg/bmake-20211221.tar.gz"
+  sha256 "c48476c1c52493e61a5342d7d8541608f7852244f3c74ffd7676b6537c475bfb"
+  license "BSD-3-Clause"
+
+  livecheck do
+    url "https://www.crufty.net/ftp/pub/sjg/"
+    regex(/href=.*?bmake[._-]v?(\d{6,8})\.t/i)
+  end
 
   bottle do
-    sha256 "982395afa33bc45fd0ae39c68c9474c5f55a4a720fb6fb4480d0c2a13e31bc30" => :mojave
-    sha256 "80827f6b3c39f696667c44a6bb44c7b31ffed5e0483249f5a5221aa3096ad489" => :high_sierra
-    sha256 "439d4fe0a306fd861ed37f6a80a7ba05c463778be449e4cafd12dddbc073103d" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "74f3d7297d0e43e051ebc25df8e6b6c937522e1eb7a6895479f5eee0e65f1850"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "8089cd842adb172141c112baf8db676d392e7849894b8aaee63401e4f8da01ae"
+    sha256                               monterey:       "217b6ce35f1aeb7c59fbc35bbe04ade7290abb2b99c9538f7f375056088155c9"
+    sha256                               big_sur:        "9590fa688cbaf287271bbca8548420dde6c62603bc4b075f70660b561d72e19e"
+    sha256                               catalina:       "8da02f75fcdb4e85960a24da424e76c077cc58649935684d841e71521075827e"
+    sha256                               x86_64_linux:   "7a53a49414a8e399b846c5451923ef2eef3de96ce6998b1d2d61b162a473bda2"
   end
 
   def install
@@ -15,7 +24,8 @@ class Bmake < Formula
     inreplace "mk/man.mk", "MANTARGET?", "MANTARGET"
 
     # -DWITHOUT_PROG_LINK means "don't symlink as bmake-VERSION."
-    args = ["--prefix=#{prefix}", "-DWITHOUT_PROG_LINK", "--install"]
+    # shell-ksh test segfaults since macOS 11.
+    args = ["--prefix=#{prefix}", "-DWITHOUT_PROG_LINK", "--install", "BROKEN_TESTS=shell-ksh"]
     system "sh", "boot-strap", *args
 
     man1.install "bmake.1"

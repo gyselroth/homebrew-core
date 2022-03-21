@@ -1,26 +1,29 @@
-require "language/haskell"
-
 class DhallJson < Formula
-  include Language::Haskell::Cabal
-
   desc "Dhall to JSON compiler and a Dhall to YAML compiler"
   homepage "https://github.com/dhall-lang/dhall-haskell/tree/master/dhall-json"
-  url "https://hackage.haskell.org/package/dhall-json-1.2.8/dhall-json-1.2.8.tar.gz"
-  sha256 "edfd0f1cac49047f75f3096716ed961998df4bc9ce3661f6e8b0ba9ce0f3b168"
-  head "https://github.com/dhall-lang/dhall-haskell.git"
+  url "https://hackage.haskell.org/package/dhall-json-1.7.10/dhall-json-1.7.10.tar.gz"
+  sha256 "e15cd486b287ed281cd56da8d0603bb70dbfa33f2b3e107682d82935dad3f785"
+  license "BSD-3-Clause"
+  head "https://github.com/dhall-lang/dhall-haskell.git", branch: "master"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "61a8c523c47ca8d2f95da8bff97f70f2bf627f8febc8f8c7f54521c46facff24" => :mojave
-    sha256 "d4713f73f9b860ca4e311c637282430e66f9d72e823f8c9bcfe85b1fa0d734f9" => :high_sierra
-    sha256 "2ded62ecaaae75894f0114d7e48d47bc14ba4eeb1a92ed7b9bc6821716475735" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "7ea1423f43fb9a7fa3789514ae55808ee1a7d9fa90efa1ad831330b61e43ccce"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "56e8a007ff90bf159482f8bdefd4f9d322b81aac086e7de1fed6e965b4ddb7d6"
+    sha256 cellar: :any_skip_relocation, monterey:       "3e8a970246c08fdf53b34a86c37f89c0356479ce9db6e75196c54bec381642a5"
+    sha256 cellar: :any_skip_relocation, big_sur:        "e42035c35b1982cac88c2439be1a7277826eaad3d94119397ff95f27924a9ac3"
+    sha256 cellar: :any_skip_relocation, catalina:       "cb073ad995a78669e14308df6e1cfb2948d888f32d639ad28a4e28d6f3665fa2"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "574870ec071224a29cbee1e99f58824e2a8c55f3f754c8d59e571e44e13205b7"
   end
 
   depends_on "cabal-install" => :build
   depends_on "ghc" => :build
 
+  uses_from_macos "ncurses"
+  uses_from_macos "zlib"
+
   def install
-    install_cabal_package
+    system "cabal", "v2-update"
+    system "cabal", "v2-install", *std_cabal_v2_args
   end
 
   test do

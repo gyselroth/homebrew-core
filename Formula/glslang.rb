@@ -1,21 +1,35 @@
 class Glslang < Formula
   desc "OpenGL and OpenGL ES reference compiler for shading languages"
   homepage "https://www.khronos.org/opengles/sdk/tools/Reference-Compiler/"
-  url "https://github.com/KhronosGroup/glslang/archive/7.11.3214.tar.gz"
-  sha256 "b30b4668734328d256e30c94037e60d3775b1055743c04d8fd709f2960f302a9"
+  url "https://github.com/KhronosGroup/glslang/archive/11.8.0.tar.gz"
+  sha256 "9e5fbe5b844d203da5e61bcd84eda76326e0ff5dc696cb862147bbe01d2febb0"
+  license all_of: ["BSD-3-Clause", "GPL-3.0-or-later", "MIT", "Apache-2.0"]
   head "https://github.com/KhronosGroup/glslang.git"
 
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
+
   bottle do
-    cellar :any_skip_relocation
-    sha256 "a62ffe30f1d2b726a20d558679d9061d513bce025f31551cc2b218e744f8e7aa" => :mojave
-    sha256 "0ade09ae5c51996b8d661dcd2f03164acaad6bcd8bde1995f960370c7d5e88d1" => :high_sierra
-    sha256 "1c3d394fc3efcfcac63f8f1656bb12749cde4da1962d13eb5b657946d51e3359" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "d36ff2a45c0d734b259e90dcf37c9b245cc64ea3a648f4ed0b3f596603005635"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "978c82606215edc52643da92321b6e14dddfac221a1bf8ec873ce71c47daf742"
+    sha256 cellar: :any_skip_relocation, monterey:       "2d5fdac8308224813f8d9823db40ed4d89c242a8c9710f9ba37883766b5b6f5d"
+    sha256 cellar: :any_skip_relocation, big_sur:        "829bba8260c3c7c277982f73b6090f831087c1c89851bee49aab07228fa873a5"
+    sha256 cellar: :any_skip_relocation, catalina:       "c92a65f5ad771714fb8adbe84bf640e5b665d89125fc0e0471dec28b3e0d47c3"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "a3e484e8ccba2def41c4e318d6e4ba792e2217d70c027664e11a2e3618063a03"
   end
 
   depends_on "cmake" => :build
+  depends_on "python@3.10" => :build
 
   def install
-    system "cmake", ".", *std_cmake_args
+    args = %w[
+      -DBUILD_EXTERNAL=OFF
+      -DENABLE_CTEST=OFF
+    ]
+
+    system "cmake", ".", *std_cmake_args, *args
     system "make"
     system "make", "install"
   end

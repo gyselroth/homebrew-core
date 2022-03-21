@@ -1,33 +1,36 @@
 class Ispc < Formula
   desc "Compiler for SIMD programming on the CPU"
   homepage "https://ispc.github.io"
-  url "https://github.com/ispc/ispc/archive/v1.11.0.tar.gz"
-  sha256 "f48ef6e8a1fe5ad4fca691583bf7419f4dce1596e7ed850ff99cc017f8711b2f"
+  url "https://github.com/ispc/ispc/archive/v1.17.0.tar.gz"
+  sha256 "37fb1055d6c6b232e112d8d50145d726824ed4d8da93a7396315dceba6c76e62"
+  license "BSD-3-Clause"
 
   bottle do
-    cellar :any
-    sha256 "0211c32ec401106b7f5afb79b358c74b049526dc5308844b1a1327732daa54d5" => :mojave
-    sha256 "0fd371dc2dd0ab471fd25cbe2fca0ef3b4402b5cc2badd3e57694de9e16e4be7" => :high_sierra
-    sha256 "5d2ad9aea47988b7e49a72fcf3ad1766a3f5291a3613f665164ecf3726af861f" => :sierra
+    sha256 cellar: :any, arm64_monterey: "95e78ba62fbcd1d290db0d04e1738b339a40c0d600f67bd6cc7ac3158e2ec58d"
+    sha256 cellar: :any, arm64_big_sur:  "7847016c49b86fde9b9807d33090a81997b9736a5a564b4ca696324815a4d2d2"
+    sha256 cellar: :any, monterey:       "18c71e795071937755b19b4ad1d38352305e5135fa376cdf822760f818ff2384"
+    sha256 cellar: :any, big_sur:        "87c6ea89cf9c56e909ec1467fa738e554e0e72c2692401bd6d487bb1de0cb6ee"
+    sha256 cellar: :any, catalina:       "9db07b42653f019b89aa885e92c15b471444116dc7e899857ecfe77ef3c3d5c3"
   end
 
   depends_on "bison" => :build
   depends_on "cmake" => :build
   depends_on "flex" => :build
-  depends_on "llvm@4"
+  depends_on "python@3.9" => :build
+  depends_on "llvm@12"
+
+  def llvm
+    deps.map(&:to_formula).find { |f| f.name.match? "^llvm" }
+  end
 
   def install
-    # The standard include paths for clang supplied by the llvm@4 formula do not include
-    # C headers such as unistd.h. Add the path to those headers explicitly so that
-    # generation of the ispc builtins and standard library do not silently fail.
-    inreplace "cmake/GenerateBuiltins.cmake", "${CLANG_EXECUTABLE}",
-      "${CLANG_EXECUTABLE} -I#{MacOS.sdk_path}/usr/include"
-
     args = std_cmake_args + %W[
       -DISPC_INCLUDE_EXAMPLES=OFF
       -DISPC_INCLUDE_TESTS=OFF
       -DISPC_INCLUDE_UTILS=OFF
-      -DLLVM_TOOLS_BINARY_DIR='#{Formula["llvm@4"]}'
+      -DLLVM_TOOLS_BINARY_DIR='#{llvm.opt_bin}'
+      -DISPC_NO_DUMPS=ON
+      -DARM_ENABLED=#{Hardware::CPU.arm? ? "ON" : "OFF"}
     ]
 
     mkdir "build" do
@@ -50,7 +53,15 @@ class Ispc < Formula
         }
       }
     EOS
-    system bin/"ispc", "--arch=x86-64", "--target=sse2", testpath/"simple.ispc",
+
+    if Hardware::CPU.arm?
+      arch = "aarch64"
+      target = "neon"
+    else
+      arch = "x86-64"
+      target = "sse2"
+    end
+    system bin/"ispc", "--arch=#{arch}", "--target=#{target}", testpath/"simple.ispc",
       "-o", "simple_ispc.o", "-h", "simple_ispc.h"
 
     (testpath/"simple.cpp").write <<~EOS

@@ -1,18 +1,29 @@
 class MediaInfo < Formula
   desc "Unified display of technical and tag data for audio/video"
   homepage "https://mediaarea.net/"
-  url "https://mediaarea.net/download/binary/mediainfo/19.04/MediaInfo_CLI_19.04_GNU_FromSource.tar.bz2"
-  version "19.04"
-  sha256 "fdd3de83d09e85d6b9ecb8b74e86f2fed31d424621adcd5f01b020a214bc7931"
+  url "https://mediaarea.net/download/binary/mediainfo/21.09/MediaInfo_CLI_21.09_GNU_FromSource.tar.bz2"
+  sha256 "cced70fc0f23a3e95a5d602099c86547d5b291ff0aef78ea7aaff03908b4d3c5"
+  license "BSD-2-Clause"
+
+  livecheck do
+    url "https://mediaarea.net/en/MediaInfo/Download/Source"
+    regex(/href=.*?mediainfo[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    cellar :any
-    sha256 "b8dd9d52888d0cd92da22fad6b896a757269961c4d94c7136e5c79b4aeea6f36" => :mojave
-    sha256 "3dbda8ffbd8af33d17b6d7e290d40be1a8cb3e7c0088b4e4545ebfe7baa3dabe" => :high_sierra
-    sha256 "05cf959783f2137cdb7e35df7135a71bb6eda02dec2dc6ac2b66b82f4e0cfd99" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "d808a90ceb8e9d8a3372df00f86713c44fa63e0e21355fda3f151d0874d8d4eb"
+    sha256 cellar: :any,                 arm64_big_sur:  "a867be2d48af32254cf7d789bc1180453caf7966126b2388d80da99a6aaa4f9e"
+    sha256 cellar: :any,                 monterey:       "1c27fe68ded8e89d95776eeb2dea6cb326a302e058c0e1f4d0871c0baca17548"
+    sha256 cellar: :any,                 big_sur:        "75c84b8b3d32e058bafeee2a086c739e190ee94a92c987bb2928a093eff48e35"
+    sha256 cellar: :any,                 catalina:       "5bf600f4122b3922d0935e0c40c1c598a7884d1fb89aead60b27b5c9d2aecd37"
+    sha256 cellar: :any,                 mojave:         "207f0ed70033e804e776765b3ba9afd85a50731685441985b9598c225be8c958"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "821008db0d750423722c9f694c4b95374ea023844afb6019a09170e2534307ef"
   end
 
   depends_on "pkg-config" => :build
+
+  uses_from_macos "curl"
+  uses_from_macos "zlib"
 
   def install
     cd "ZenLib/Project/GNU/Library" do

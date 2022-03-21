@@ -1,27 +1,35 @@
 class Carla < Formula
   desc "Audio plugin host supporting LADSPA, LV2, VST2/3, SF2 and more"
   homepage "https://kxstudio.linuxaudio.org/Applications:Carla"
-  url "https://github.com/falkTX/Carla/archive/v2.0.0.tar.gz"
-  sha256 "d0c8d8417f8cce9abe807f6359231f187d60db7121ec1dccce3b596a22ef6c41"
-  head "https://github.com/falkTX/Carla.git"
+  url "https://github.com/falkTX/Carla/archive/v2.4.2.tar.gz"
+  sha256 "376884965e685242953cab757818dde262209c651bd563a04eade0678c6b9f39"
+  license "GPL-2.0-or-later"
+  head "https://github.com/falkTX/Carla.git", branch: "main"
+
+  livecheck do
+    url :stable
+    strategy :github_latest
+  end
 
   bottle do
-    cellar :any
-    sha256 "a39e18a5d4607940f90a6a32efc29fa82ec626995fe93354a85f248c63e65c2a" => :mojave
-    sha256 "24e9a7ac065d312ad4911dd663befc3abadc020a239f013345cfd6b3bfac2c4e" => :high_sierra
-    sha256 "2ce1ae9b9971999d046e84523807da278fbd67dedfcc5282b7e0965880980cd5" => :sierra
+    sha256 cellar: :any, arm64_big_sur: "47675f00c8b4a6651eb405321709115d71886fe0b9b13badf82cbd42bba34825"
+    sha256 cellar: :any, big_sur:       "0303540b446d18d094cd6672687fbf80f434baa5fd92dc0d98c7fa30c672d184"
+    sha256 cellar: :any, catalina:      "e81b8c253c51edf12ddef8b6ad8f2e4409102d98b9ce3cf5ea12a8f3f965eb21"
   end
 
   depends_on "pkg-config" => :build
   depends_on "fluid-synth"
   depends_on "liblo"
   depends_on "libmagic"
-  depends_on "pyqt"
-  depends_on "python"
+  depends_on "pyqt@5"
+  depends_on "python@3.9"
 
   def install
     system "make"
     system "make", "install", "PREFIX=#{prefix}"
+
+    inreplace bin/"carla", "PYTHON=$(which python3 2>/dev/null)",
+                           "PYTHON=#{Formula["python@3.9"].opt_bin}/python3"
   end
 
   test do

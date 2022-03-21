@@ -3,14 +3,19 @@ class Pdf2htmlex < Formula
   homepage "https://coolwanglu.github.io/pdf2htmlEX/"
   url "https://github.com/coolwanglu/pdf2htmlEX/archive/v0.14.6.tar.gz"
   sha256 "320ac2e1c2ea4a2972970f52809d90073ee00a6c42ef6d9833fb48436222f0e5"
-  revision 21
-  head "https://github.com/coolwanglu/pdf2htmlEX.git"
+  license "GPL-3.0-or-later"
+  revision 24
+  head "https://github.com/coolwanglu/pdf2htmlEX.git", branch: "master"
 
   bottle do
-    sha256 "ed3b2014900a813cc67fc580949cfbc2b7525b6bfd652df656d5b03252d0c10e" => :mojave
-    sha256 "a06598399b408551a1d952d864c7d36d8989988f18c411c80062084bf8df76ba" => :high_sierra
-    sha256 "ec3c20e86bf3b265454d5886f884787348db0c4f1670ba721287ed7d62b08fff" => :sierra
+    sha256 arm64_big_sur: "8c29d3c811e6e6580644620a76848458db39181b996cc15e4df2589c8de40e27"
+    sha256 big_sur:       "7cb1691e750ce40dfc9dbb9e9faba3138158c31e3221335acd3d4f25eb7bf3c3"
+    sha256 catalina:      "76c5b16da33231ee6d269f95c5b9b3f0f06b9f5d5634e003d55e6ad5e123a387"
+    sha256 mojave:        "0cf6aa3cd87e96aab2fc58b618f8a9127edec88a624bd6cf2f5816fd575c0a50"
+    sha256 high_sierra:   "8a55a7cd0d373d223162ee92bc6f02c269b4f17fe987471ba3388ea257cf870f"
   end
+
+  deprecate! date: "2016-12-12", because: :repo_archived
 
   depends_on "autoconf" => :build # for fontforge
   depends_on "automake" => :build # for fontforge
@@ -34,7 +39,7 @@ class Pdf2htmlex < Formula
   # Pdf2htmlex use an outdated, customised Fontforge installation.
   # See https://github.com/coolwanglu/pdf2htmlEX/wiki/Building
   resource "fontforge" do
-    url "https://github.com/coolwanglu/fontforge.git", :branch => "pdf2htmlEX"
+    url "https://github.com/coolwanglu/fontforge.git", branch: "pdf2htmlEX"
   end
 
   # Upstream issue "poppler 0.59.0 incompatibility"
@@ -55,17 +60,18 @@ class Pdf2htmlex < Formula
       # https://github.com/coolwanglu/pdf2htmlEX/issues/713
       inreplace "gutils/gimagereadgif.c", "DGifCloseFile(gif)", "DGifCloseFile(gif, NULL)"
 
-      # Fix linker error; see: https://trac.macports.org/ticket/25012
-      ENV.append "LDFLAGS", "-lintl"
-
-      # Reset ARCHFLAGS to match how we build
-      ENV["ARCHFLAGS"] = "-arch #{MacOS.preferred_arch}"
+      if OS.mac?
+        # Fix linker error; see: https://trac.macports.org/ticket/25012
+        ENV.append "LDFLAGS", "-lintl"
+      end
 
       system "./autogen.sh"
       system "./configure", "--prefix=#{libexec}/fontforge",
                             "--without-libzmq",
                             "--without-x",
                             "--without-iconv",
+                            "--without-libspiro",
+                            "--without-libuninameslist",
                             "--disable-python-scripting",
                             "--disable-python-extension"
       system "make"

@@ -1,21 +1,23 @@
 class Libmatio < Formula
   desc "C library for reading and writing MATLAB MAT files"
   homepage "https://matio.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/matio/matio/1.5.12/matio-1.5.12.tar.gz"
-  sha256 "8695e380e465056afa5b5e20128935afe7d50e03830f9f7778a72e1e1894d8a9"
-  revision 3
+  url "https://downloads.sourceforge.net/project/matio/matio/1.5.21/matio-1.5.21.tar.gz"
+  sha256 "21809177e55839e7c94dada744ee55c1dea7d757ddaab89605776d50122fb065"
+  license "BSD-2-Clause"
+  revision 2
 
   bottle do
-    cellar :any
-    rebuild 1
-    sha256 "5d2703b87aee0b2c3204cb78b7689c650b076157a274c5d543aa5852bbd7febb" => :mojave
-    sha256 "5ce978cdcbe04527d730b8fdb018304eba54328104afce7c8754dd71218b5bc8" => :high_sierra
-    sha256 "3d5970022b653c12d7b1f1b2720d9ad87e6f478e7116175fc914a3d377a2c9e3" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "2543bb273ff8c2a4d36bd087a563c19bc99d7c709130544d5da7a8954b94c984"
+    sha256 cellar: :any,                 arm64_big_sur:  "83535d794eb32470b1272bc210afe19ba21b10f4549eaa61b98d4bc172a89048"
+    sha256 cellar: :any,                 monterey:       "fd77f8a1a2668e7fa341590738f31fa15729d18c0eb8d7348241843b380f2a8a"
+    sha256 cellar: :any,                 big_sur:        "4015116bdbe565d268904594816a5e1eca9e1fccc3a61da1eff8b1e8911cc1dd"
+    sha256 cellar: :any,                 catalina:       "fe8e1aecf04374a42029201cdd9d64da5554eb9548ff57b6bf96d4dc0ec79dac"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "a1ce599ef49eb124309f42a69b3c179258e61b2a930ba0c8a3fd353171c7e40a"
   end
 
   depends_on "hdf5"
 
-  resource "test_mat_file" do
+  resource "homebrew-test_mat_file" do
     url "https://web.uvic.ca/~monahana/eos225/poc_data.mat.sfx"
     sha256 "a29df222605476dcfa660597a7805176d7cb6e6c60413a3e487b62b6dbf8e6fe"
   end
@@ -34,7 +36,7 @@ class Libmatio < Formula
   end
 
   test do
-    testpath.install resource("test_mat_file")
+    testpath.install resource("homebrew-test_mat_file")
     (testpath/"mat.c").write <<~'EOS'
       #include <stdlib.h>
       #include <matio.h>

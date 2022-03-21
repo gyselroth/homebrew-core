@@ -1,30 +1,31 @@
 class JsonrpcGlib < Formula
   desc "GNOME library to communicate with JSON-RPC based peers"
   homepage "https://gitlab.gnome.org/GNOME/jsonrpc-glib"
-  url "https://download.gnome.org/sources/jsonrpc-glib/3.32/jsonrpc-glib-3.32.0.tar.xz"
-  sha256 "bc60aa36c8bdc9c701ad490508445633a9f3973ae0bd5bdd0633d5f6ffeea6eb"
+  url "https://download.gnome.org/sources/jsonrpc-glib/3.40/jsonrpc-glib-3.40.0.tar.xz"
+  sha256 "c2e3d16257c7266cd3901884e22375575bf61a8e1f67596c88e0d87ae70d0ef4"
+  license "LGPL-2.1-or-later"
 
   bottle do
-    sha256 "04cca91e37582e34e6c67edc5c6582899a137ba5b36c5b9be1ac7878746bd748" => :mojave
-    sha256 "12b38863599f606ac861abcdcb1f1042a0242ccb8a4f69e7f612924422381e18" => :high_sierra
-    sha256 "25613b83e25e71ba162b96337bd394d01e48d57895ff0e8ec45e0a7b929bb2f1" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "b840c82daeec35544e1eddb0481a5a6300f867e853859b557c2cb3f0d4e19ad3"
+    sha256 cellar: :any,                 arm64_big_sur:  "69e3e97a9a4193dd6f3a23b11166ea27cb99760931244f6a391a228bc4eca196"
+    sha256 cellar: :any,                 monterey:       "f25b784b62fa80160800aad053d3b1bf13267135cc0cf56908fa0142075580e2"
+    sha256 cellar: :any,                 big_sur:        "ec54de6bc6799ae0b497447de9d3dfe5b4f88ce71d3a826da43785affae68429"
+    sha256 cellar: :any,                 catalina:       "ea6e41d579c3e4d3dc33355b3de46277d6605822a78f2f395e329329155a6bf7"
+    sha256 cellar: :any,                 mojave:         "ae9d2d930e0b55dcd99e9ed1188d5a4a7adf4523851feb1fb1a01ff15d9de575"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "50fbcd7be2fa9c83aa93fd742e8c678998494c03c27223d47fafb50fbe0f1fe0"
   end
 
   depends_on "gobject-introspection" => :build
   depends_on "meson" => :build
   depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "python" => :build
   depends_on "vala" => :build
   depends_on "glib"
   depends_on "json-glib"
 
-  # submitted upstream as https://gitlab.gnome.org/GNOME/jsonrpc-glib/merge_requests/5
-  patch :DATA
-
   def install
     mkdir "build" do
-      system "meson", "--prefix=#{prefix}", "-Dwith_vapi=true", ".."
+      system "meson", *std_meson_args, "-Dwith_vapi=true", ".."
       system "ninja", "-v"
       system "ninja", "install", "-v"
     end
@@ -59,49 +60,15 @@ class JsonrpcGlib < Formula
       -lgio-2.0
       -lglib-2.0
       -lgobject-2.0
-      -lintl
       -ljson-glib-1.0
       -ljsonrpc-glib-1.0
-      -Wl,-framework
-      -Wl,CoreFoundation
     ]
+    on_macos do
+      flags << "-lintl"
+      flags << "-Wl,-framework"
+      flags << "-Wl,CoreFoundation"
+    end
     system ENV.cc, "test.c", "-o", "test", *flags
     system "./test"
   end
 end
-__END__
-diff --git a/meson.build b/meson.build
-index e949308..cb98d63 100644
---- a/meson.build
-+++ b/meson.build
-@@ -26,6 +26,8 @@ current = jsonrpc_glib_version_minor * 100 + jsonrpc_glib_version_micro - jsonrp
- revision = jsonrpc_glib_interface_age
- libversion = '@0@.@1@.@2@'.format(soversion, current, revision)
-
-+darwin_versions = [current + 1, '@0@.@1@'.format(current + 1, revision)]
-+
- config_h = configuration_data()
- config_h.set_quoted('GETTEXT_PACKAGE', 'libjsonrpc_glib')
- config_h.set_quoted('LOCALEDIR', join_paths(get_option('prefix'), get_option('localedir')))
-diff --git a/src/meson.build b/src/meson.build
-index 3366e96..83fe506 100644
---- a/src/meson.build
-+++ b/src/meson.build
-@@ -52,11 +52,12 @@ libjsonrpc_glib = library(
-   'jsonrpc-glib-' + apiversion,
-   libjsonrpc_glib_sources,
-
--        c_args: hidden_visibility_args + release_args,
--  dependencies: libjsonrpc_glib_deps,
--     soversion: soversion,
--       version: libversion,
--       install: true,
-+         c_args: hidden_visibility_args + release_args,
-+   dependencies: libjsonrpc_glib_deps,
-+      soversion: soversion,
-+        version: libversion,
-+darwin_versions: darwin_versions,
-+        install: true,
- )
-
- libjsonrpc_glib_dep = declare_dependency(

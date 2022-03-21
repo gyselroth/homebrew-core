@@ -1,17 +1,30 @@
 class Proftpd < Formula
   desc "Highly configurable GPL-licensed FTP server software"
   homepage "http://www.proftpd.org/"
-  url "ftp://ftp.proftpd.org/distrib/source/proftpd-1.3.6.tar.gz"
-  mirror "https://fossies.org/linux/misc/proftpd-1.3.6.tar.gz"
-  mirror "https://ftp.osuosl.org/pub/blfs/conglomeration/proftpd/proftpd-1.3.6.tar.gz"
-  sha256 "91ef74b143495d5ff97c4d4770c6804072a8c8eb1ad1ecc8cc541b40e152ecaf"
+  url "https://github.com/proftpd/proftpd/archive/v1.3.7c.tar.gz"
+  mirror "https://fossies.org/linux/misc/proftpd-1.3.7c.tar.gz"
+  mirror "https://ftp.osuosl.org/pub/blfs/conglomeration/proftpd/proftpd-1.3.7c.tar.gz"
+  version "1.3.7c"
+  sha256 "7070968b9b6cf614ce7f756c8c1a66c32c1afa4f961784a62301790a801400da"
+  license "GPL-2.0-or-later"
+
+  # Proftpd uses an incrementing letter after the numeric version for
+  # maintenance releases. Versions like `1.2.3a` and `1.2.3b` are not alpha and
+  # beta respectively. Prerelease versions use a format like `1.2.3rc1`.
+  livecheck do
+    url :stable
+    strategy :github_latest
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+[a-z]?)["' >]}i)
+  end
 
   bottle do
-    sha256 "bf1b06c934ef7810d111125069f992382f0744ecfbdfcdea02e8f7b1ed4774d3" => :mojave
-    sha256 "58c448066f5eeb96a68b8b5727e0f83ae83857aeec7a2354c501b5f6a6405cf8" => :high_sierra
-    sha256 "ff7d5535f7aeb76aab782bdfb534ae22b3109840228c0c93ad6e7dcfecb56f5f" => :sierra
-    sha256 "4ac3a9a6ab8a21e05d82fefae042d7b94e920d5f3d172485202364b489d9d629" => :el_capitan
-    sha256 "ebf19b0218a7e3897457f91c6721a59ef897329db3f49461415b56168361a2d8" => :yosemite
+    sha256 arm64_monterey: "6661c5df232e3e2f8e0609fad62bcaaee63d626d831752bdcdfb8d84a9d124b2"
+    sha256 arm64_big_sur:  "0429e46d82d193acdb80410a84c9d00d26e8a0510b0b5ec29ab7aa543d41f46a"
+    sha256 monterey:       "add62615c7234194288b6d780955ed00e7bbeb5b854765acc5a380ac1d203fd2"
+    sha256 big_sur:        "1a4d0410392d18250ea4f29fe056e3e647345bb940f3b918fae448fe16bb4562"
+    sha256 catalina:       "e40fb1eb3c76ff530fbf95275200defdcc38bb16ed3de8dfe90f5bcdf0965ae4"
+    sha256 mojave:         "c6143e56532ccfe54ce0ef2889a356656d7c9800c93e18cdafd8d5430be3a43c"
+    sha256 x86_64_linux:   "9539952d41b01326e358bc32ae8aa96297154b992e5359b5ee29e3a4b1f20036"
   end
 
   def install
@@ -28,34 +41,12 @@ class Proftpd < Formula
     system "make", "INSTALL_USER=#{install_user}", "INSTALL_GROUP=#{install_group}", "install"
   end
 
-  plist_options :manual => "proftpd"
-
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>KeepAlive</key>
-        <false/>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_sbin}/proftpd</string>
-        </array>
-        <key>UserName</key>
-        <string>root</string>
-        <key>WorkingDirectory</key>
-        <string>#{HOMEBREW_PREFIX}</string>
-        <key>StandardErrorPath</key>
-        <string>/dev/null</string>
-        <key>StandardOutPath</key>
-        <string>/dev/null</string>
-      </dict>
-    </plist>
-  EOS
+  service do
+    run [opt_sbin/"proftpd"]
+    keep_alive false
+    working_dir HOMEBREW_PREFIX
+    log_path "/dev/null"
+    error_log_path "/dev/null"
   end
 
   test do

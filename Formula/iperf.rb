@@ -1,15 +1,22 @@
 class Iperf < Formula
   desc "Tool to measure maximum TCP and UDP bandwidth"
   homepage "https://sourceforge.net/projects/iperf2/"
-  url "https://downloads.sourceforge.net/project/iperf2/iperf-2.0.12.tar.gz"
-  sha256 "367f651fb1264b13f6518e41b8a7e08ce3e41b2a1c80e99ff0347561eed32646"
+  url "https://downloads.sourceforge.net/project/iperf2/iperf-2.1.6.tar.gz"
+  sha256 "4a43e44439b95622aebeee55754a17d1c94076032e90620dfc1ab9908cb9e080"
+  license "BSD-3-Clause"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/iperf[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "01de4f2fb033d82ea4b8871d9a4ac10ab9e750b731c7562404cd351cf36ae4f1" => :mojave
-    sha256 "7a29fc4ba28b6045cb312df0970bac0186b13fc981eb36a9d1d3c83d1a3a8a51" => :high_sierra
-    sha256 "0a2e1d58baabe619ee38814611f8ed51d58b56340bcdb724b4d1d5181377fbef" => :sierra
-    sha256 "32d35b8a77f0b9bf8aba9a7e7c0d0629faab867836ef5496c937284498fa6b4a" => :el_capitan
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "53d064f8c6a0c9e27cc39ffaadeaf031f73947482f7661dacfbb0e8d3464654e"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "068287059fca2635e156457ab415db71e394bfcdc3f9534b4e1b98eae81bc6c3"
+    sha256 cellar: :any_skip_relocation, monterey:       "d7b7e3999ac8c8d61a761c83498fabb78f71e8c13a096590b04e7e77bd3bf301"
+    sha256 cellar: :any_skip_relocation, big_sur:        "935ca8e70d173d20c6903cd47944bd3017efeea823e2131898fce668cb4f2d78"
+    sha256 cellar: :any_skip_relocation, catalina:       "4e76ef843f085b2b4fe4dc08b2163dae1139337d1fe6f529a61e7e0140008924"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "7ec5fc2253827e7140e99d1c1e5cba088be352d913b25557ff02d0598a4c4ce1"
   end
 
   def install
@@ -18,13 +25,11 @@ class Iperf < Formula
   end
 
   test do
-    begin
-      server = IO.popen("#{bin}/iperf --server")
-      sleep 1
-      assert_match "Bandwidth", pipe_output("#{bin}/iperf --client 127.0.0.1 --time 1")
-    ensure
-      Process.kill("SIGINT", server.pid)
-      Process.wait(server.pid)
-    end
+    server = IO.popen("#{bin}/iperf --server")
+    sleep 1
+    assert_match "Bandwidth", pipe_output("#{bin}/iperf --client 127.0.0.1 --time 1")
+  ensure
+    Process.kill("SIGINT", server.pid)
+    Process.wait(server.pid)
   end
 end

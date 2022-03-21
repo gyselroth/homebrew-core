@@ -1,61 +1,51 @@
 class ManDb < Formula
   desc "Unix documentation system"
-  homepage "http://man-db.nongnu.org/"
-  url "https://download.savannah.gnu.org/releases/man-db/man-db-2.8.5.tar.xz"
-  sha256 "b64d52747534f1fe873b2876eb7f01319985309d5d7da319d2bc52ba1e73f6c1"
-  revision 1
+  homepage "https://www.nongnu.org/man-db/"
+  url "https://download.savannah.gnu.org/releases/man-db/man-db-2.10.1.tar.xz"
+  mirror "https://download-mirror.savannah.gnu.org/releases/man-db/man-db-2.10.1.tar.xz"
+  sha256 "2ffd8f2e80122fe72e60c740c851e6a3e15c9a7921185eb4752c1c672824bed6"
+  license "GPL-2.0-or-later"
+
+  livecheck do
+    url "https://download.savannah.gnu.org/releases/man-db/"
+    regex(/href=.*?man-db[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "d068d781ba8482dd4e00b14d514e8bbaa30600ed286f0c422e09524e3e8a4247" => :mojave
-    sha256 "4ee0fb987e13ced600fdbc6159e75f5303510e937d94ed78ccd0610eb8eac601" => :high_sierra
-    sha256 "6054a6367980207aad35a40f0147e389e8f4db1691f42056111448389c61f23b" => :sierra
+    sha256 arm64_monterey: "fd876c39ea112c06c4f4d642530156d37dd2d631825bb1a658f043b1ef18c246"
+    sha256 arm64_big_sur:  "aa63cd096bf541fbe8392bed8963a69de75376f9e77203ade0e242a162131866"
+    sha256 monterey:       "cd1e73aca256a8ee637f76307e41d0e96c5b96df0a919af29e3a425bace347a5"
+    sha256 big_sur:        "b907d3e2e2ce2367e62cf73c3a9aaaea5082c5f9bf6489f2e0ec9305ddcfcc95"
+    sha256 catalina:       "c390e6f4182d8624926ba2624ec0caf62c21d1d5f901d0769ca1f8f87dba2757"
+    sha256 x86_64_linux:   "147ba9c6070382aa4fce370e63ea03f8c49d66362f818c14d09bd7fb9e15b4a3"
   end
 
   depends_on "pkg-config" => :build
+  depends_on "groff"
+  depends_on "libpipeline"
 
-  resource "libpipeline" do
-    url "https://download.savannah.gnu.org/releases/libpipeline/libpipeline-1.5.1.tar.gz"
-    sha256 "d633706b7d845f08b42bc66ddbe845d57e726bf89298e2cee29f09577e2f902f"
+  uses_from_macos "zlib"
+
+  on_linux do
+    depends_on "gdbm"
   end
 
   def install
-    resource("libpipeline").stage do
-      system "./configure",
-        "--disable-dependency-tracking",
-        "--disable-silent-rules",
-        "--prefix=#{buildpath}/libpipeline",
-        "--enable-static",
-        "--disable-shared"
-      system "make"
-      system "make", "install"
-    end
-
-    ENV["libpipeline_CFLAGS"] = "-I#{buildpath}/libpipeline/include"
-    ENV["libpipeline_LIBS"] = "-L#{buildpath}/libpipeline/lib -lpipeline"
-
     args = %W[
       --disable-dependency-tracking
       --disable-silent-rules
       --prefix=#{prefix}
       --disable-cache-owner
       --disable-setuid
+      --disable-nls
       --program-prefix=g
-    ]
-
-    # NB: Remove once man-db 2.8.6 is released
-    # https://git.savannah.gnu.org/cgit/man-db.git/commit/?id=b74c839eaa5000a18d1c396e995eca85b0e9464b
-    args += %w[
-      --without-systemdtmpfilesdir
-      --without-systemdsystemunitdir
+      --with-config-file=#{etc}/man_db.conf
+      --with-systemdtmpfilesdir=#{etc}/tmpfiles.d
+      --with-systemdsystemunitdir=#{etc}/systemd/system
     ]
 
     system "./configure", *args
 
-    # NB: Remove once man-db 2.8.6 is released
-    # https://git.savannah.gnu.org/cgit/man-db.git/commit/?id=056e8c7c012b00261133259d6438ff8303a8c36c
-    ENV.append_to_cflags "-Wl,-flat_namespace,-undefined,suppress"
-
-    system "make", "CFLAGS=#{ENV.cflags}"
     system "make", "install"
 
     # Symlink commands without 'g' prefix into libexec/bin and
@@ -84,18 +74,25 @@ class ManDb < Formula
     man1.install_symlink "glexgrog.1" => "lexgrog.1"
   end
 
-  def caveats; <<~EOS
-    Commands also provided by macOS have been installed with the prefix "g".
-    If you need to use these commands with their normal names, you
-    can add a "bin" directory to your PATH from your bashrc like:
-      PATH="#{opt_libexec}/bin:$PATH"
-  EOS
+  def caveats
+    <<~EOS
+      Commands also provided by macOS have been installed with the prefix "g".
+      If you need to use these commands with their normal names, you
+      can add a "bin" directory to your PATH from your bashrc like:
+        PATH="#{opt_libexec}/bin:$PATH"
+    EOS
   end
 
   test do
     ENV["PAGER"] = "cat"
     output = shell_output("#{bin}/gman true")
-    assert_match "BSD General Commands Manual", output
-    assert_match "The true utility always returns with exit code zero", output
+    on_macos do
+      assert_match "BSD General Commands Manual", output
+      assert_match "The true utility always returns with exit code zero", output
+    end
+    on_linux do
+      assert_match "true - do nothing, successfully", output
+      assert_match "GNU coreutils online help: <http://www.gnu.org/software/coreutils/", output
+    end
   end
 end

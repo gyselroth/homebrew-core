@@ -1,16 +1,24 @@
 class Cubelib < Formula
   desc "Cube, is a performance report explorer for Scalasca and Score-P"
   homepage "https://scalasca.org/software/cube-4.x/download.html"
-  url "https://apps.fz-juelich.de/scalasca/releases/cube/4.4/dist/cubelib-4.4.3.tar.gz"
-  sha256 "bcd4fa81a5ba37194e590a5d7c3e6c44b448f5e156a175837b77c21206847a8d"
+  url "https://apps.fz-juelich.de/scalasca/releases/cube/4.6/dist/cubelib-4.6.tar.gz"
+  sha256 "36eaffa7688db8b9304c9e48ca5dc4edc2cb66538aaf48657b9b5ccd7979385b"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?cubelib[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "130ce4f4c660f6f6fb56fcfe2908f76f0dd9de46687c358957b5892a524b9fdf" => :mojave
-    sha256 "7f6bd7863a9d8b18ead409bfd6b32454c2dbec3dfec1cc9fd904b772a72d7ba8" => :high_sierra
-    sha256 "584e847088b6183941ebbcdc7719e8f285879d1f3f76ebc9723a9a0e1b21a404" => :sierra
+    sha256 arm64_big_sur: "6b647d7c7673d0b4b95c7240dc477ee13e0fdd5c9f8952bd9b8d80b0f3f55d4d"
+    sha256 big_sur:       "2680056fa693e78f9f89fcaa55b67888c4aa2d947cc4a2c9d2167e3380782517"
+    sha256 catalina:      "5b03ba168b4d88c74b68409a9d7fc5b6aca796a78b7e55d29a1cba2d29e1595a"
+    sha256 mojave:        "5eca16fc5e707d28e6595f070a49516d65a46aa495b95ab78616777027e36114"
   end
 
   def install
+    ENV.deparallelize
+
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--disable-silent-rules",
@@ -19,7 +27,6 @@ class Cubelib < Formula
                           "LDFLAGS=-stdlib=libc++",
                           "--prefix=#{prefix}"
     system "make"
-    ENV.deparallelize
     system "make", "install"
   end
 

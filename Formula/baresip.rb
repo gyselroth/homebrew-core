@@ -1,14 +1,16 @@
 class Baresip < Formula
   desc "Modular SIP useragent"
-  homepage "http://www.creytiv.com/baresip.html"
-  url "http://www.creytiv.com/pub/baresip-0.5.10.tar.gz"
-  sha256 "393fb010410d3fc6a4879cfda235f0ec98439be5d1dca02c15f3416f7110a7fb"
+  homepage "https://github.com/baresip/baresip"
+  url "https://github.com/baresip/baresip/archive/v1.1.0.tar.gz"
+  sha256 "f9230b27c4a62f31223847bc485c51f3d960f8a09f36998dedb73358e1784b4e"
+  license "BSD-3-Clause"
 
   bottle do
-    sha256 "a7d010f0c6ea77cfe38e34a26d163fda8994c2e903988b70d8771e685eeb3c5e" => :mojave
-    sha256 "2d21997680aa9d6faba15c4e786afddf9c76f2fc51887475de59d56262fcf785" => :high_sierra
-    sha256 "b60def84ebf98e806916f400f602036824b03d3b8b1dd97d44929fe2004ad1ff" => :sierra
-    sha256 "f23e3075e1d9b114d1b4022d831f9d4639d3a17438b2f79eb6919dc9819c3387" => :el_capitan
+    sha256 arm64_monterey: "a1623929ecb9f411bd1ab4fa607aaa74ec48db088ca9075ce5150319af22faad"
+    sha256 arm64_big_sur:  "77f4fe8630f9f20ee699f35c7b382aeed1f9d0aca15d022c8c44953ad1139559"
+    sha256 monterey:       "44b6ef568ced4088484499a8f627a283af2bc6ce32aaa1e0e9e4a43c4f0c69fe"
+    sha256 big_sur:        "01fb027d2ef4ebb5ded6487930879b83f30140439b705813fefc5b8799b3ab5d"
+    sha256 catalina:       "968f11a8d0fd310d3c3998e51c1d20588faa49354d9d5bb4193bc7ac91c0ea98"
   end
 
   depends_on "libre"
@@ -22,20 +24,26 @@ class Baresip < Formula
     end
 
     libre = Formula["libre"]
+    librem = Formula["librem"]
+    # NOTE: `LIBRE_SO` is a directory but `LIBREM_SO` is a shared library.
     system "make", "install", "PREFIX=#{prefix}",
                               "LIBRE_MK=#{libre.opt_share}/re/re.mk",
                               "LIBRE_INC=#{libre.opt_include}/re",
                               "LIBRE_SO=#{libre.opt_lib}",
+                              "LIBREM_PATH=#{librem.opt_prefix}",
+                              "LIBREM_SO=#{librem.opt_lib/shared_library("librem")}",
                               "MOD_AUTODETECT=",
                               "USE_AVCAPTURE=1",
                               "USE_COREAUDIO=1",
                               "USE_G711=1",
                               "USE_OPENGL=1",
                               "USE_STDIO=1",
-                              "USE_UUID=1"
+                              "USE_UUID=1",
+                              "HAVE_GETOPT=1",
+                              "V=1"
   end
 
   test do
-    system "#{bin}/baresip", "-f", "#{ENV["HOME"]}/.baresip", "-t"
+    system bin/"baresip", "-f", testpath/".baresip", "-t", "5"
   end
 end

@@ -1,34 +1,32 @@
 class Sslscan < Formula
   desc "Test SSL/TLS enabled services to discover supported cipher suites"
   homepage "https://github.com/rbsec/sslscan"
-  url "https://github.com/rbsec/sslscan/archive/1.11.13-rbsec.tar.gz"
-  version "1.11.13"
-  sha256 "8a09c4cd1400af2eeeec8436a2f645ed0aae5576f4de045a09ea9ff099f56f4a"
-  head "https://github.com/rbsec/sslscan.git"
+  url "https://github.com/rbsec/sslscan/archive/2.0.12.tar.gz"
+  sha256 "6eeda19f564635818d6dd20a1e93174484d62acb24eca8944df07496d32b9c65"
+  license "GPL-3.0-or-later" => { with: "openvpn-openssl-exception" }
+  head "https://github.com/rbsec/sslscan.git", branch: "master"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "8a8826da03dbbaa9ee89c8e6b95496c178f5a93d86468402fb6e432ebc7f2c68" => :mojave
-    sha256 "e0735e75b58b7cb0ef72cc79089df545e0140e52bc206c1791ab979192251d22" => :high_sierra
-    sha256 "4b00ee57ccf8dfbc890bbc7ca978dd4f310e7f73dfc022c78c33b69b9b3449dc" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "f677c1e116c5495901b81a4b00a313508ef40878e3c3973c2e4eeb7353a5e76b"
+    sha256 cellar: :any,                 arm64_big_sur:  "464bab8562a9459731c06c39f00020f1bc5f63a099aece08ae574adf79945e2f"
+    sha256 cellar: :any,                 monterey:       "7921cd2103a9d6b7145b87d852dd4f229ff8ec49ec451dfad0573615a8127609"
+    sha256 cellar: :any,                 big_sur:        "c183f60f3ed7073dadccd20e691c6d87e33a5e573694485d58bc52a9b2b5c61d"
+    sha256 cellar: :any,                 catalina:       "f5ef2ab35fd23934b0068b3f5a00916c95466de2a9bfc25fca1d8c417133461d"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "0457169f9981b0612ee9e6210c6f8633d7072892db61c29caeed332d602ff70c"
   end
 
-  resource "insecure-openssl" do
-    url "https://github.com/openssl/openssl/archive/OpenSSL_1_0_2f.tar.gz"
-    sha256 "4c9492adcb800ec855f11121bd64ddff390160714d93f95f279a9bd7241c23a6"
-  end
+  depends_on "openssl@1.1"
 
   def install
-    (buildpath/"openssl").install resource("insecure-openssl")
+    # use `libcrypto.dylib|so` built from `openssl@1.1`
+    inreplace "Makefile", "./openssl/libssl.a",
+                          "#{Formula["openssl@1.1"].opt_lib}/#{shared_library("libssl")}"
+    inreplace "Makefile", "./openssl/libcrypto.a",
+                          "#{Formula["openssl@1.1"].opt_lib}/#{shared_library("libcrypto")}"
+    inreplace "Makefile", "static: openssl/libcrypto.a",
+                          "static: #{Formula["openssl@1.1"].opt_lib}/#{shared_library("libcrypto")}"
 
-    # prevent sslscan from fetching the tip of the openssl fork
-    # at https://github.com/PeterMosmans/openssl
-    inreplace "Makefile", "openssl/Makefile: .openssl.is.fresh",
-                          "openssl/Makefile:"
-
-    ENV.deparallelize do
-      system "make", "static"
-    end
+    system "make", "static"
     system "make", "install", "PREFIX=#{prefix}"
   end
 

@@ -1,41 +1,100 @@
 class Node < Formula
   desc "Platform built on V8 to build network applications"
   homepage "https://nodejs.org/"
-  url "https://nodejs.org/dist/v12.4.0/node-v12.4.0.tar.gz"
-  sha256 "cf39befb8ea486363cac6f297d8f451fd0d5dd8ad21dca51e9c2ea86b242baa0"
-  head "https://github.com/nodejs/node.git"
+  url "https://nodejs.org/dist/v17.7.2/node-v17.7.2.tar.xz"
+  sha256 "3ae5e74e0b16228cf7edf6885359a9d2e019ac843906c5e01948d746faba4aaf"
+  license "MIT"
+  head "https://github.com/nodejs/node.git", branch: "master"
+
+  livecheck do
+    url "https://nodejs.org/dist/"
+    regex(%r{href=["']?v?(\d+(?:\.\d+)+)/?["' >]}i)
+  end
 
   bottle do
-    cellar :any
-    rebuild 1
-    sha256 "f1172f2ee2e6f3bce711e9213ee31c7ff9d87cb0d624a0ed32d86df8c7028acd" => :mojave
-    sha256 "e8abcacc00ff1b153b635a1119cdbdb02cbe07c3addd1fda97f1a7d0de115c31" => :high_sierra
-    sha256 "ae5116f85404b5a829ea561c7c4986937dea79c93fa52a8b3456cb55b87899d3" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "22e782aae150cc764f5aa01a4e4e203a2f80f5f96aeaa1768b34137220e62e60"
+    sha256 cellar: :any,                 arm64_big_sur:  "4127adfd68cc2aad25a0342473b111d54efb039aeafa6243eac7b5436cfa7f24"
+    sha256 cellar: :any,                 monterey:       "2593d8a411c9cdbfa5f60d5d6d95d9c0b554b04c9c78c8a19a29dcdbf5a3aaef"
+    sha256 cellar: :any,                 big_sur:        "004c15bbd43ebf3d9ecd77a4030a44719cbc4bcd2843c5dc7c99051010243733"
+    sha256 cellar: :any,                 catalina:       "75e3b90cdf2e7e3fd473e0356d586121c6656c8815c9e7ed34821455a807be85"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "420c20f5e37f20ee970a96a0fa94ce361a17b3d9257264df1eabf73bbb65a318"
   end
 
   depends_on "pkg-config" => :build
-  depends_on "python@2" => :build
+  depends_on "python@3.9" => :build
+  depends_on "brotli"
+  depends_on "c-ares"
   depends_on "icu4c"
+  depends_on "libnghttp2"
+  depends_on "libuv"
+  depends_on "openssl@1.1"
+
+  uses_from_macos "python", since: :catalina
+  uses_from_macos "zlib"
+
+  on_macos do
+    depends_on "llvm" => [:build, :test] if DevelopmentTools.clang_build_version <= 1100
+  end
+
+  on_linux do
+    depends_on "gcc"
+  end
+
+  fails_with :clang do
+    build 1100
+    cause <<~EOS
+      error: calling a private constructor of class 'v8::internal::(anonymous namespace)::RegExpParserImpl<uint8_t>'
+    EOS
+  end
+
+  fails_with gcc: "5"
 
   # We track major/minor from upstream Node releases.
   # We will accept *important* npm patch releases when necessary.
   resource "npm" do
-    url "https://registry.npmjs.org/npm/-/npm-6.9.0.tgz"
-    sha256 "d6194c36bf612f1b2a6fbe351a7cb6f44dfb9a87a1d5336b1303dc1c07e87276"
-  end
-
-  # Fixes detecting Apple clang 11.
-  # This is an upstream patch and will be in the next release.
-  patch do
-    url "https://github.com/nodejs/node/commit/1f143b8625c2985b4317a40f279232f562417077.patch?full_index=1"
-    sha256 "12d8af6647e9a5d81f68f610ad0ed17075bf14718f4d484788baac37a0d3f842"
+    url "https://registry.npmjs.org/npm/-/npm-8.5.2.tgz"
+    sha256 "9b3d7b18c61b2b038c222c459347b9a0d80845a69ffbcb8ea62554ce913bb3ae"
   end
 
   def install
+    ENV.remove "HOMEBREW_LIBRARY_PATHS", Formula["llvm"].opt_lib
+    ENV.llvm_clang if OS.mac? && (DevelopmentTools.clang_build_version <= 1100)
+
+    # make sure subprocesses spawned by make are using our Python 3
+    ENV["PYTHON"] = Formula["python@3.9"].opt_bin/"python3"
+
     # Never install the bundled "npm", always prefer our
     # installation from tarball for better packaging control.
-    args = %W[--prefix=#{prefix} --without-npm --with-intl=system-icu]
+    args = %W[
+      --prefix=#{prefix}
+      --without-npm
+      --without-corepack
+      --with-intl=system-icu
+      --shared-libuv
+      --shared-nghttp2
+      --shared-openssl
+      --shared-zlib
+      --shared-brotli
+      --shared-cares
+      --shared-libuv-includes=#{Formula["libuv"].include}
+      --shared-libuv-libpath=#{Formula["libuv"].lib}
+      --shared-nghttp2-includes=#{Formula["libnghttp2"].include}
+      --shared-nghttp2-libpath=#{Formula["libnghttp2"].lib}
+      --shared-openssl-includes=#{Formula["openssl@1.1"].include}
+      --shared-openssl-libpath=#{Formula["openssl@1.1"].lib}
+      --shared-brotli-includes=#{Formula["brotli"].include}
+      --shared-brotli-libpath=#{Formula["brotli"].lib}
+      --shared-cares-includes=#{Formula["c-ares"].include}
+      --shared-cares-libpath=#{Formula["c-ares"].lib}
+      --openssl-use-def-ca-store
+    ]
     args << "--tag=head" if build.head?
+
+    # Enabling LTO errors on Linux with:
+    # terminate called after throwing an instance of 'std::out_of_range'
+    # Pre-Catalina macOS also can't build with LTO
+    # LTO is unpleasant if you have to build from source.
+    args << "--enable-lto" if MacOS.version >= :catalina && build.bottle?
 
     system "./configure", *args
     system "make", "install"
@@ -45,6 +104,8 @@ class Node < Formula
 
     bootstrap = buildpath/"npm_bootstrap"
     bootstrap.install resource("npm")
+    # These dirs must exists before npm install.
+    mkdir_p libexec/"lib"
     system "node", bootstrap/"bin/npm-cli.js", "install", "-ddd", "--global",
             "--prefix=#{libexec}", resource("npm").cached_download
 
@@ -73,19 +134,22 @@ class Node < Formula
     ln_sf node_modules/"npm/bin/npm-cli.js", HOMEBREW_PREFIX/"bin/npm"
     ln_sf node_modules/"npm/bin/npx-cli.js", HOMEBREW_PREFIX/"bin/npx"
 
-    # Let's do the manpage dance. It's just a jump to the left.
-    # And then a step to the right, with your hand on rm_f.
+    # Create manpage symlinks (or overwrite the old ones)
     %w[man1 man5 man7].each do |man|
       # Dirs must exist first: https://github.com/Homebrew/legacy-homebrew/issues/35969
       mkdir_p HOMEBREW_PREFIX/"share/man/#{man}"
+      # still needed to migrate from copied file manpages to symlink manpages
       rm_f Dir[HOMEBREW_PREFIX/"share/man/#{man}/{npm.,npm-,npmrc.,package.json.,npx.}*"]
-      cp Dir[libexec/"lib/node_modules/npm/man/#{man}/{npm,package.json,npx}*"], HOMEBREW_PREFIX/"share/man/#{man}"
+      ln_sf Dir[node_modules/"npm/man/#{man}/{npm,package-,shrinkwrap-,npx}*"], HOMEBREW_PREFIX/"share/man/#{man}"
     end
 
     (node_modules/"npm/npmrc").atomic_write("prefix = #{HOMEBREW_PREFIX}\n")
   end
 
   test do
+    # Make sure Mojave does not have `CC=llvm_clang`.
+    ENV.clang if OS.mac?
+
     path = testpath/"test.js"
     path.write "console.log('hello');"
 
@@ -104,10 +168,10 @@ class Node < Formula
     assert_predicate HOMEBREW_PREFIX/"bin/npm", :exist?, "npm must exist"
     assert_predicate HOMEBREW_PREFIX/"bin/npm", :executable?, "npm must be executable"
     npm_args = ["-ddd", "--cache=#{HOMEBREW_CACHE}/npm_cache", "--build-from-source"]
-    system "#{HOMEBREW_PREFIX}/bin/npm", *npm_args, "install", "npm@latest"
-    system "#{HOMEBREW_PREFIX}/bin/npm", *npm_args, "install", "bufferutil" unless head?
+    system HOMEBREW_PREFIX/"bin/npm", *npm_args, "install", "npm@latest"
+    system HOMEBREW_PREFIX/"bin/npm", *npm_args, "install", "ref-napi" unless head?
     assert_predicate HOMEBREW_PREFIX/"bin/npx", :exist?, "npx must exist"
     assert_predicate HOMEBREW_PREFIX/"bin/npx", :executable?, "npx must be executable"
-    assert_match "< hello >", shell_output("#{HOMEBREW_PREFIX}/bin/npx cowsay hello")
+    assert_match "< hello >", shell_output("#{HOMEBREW_PREFIX}/bin/npx --yes cowsay hello")
   end
 end

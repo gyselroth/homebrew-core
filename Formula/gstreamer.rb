@@ -1,66 +1,67 @@
 class Gstreamer < Formula
   desc "Development framework for multimedia applications"
   homepage "https://gstreamer.freedesktop.org/"
-  url "https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-1.16.0.tar.xz"
-  sha256 "0e8e2f7118be437cba879353970cf83c2acced825ecb9275ba05d9186ef07c00"
-  revision 1
+  url "https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-1.20.0.tar.xz"
+  sha256 "edf4bffff85591d4fff7b21bb9ed7f0feabc123ac4a4eff29e73cbce454f9db7"
+  license "LGPL-2.0-or-later"
+  head "https://gitlab.freedesktop.org/gstreamer/gstreamer.git", branch: "main"
 
-  bottle do
-    sha256 "fe1ce0548e21fac19094dc4911f0739602f3076bdfd49ddf21fc1f5d6700bf2d" => :mojave
-    sha256 "62997c4bdca2dde57d5e048868e2eceece69399fb1765dc4c10b6df22ea53e2e" => :high_sierra
-    sha256 "df35466e2ff725dd1cac0c4937b48727c60cab86b57d0c8e36a4060b20aef36a" => :sierra
+  livecheck do
+    url "https://gstreamer.freedesktop.org/src/gstreamer/"
+    regex(/href=.*?gstreamer[._-]v?(\d+\.\d*[02468](?:\.\d+)*)\.t/i)
   end
 
-  head do
-    url "https://anongit.freedesktop.org/git/gstreamer/gstreamer.git"
-
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
+  bottle do
+    sha256 arm64_monterey: "dcdb9d6ea8dea1ee2cf96d2f3ae53f91f54ce4a4f31b5c90547e9a0086d7ebe3"
+    sha256 arm64_big_sur:  "338af18dbcee38eb5940d33e5af8afec43376af5b2d4c6960ccaa637238816d4"
+    sha256 monterey:       "c54f6d63d09a9cfc09cb0d31b07a68c9bdd323b1e7b198923c9b2cfd477652d9"
+    sha256 big_sur:        "ba6023a5f407eb760843db3dbdcd7be445f2c839241b0b2b1e7f39c2b15888d2"
+    sha256 catalina:       "eca84f276c317ea72111ed2d95602ded1a763c9d0bc3167b81b0598121fe16d0"
+    sha256 x86_64_linux:   "ef6e71c3405d0aff339b0bf4a585ced1143c8c513ce69c75def5fabaf588f31d"
   end
 
   depends_on "bison" => :build
   depends_on "gobject-introspection" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "gettext"
   depends_on "glib"
 
+  uses_from_macos "flex" => :build
+
   def install
-    args = %W[
-      --prefix=#{prefix}
-      --disable-debug
-      --disable-dependency-tracking
-      --disable-gtk-doc
-      --enable-introspection=yes
+    # Ban trying to chown to root.
+    # https://bugzilla.gnome.org/show_bug.cgi?id=750367
+    args = std_meson_args + %w[
+      -Dintrospection=enabled
+      -Dptp-helper-permissions=none
     ]
-
-    if build.head?
-      ENV["NOCONFIGURE"] = "yes"
-      system "./autogen.sh"
-
-      # Ban trying to chown to root.
-      # https://bugzilla.gnome.org/show_bug.cgi?id=750367
-      args << "--with-ptp-helper-permissions=none"
-    end
 
     # Look for plugins in HOMEBREW_PREFIX/lib/gstreamer-1.0 instead of
     # HOMEBREW_PREFIX/Cellar/gstreamer/1.0/lib/gstreamer-1.0, so we'll find
     # plugins installed by other packages without setting GST_PLUGIN_PATH in
     # the environment.
-    inreplace "configure", 'PLUGINDIR="$full_var"',
-      "PLUGINDIR=\"#{HOMEBREW_PREFIX}/lib/gstreamer-1.0\""
+    inreplace "meson.build",
+      "cdata.set_quoted('PLUGINDIR', join_paths(get_option('prefix'), get_option('libdir'), 'gstreamer-1.0'))",
+      "cdata.set_quoted('PLUGINDIR', '#{HOMEBREW_PREFIX}/lib/gstreamer-1.0')"
 
-    system "./configure", *args
-    system "make"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *args, ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
+    end
+
+    bin.env_script_all_files libexec/"bin", GST_PLUGIN_SYSTEM_PATH: HOMEBREW_PREFIX/"lib/gstreamer-1.0"
   end
 
-  def caveats; <<~EOS
-    Consider also installing gst-plugins-base and gst-plugins-good.
+  def caveats
+    <<~EOS
+      Consider also installing gst-plugins-base and gst-plugins-good.
 
-    The gst-plugins-* packages contain gstreamer-video-1.0, gstreamer-audio-1.0,
-    and other components needed by most gstreamer applications.
-  EOS
+      The gst-plugins-* packages contain gstreamer-video-1.0, gstreamer-audio-1.0,
+      and other components needed by most gstreamer applications.
+    EOS
   end
 
   test do

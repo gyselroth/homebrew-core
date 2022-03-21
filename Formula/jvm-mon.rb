@@ -3,11 +3,20 @@ class JvmMon < Formula
   homepage "https://github.com/ajermakovics/jvm-mon"
   url "https://github.com/ajermakovics/jvm-mon/releases/download/0.3/jvm-mon-0.3.tar.gz"
   sha256 "9b5dd3d280cb52b6e2a9a491451da2ee41c65c770002adadb61b02aa6690c940"
-  revision 1
+  license "Apache-2.0"
+  revision 2
 
-  bottle :unneeded
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
-  depends_on :java => "1.8"
+  bottle do
+    rebuild 1
+    sha256 cellar: :any, all: "054e482f025dfb8f3487dadd1a6c4faea207c16b8fe56ecfbdbe293745ddb8b9"
+  end
+
+  depends_on "openjdk@8"
 
   def install
     rm_f Dir["bin/*.bat"]

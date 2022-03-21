@@ -1,15 +1,25 @@
 class Unison < Formula
   desc "File synchronization tool for OSX"
   homepage "https://www.cis.upenn.edu/~bcpierce/unison/"
-  url "https://github.com/bcpierce00/unison/archive/v2.51.2.tar.gz"
-  sha256 "a2efcbeab651be6df69cc9b253011a07955ecb91fb407a219719451197849d5e"
+  url "https://github.com/bcpierce00/unison/archive/v2.51.5.tar.gz"
+  sha256 "7e876371992ebf890b60f32df880a98a75fe8c47c06b7b2ae2ad36be48013e83"
+  license "GPL-3.0-or-later"
+  head "https://github.com/bcpierce00/unison.git", branch: "master"
+
+  # The "latest" release on GitHub sometimes points to unstable versions (e.g.,
+  # release candidates), so we check the Git tags instead.
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "55a361bda2f5a43073508d25702eea6b16470f74619e4a6d1058f7fc89f901e5" => :mojave
-    sha256 "1622a673b2bc8ef6d00dd754c26cfd3d5f737ed1dc48a46bbce486fa0f766181" => :high_sierra
-    sha256 "fd00605490100ec224f5d86a79da341ce639e1d0772fb48cc133672d1bc2a812" => :sierra
-    sha256 "53c945e143961a5d158a36980664d5be7153b84074bfa4220eee2db35404b7d3" => :el_capitan
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "98cdf34ea44465871eb5338eb26b480b96ace1192e54d6c7db997bd2d486cc50"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "3ac8d5f306f4079a4c148bc1bc93b32533b1e4d48144a04255896111e0361aa1"
+    sha256 cellar: :any_skip_relocation, monterey:       "460e6a4e07b3ee795ca91f920064c223a4b68649c63abe3bd2d98f6b38cf4116"
+    sha256 cellar: :any_skip_relocation, big_sur:        "ad4e0217401e1790e575a5d78c118bcc0c0602d32e6c2f8569edf7ae6cb1efeb"
+    sha256 cellar: :any_skip_relocation, catalina:       "82f848e724776d1dffc4f1ed6fa48500bb44714ed8096ab1a571c524ea6afcfa"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "c89c81b1b16caf7fa1cd2feb8e7c77481aaa96dacaf0b1cda7d4ab0b6282af74"
   end
 
   depends_on "ocaml" => :build

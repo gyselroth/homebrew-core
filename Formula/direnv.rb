@@ -1,26 +1,24 @@
 class Direnv < Formula
   desc "Load/unload environment variables based on $PWD"
   homepage "https://direnv.net/"
-  url "https://github.com/direnv/direnv/archive/v2.20.1.tar.gz"
-  sha256 "dd54393661602bb989ee880f14c41f7a7b47a153777999509127459edae52e47"
-  head "https://github.com/direnv/direnv.git"
+  url "https://github.com/direnv/direnv/archive/v2.30.3.tar.gz"
+  sha256 "7fb5431b98d57fb8c70218b4a0fab4b08f102790e7a92486f588bf3d5751ac3b"
+  license "MIT"
+  head "https://github.com/direnv/direnv.git", branch: "master"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "548dc9aab0d941ce4bb15b5f5b0de0c70308cdebc2c6af8d54a644e57e71ffa5" => :mojave
-    sha256 "eb6c47a8999d698a81032a4d5f60053ea898251575a79e95fcaeb35dcb15c6cb" => :high_sierra
-    sha256 "6e5aea68152027b0117319dadf8ecdcc0183815073ea8dbfab10e7bf5967047c" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "0a2bf97696f0e57e713db8f39dcff719fa17e0512b6ad14a7657a1c946943a85"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "41d4f105cdef28417dae6c248a5819709967897071c34ed63fa5432644d944f2"
+    sha256 cellar: :any_skip_relocation, monterey:       "761499a99dc029d5cafe075105827c4897d5e45dd53cfa7bf86ea51fc4f1afaf"
+    sha256 cellar: :any_skip_relocation, big_sur:        "73fc3e19b391c97806c44d2f2b38b5ddc28742d656ab6ca013371acc6cabd5bc"
+    sha256 cellar: :any_skip_relocation, catalina:       "77c87b8f6ee51b65514b5688babcd83117b75feb2b40b0489bd0649cdeb3f3cb"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "b18ff46bf3e0b18eace8b2a0754829555a991d58d6fe3f76681a8a057c48a04c"
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    (buildpath/"src/github.com/direnv/direnv").install buildpath.children
-    cd "src/github.com/direnv/direnv" do
-      system "make", "install", "DESTDIR=#{prefix}"
-      prefix.install_metafiles
-    end
+    system "make", "install", "PREFIX=#{prefix}"
   end
 
   test do

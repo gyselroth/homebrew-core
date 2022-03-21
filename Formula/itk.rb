@@ -1,15 +1,24 @@
 class Itk < Formula
   desc "Insight Toolkit is a toolkit for performing registration and segmentation"
-  homepage "https://www.itk.org/"
-  url "https://downloads.sourceforge.net/project/itk/itk/4.13/InsightToolkit-4.13.2.tar.gz"
-  sha256 "d8760b279de20497c432e7cdf97ed349277da1ae435be1f6f0f00fbe8d4938c1"
+  homepage "https://itk.org"
+  url "https://github.com/InsightSoftwareConsortium/ITK/releases/download/v5.2.1/InsightToolkit-5.2.1.tar.gz"
+  sha256 "192d41bcdd258273d88069094f98c61c38693553fd751b54f8cda308439555db"
+  license "Apache-2.0"
   revision 1
-  head "https://itk.org/ITK.git"
+  head "https://github.com/InsightSoftwareConsortium/ITK.git", branch: "master"
+
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
-    sha256 "043c8bb2431ca4ecb4f8e392afe98c2f6fce5688e80525356ad412fb0aa7af6e" => :mojave
-    sha256 "c0f6268306bd86bf562d0cb28566483967e11bdfc18ca098394c0837de331fb7" => :high_sierra
-    sha256 "24390090a8109b2c50ecf1c51ce3cc168c1b4722f281aa8976642a6ba9d3b367" => :sierra
+    sha256 arm64_monterey: "d0d84e530fc37f325faca65c66509d1657cb1e8b8b4ba12f463d53f696cf7ee1"
+    sha256 arm64_big_sur:  "b12344d4d532d45ecc2b26460098d94c3600fae18783c09ba28772c981df32ef"
+    sha256 monterey:       "6196f661aa3ce5b1373adb10bdd8fd6f5545ed1b2d2523484281c78da52edc16"
+    sha256 big_sur:        "3bdc918b3060cafc667a89fbe1c3600ab16e92ea511b894f843bac9e30d71faa"
+    sha256 catalina:       "bd8d199e8f6940481bd14ca9f7ec10a260ed905c6136a5e669b1918fec6b109c"
+    sha256 x86_64_linux:   "c523cc44cdd24cd80b3903e49ebe08088664ef3ef88dab83570c665b2645669b"
   end
 
   depends_on "cmake" => :build
@@ -19,14 +28,17 @@ class Itk < Formula
   depends_on "jpeg"
   depends_on "libpng"
   depends_on "libtiff"
-  depends_on "vtk"
+  depends_on "vtk@8.2" # needed for gdcm
 
-  # Patch needed to install MINC's cmake files into #{lib}/cmake not #{lib}
-  # PR Submitted to ITK upstream: https://github.com/InsightSoftwareConsortium/ITK/pull/754
-  patch do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/master/itk/4.13.2-MINC-cmake-files-location.patch"
-    sha256 "7ec6a55e83109332d636298e7339793ec338969211533467ff0fbfb7c1c27883"
+  on_linux do
+    depends_on "alsa-lib"
+    depends_on "gcc"
+    depends_on "unixodbc"
+
+    ignore_missing_libraries "libjvm.so"
   end
+
+  fails_with gcc: "5"
 
   def install
     args = std_cmake_args + %W[
@@ -49,11 +61,24 @@ class Itk < Formula
       -DITK_USE_SYSTEM_TIFF=ON
       -DITK_USE_SYSTEM_GDCM=ON
       -DITK_LEGACY_REMOVE=ON
-      -DModule_ITKLevelSetsv4Visualization=ON
       -DModule_ITKReview=ON
       -DModule_ITKVtkGlue=ON
-      -DITK_USE_GPU=ON
     ]
+
+    args << "-DITK_USE_GPU=ON" if OS.mac?
+
+    # Avoid references to the Homebrew shims directory
+    inreplace "Modules/Core/Common/src/CMakeLists.txt" do |s|
+      s.gsub!(/MAKE_MAP_ENTRY\(\s*\\"CMAKE_C_COMPILER\\",
+              \s*\\"\${CMAKE_C_COMPILER}\\".*\);/x,
+              "MAKE_MAP_ENTRY(\\\"CMAKE_C_COMPILER\\\", " \
+              "\\\"#{ENV.cc}\\\", \\\"The C compiler.\\\");")
+
+      s.gsub!(/MAKE_MAP_ENTRY\(\s*\\"CMAKE_CXX_COMPILER\\",
+              \s*\\"\${CMAKE_CXX_COMPILER}\\".*\);/x,
+              "MAKE_MAP_ENTRY(\\\"CMAKE_CXX_COMPILER\\\", " \
+              "\\\"#{ENV.cxx}\\\", \\\"The CXX compiler.\\\");")
+    end
 
     mkdir "build" do
       system "cmake", "..", *args
@@ -74,15 +99,15 @@ class Itk < Formula
       }
     EOS
 
-    v = version.to_s.split(".")[0..1].join(".")
+    v = version.major_minor
     # Build step
-    system ENV.cxx, "-isystem", "#{include}/ITK-#{v}", "-o", "test.cxx.o", "-c", "test.cxx"
+    system ENV.cxx, "-std=c++11", "-isystem", "#{include}/ITK-#{v}", "-o", "test.cxx.o", "-c", "test.cxx"
     # Linking step
-    system ENV.cxx, "test.cxx.o", "-o", "test",
-                    "#{lib}/libITKCommon-#{v}.1.dylib",
-                    "#{lib}/libITKVNLInstantiation-#{v}.1.dylib",
-                    "#{lib}/libitkvnl_algo-#{v}.1.dylib",
-                    "#{lib}/libitkvnl-#{v}.1.dylib"
+    system ENV.cxx, "-std=c++11", "test.cxx.o", "-o", "test",
+                    shared_library("#{lib}/libITKCommon-#{v}", 1),
+                    shared_library("#{lib}/libITKVNLInstantiation-#{v}", 1),
+                    shared_library("#{lib}/libitkvnl_algo-#{v}", 1),
+                    shared_library("#{lib}/libitkvnl-#{v}", 1)
     system "./test"
   end
 end

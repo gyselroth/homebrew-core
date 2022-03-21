@@ -1,29 +1,37 @@
 class Scipy < Formula
   desc "Software for mathematics, science, and engineering"
   homepage "https://www.scipy.org"
-  url "https://files.pythonhosted.org/packages/cb/97/361c8c6ceb3eb765371a702ea873ff2fe112fa40073e7d2b8199db8eb56e/scipy-1.3.0.tar.gz"
-  sha256 "c3bb4bd2aca82fb498247deeac12265921fe231502a6bc6edea3ee7fe6c40a7a"
-  head "https://github.com/scipy/scipy.git"
+  url "https://files.pythonhosted.org/packages/b4/a2/4faa34bf0cdbefd5c706625f1234987795f368eb4e97bde9d6f46860843e/scipy-1.8.0.tar.gz"
+  sha256 "31d4f2d6b724bc9a98e527b5849b8a7e589bf1ea630c33aa563eda912c9ff0bd"
+  license "BSD-3-Clause"
+  head "https://github.com/scipy/scipy.git", branch: "master"
 
   bottle do
-    cellar :any
-    sha256 "6ba4af97b345fb1b95db42eafc9b5a89af45c2da60734b4d317daba2f93bd2f2" => :mojave
-    sha256 "02c6c92cb694c7c1c493e4c309043f104538366dc2813c180d4def06d28892c6" => :high_sierra
-    sha256 "9d3f6843a954b1b525af1deb5a0e66cd9b9e0ee377d4435ddd6bd602a68cb862" => :sierra
+    sha256 cellar: :any, arm64_monterey: "2818d2eecf3d9126d53cc3629b5e06227a0ea7ea5a4a845d3dc1b81d0180b0d7"
+    sha256 cellar: :any, arm64_big_sur:  "89d3d3b52108ace1c4a19671ec7b7e1bff59ae4472370b767411624f374e357d"
+    sha256 cellar: :any, monterey:       "caf9212be80e0ff32f309c3dbad8861b307a8bdc0e980599eed2f408bf531c28"
+    sha256 cellar: :any, big_sur:        "ae3e8196537deaf9739880873b9fe859c84229929f111a834a0ab951166d440d"
+    sha256 cellar: :any, catalina:       "5e74dcfd26730a916093f9b18dee1b1bd1a6d58d52790839c4efe2f35c452ea1"
+    sha256               x86_64_linux:   "b953884a721170689cec7207e3e416606a030a1e61542a83502dd643b086cc45"
   end
 
+  depends_on "cython" => :build
+  depends_on "pythran" => :build
   depends_on "swig" => :build
   depends_on "gcc" # for gfortran
   depends_on "numpy"
   depends_on "openblas"
-  depends_on "python"
+  depends_on "pybind11"
+  depends_on "python@3.9"
 
   cxxstdlib_check :skip
+
+  fails_with gcc: "5"
 
   def install
     openblas = Formula["openblas"].opt_prefix
     ENV["ATLAS"] = "None" # avoid linking against Accelerate.framework
-    ENV["BLAS"] = ENV["LAPACK"] = "#{openblas}/lib/libopenblas.dylib"
+    ENV["BLAS"] = ENV["LAPACK"] = "#{openblas}/lib/#{shared_library("libopenblas")}"
 
     config = <<~EOS
       [DEFAULT]
@@ -37,11 +45,15 @@ class Scipy < Formula
 
     Pathname("site.cfg").write config
 
-    version = Language::Python.major_minor_version "python3"
-    ENV["PYTHONPATH"] = Formula["numpy"].opt_lib/"python#{version}/site-packages"
-    ENV.prepend_create_path "PYTHONPATH", lib/"python#{version}/site-packages"
-    system "python3", "setup.py", "build", "--fcompiler=gnu95"
-    system "python3", *Language::Python.setup_install_args(prefix)
+    site_packages = Language::Python.site_packages("python3")
+    ENV.prepend_create_path "PYTHONPATH", Formula["cython"].opt_libexec/site_packages
+    ENV.prepend_create_path "PYTHONPATH", Formula["pythran"].opt_libexec/site_packages
+    ENV.prepend_create_path "PYTHONPATH", Formula["numpy"].opt_prefix/site_packages
+    ENV.prepend_create_path "PYTHONPATH", site_packages
+
+    system Formula["python@3.9"].opt_bin/"python3", "setup.py", "build",
+      "--fcompiler=gfortran", "--parallel=#{ENV.make_jobs}"
+    system Formula["python@3.9"].opt_bin/"python3", *Language::Python.setup_install_args(prefix)
   end
 
   # cleanup leftover .pyc files from previous installs which can cause problems
@@ -50,19 +62,7 @@ class Scipy < Formula
     rm_f Dir["#{HOMEBREW_PREFIX}/lib/python*.*/site-packages/scipy/**/*.pyc"]
   end
 
-  def caveats
-    homebrew_site_packages = Language::Python.homebrew_site_packages
-    user_site_packages = Language::Python.user_site_packages "python"
-    <<~EOS
-      If you use system python (that comes - depending on the OS X version -
-      with older versions of numpy, scipy and matplotlib), you may need to
-      ensure that the brewed packages come earlier in Python's sys.path with:
-        mkdir -p #{user_site_packages}
-        echo 'import sys; sys.path.insert(1, "#{homebrew_site_packages}")' >> #{user_site_packages}/homebrew.pth
-    EOS
-  end
-
   test do
-    system "python3", "-c", "import scipy"
+    system Formula["python@3.9"].opt_bin/"python3", "-c", "import scipy"
   end
 end

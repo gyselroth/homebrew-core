@@ -3,26 +3,46 @@
 class Mercurial < Formula
   desc "Scalable distributed version control system"
   homepage "https://mercurial-scm.org/"
-  url "https://www.mercurial-scm.org/release/mercurial-5.0.1.tar.gz"
-  sha256 "4c98a8e4cd5595feaa5ef7385ee2ac6b78bb4599353d3851c0823bd5543e62ce"
+  url "https://www.mercurial-scm.org/release/mercurial-6.1.tar.gz"
+  sha256 "86f98645e4565a9256991dcde22b77b8e7d22ca6fbb60c1f4cdbd8469a38cc1f"
+  license "GPL-2.0-or-later"
 
-  bottle do
-    sha256 "6dfff5ad74443459e92834d817c585ab7ab5a24a18e5ac00b2d8851a16d95c6a" => :mojave
-    sha256 "f119bac9d0955b574cfe7e2317b3714b660588a0f56c8c1968b7b3e802c7b00c" => :high_sierra
-    sha256 "237a05434f083c5bfda82bbf93c1a65064682519171f99420479ecf115bf1bcb" => :sierra
+  livecheck do
+    url "https://www.mercurial-scm.org/release/"
+    regex(/href=.*?mercurial[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on "python@2" # does not support Python 3
+  bottle do
+    sha256 arm64_monterey: "5e51a0d69393e675bc945a4dbaf94986d0bf699f9305af0779d3c79e011291b4"
+    sha256 arm64_big_sur:  "227c1ed84490c3ffc480729acdfbfb956286577e8aad582b7456cd4a8a538649"
+    sha256 monterey:       "24d16d7071fc552dbffa7f43a5ed6f09abce0616ba33ca61fdb1e8c560ef6b5e"
+    sha256 big_sur:        "b9005e9a4c7a45d0f8cd20d957d988c3e3814c5a62c6dbdf6ddcae5f99050e6e"
+    sha256 catalina:       "8728f55a40244173cbc538b6df6a449da55e166803db1f15d3438eee74d6532a"
+    sha256 x86_64_linux:   "d3118f170ca153846bf4aecfe57f8b8109b7a0c7802217ae08ba6e6766309ece"
+  end
+
+  depends_on "python@3.10"
 
   def install
-    ENV.prepend_path "PATH", Formula["python@2"].opt_libexec/"bin"
+    ENV["HGPYTHON3"] = "1"
 
-    system "make", "PREFIX=#{prefix}", "install-bin"
+    # FIXME: python@3.10 formula's "prefix scheme" patch tries to install into
+    # HOMEBREW_PREFIX/{lib,bin}, which fails due to sandbox. As workaround,
+    # manually set the installation paths to behave like prior python versions.
+    site_packages = prefix/Language::Python.site_packages("python3")
+    inreplace "Makefile",
+              "--prefix=\"$(PREFIX)\"",
+              "\\0 --install-lib=\"#{site_packages}\" --install-scripts=\"#{prefix}/bin\""
+
+    system "make", "PREFIX=#{prefix}",
+                   "PYTHON=#{which("python3")}",
+                   "install-bin"
 
     # Install chg (see https://www.mercurial-scm.org/wiki/CHg)
     cd "contrib/chg" do
-      system "make", "PREFIX=#{prefix}", "HGPATH=#{bin}/hg", \
-             "HG=#{bin}/hg"
+      system "make", "PREFIX=#{prefix}",
+                     "PYTHON=#{which("python3")}",
+                     "HGPATH=#{bin}/hg", "HG=#{bin}/hg"
       bin.install "chg"
     end
 

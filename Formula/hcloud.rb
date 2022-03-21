@@ -1,33 +1,32 @@
 class Hcloud < Formula
   desc "Command-line interface for Hetzner Cloud"
   homepage "https://github.com/hetznercloud/cli"
-  url "https://github.com/hetznercloud/cli/archive/v1.12.0.tar.gz"
-  sha256 "23485952b9095c7ee0d004f714d9a9199afa5cb4309627636b53fb51760fb18e"
+  url "https://github.com/hetznercloud/cli/archive/v1.29.0.tar.gz"
+  sha256 "ea8b08702f7285d5e886fc8797287ac05747eb66ad1d77d041725f9cf6c88893"
+  license "MIT"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "bab8821a1b871fea76d8cdc598bb5995c06cd4eb484bcb01630d2491e9ab4912" => :mojave
-    sha256 "1e232a192dfbe91a7c5ea734c5d93504c8427d3c3e9a3117e8fe93cf12fc9876" => :high_sierra
-    sha256 "5ea57a4f11d0c090a87e17cf9c914e7a57d113f60b79684ec1a8305cff617510" => :sierra
+    rebuild 1
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "65e73b6d461b64a512f5d72f9bfb5d71abbee2f915038eadbfde03683c56e714"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "896b6d8f451206911d9919ff92c415371e0b47624ed33e0fff7681a858fafca9"
+    sha256 cellar: :any_skip_relocation, monterey:       "86953a27658cd605bd63a61b6a41868827cb5de0b3ba638e94728473c31a1579"
+    sha256 cellar: :any_skip_relocation, big_sur:        "f992dcc13506c5af3f54387b5d2ecce4678b04b6f95cd7d59742e60011b5981b"
+    sha256 cellar: :any_skip_relocation, catalina:       "50f6f109eed783337f403da4399bcf54fe3ba23c1dcd8728454f467227ee4843"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "5441f014a6f352e26d4023fb730e481fe5131a15f0017d64465798c21bfc4152"
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = HOMEBREW_CACHE/"go_cache"
-    (buildpath/"src/github.com/hetznercloud/cli").install buildpath.children
+    ldflags = "-s -w -X github.com/hetznercloud/cli/internal/version.Version=v#{version}"
+    system "go", "build", *std_go_args(ldflags: ldflags), "./cmd/hcloud"
 
-    cd "src/github.com/hetznercloud/cli" do
-      ldflags = "-w -X github.com/hetznercloud/cli/cli.Version=v#{version}"
-      system "go", "build", "-o", bin/"hcloud", "-ldflags", ldflags,
-                   "./cmd/hcloud"
-      prefix.install_metafiles
-    end
-
-    output = Utils.popen_read("#{bin}/hcloud completion bash")
+    output = Utils.safe_popen_read(bin/"hcloud", "completion", "bash")
     (bash_completion/"hcloud").write output
-    output = Utils.popen_read("#{bin}/hcloud completion zsh")
+    output = Utils.safe_popen_read(bin/"hcloud", "completion", "zsh")
     (zsh_completion/"_hcloud").write output
+    output = Utils.safe_popen_read(bin/"hcloud", "completion", "fish")
+    (fish_completion/"hcloud.fish").write output
   end
 
   test do

@@ -1,31 +1,34 @@
 class Kubecfg < Formula
   desc "Manage complex enterprise Kubernetes environments as code"
-  homepage "https://github.com/bitnami/kubecfg"
-  url "https://github.com/bitnami/kubecfg/archive/v0.12.0.tar.gz"
-  sha256 "328acbf238b24a3cd25d13f872f6f640c4048ea8ca0120927349bd966e98ecc7"
+  homepage "https://github.com/kubecfg/kubecfg"
+  url "https://github.com/kubecfg/kubecfg/archive/v0.25.0.tar.gz"
+  sha256 "884708337842341d4f777e00321bfa72b16bf73027a583305ebb281000096714"
+  license "Apache-2.0"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "84bed4c9638a762c15b0bf5a9709c49a9f89acf81dd57710832ae41c83c44253" => :mojave
-    sha256 "56b59e971880081f820355b3661a32058f584d54cd0044b686724c5ca2c56e43" => :high_sierra
-    sha256 "646b089ef7e817b954d541ea65c7226a2be3a2e9d55678e49ac30575b9eaa314" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "3d0493485d981eef070e9d601853aa14ebfa5aaeaadac1788220ce8e971ba6e5"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "ddf29077c8b978dabe38902a7989724a476bebadc7ac59006bdfc58a1a1103e9"
+    sha256 cellar: :any_skip_relocation, monterey:       "a37780ae7c09e5c0509e947dfd371cefeb2ed3189ebe7bdeb2e53968dc3adfdd"
+    sha256 cellar: :any_skip_relocation, big_sur:        "b809e1e16f28a716ef3508f803c5e585b6fad6237d20b8405b1cde5763691c71"
+    sha256 cellar: :any_skip_relocation, catalina:       "a010bff9ce4cca2979d440abb3cf121f458c53f714470fbcd1cc8509dfe042d3"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "a9e918cdb9471180fb31fe870940058ddd037ba7b9d9b391cf28b4f2f8d5fecd"
   end
 
   depends_on "go" => :build
 
   def install
-    (buildpath/"src/github.com/bitnami/kubecfg").install buildpath.children
+    (buildpath/"src/github.com/kubecfg/kubecfg").install buildpath.children
 
-    cd "src/github.com/bitnami/kubecfg" do
+    cd "src/github.com/kubecfg/kubecfg" do
       system "make", "VERSION=v#{version}"
       bin.install "kubecfg"
       pkgshare.install Dir["examples/*"], "testdata/kubecfg_test.jsonnet"
       prefix.install_metafiles
     end
 
-    output = Utils.popen_read("#{bin}/kubecfg completion --shell bash")
+    output = Utils.safe_popen_read("#{bin}/kubecfg", "completion", "--shell", "bash")
     (bash_completion/"kubecfg").write output
-    output = Utils.popen_read("#{bin}/kubecfg completion --shell zsh")
+    output = Utils.safe_popen_read("#{bin}/kubecfg", "completion", "--shell", "zsh")
     (zsh_completion/"_kubecfg").write output
   end
 

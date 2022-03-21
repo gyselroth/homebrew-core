@@ -1,23 +1,25 @@
 class Libspectre < Formula
   desc "Small library for rendering Postscript documents"
   homepage "https://wiki.freedesktop.org/www/Software/libspectre/"
-  url "https://libspectre.freedesktop.org/releases/libspectre-0.2.8.tar.gz"
-  sha256 "65256af389823bbc4ee4d25bfd1cc19023ffc29ae9f9677f2d200fa6e98bc7a8"
-  revision 8
+  url "https://libspectre.freedesktop.org/releases/libspectre-0.2.10.tar.gz"
+  sha256 "cf60b2a80f6bfc9a6b110e18f08309040ceaa755210bf94c465a969da7524d07"
+  license "GPL-2.0-or-later"
+
+  livecheck do
+    url "https://libspectre.freedesktop.org/releases/"
+    regex(/href=.*?libspectre[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    cellar :any
-    sha256 "1a798aea82249189e4f54684279b8f6b077c8aa2bf3aafc66627270688169488" => :mojave
-    sha256 "15e69692be7208dce904de97c3386cbb306ddde707a8ee077d270760cd4330da" => :high_sierra
-    sha256 "e1420e4a0de83c9fc587ec8a072b65e59ac7de789b2b31435b0f71e70aa7ac6e" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "feb7cfda3ee56fa06a53f733f68d69c7ae69cbde08469e9a2c074cb9191db12d"
+    sha256 cellar: :any,                 arm64_big_sur:  "d534a89facbba541742df755c49b8fd1e3ccedda8aeb5b9428e7b818fa8dfb73"
+    sha256 cellar: :any,                 monterey:       "9a070c179f2fea6f85c4638c0a5cff5543fdccb7fa9157d8c49ca3c8170da540"
+    sha256 cellar: :any,                 big_sur:        "72fb8d9117c3922ac7bad067b974b45fe91ccabfe9396613d463be36d60033c5"
+    sha256 cellar: :any,                 catalina:       "252cdeeb91d17de587e7b93cf9bdec8a1c5ae95f1ac4af6e0ad540f20a1b354d"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "d9ec982a240d4a7b5ced514c3842046e4beaf428595d3ec1b9575519dcf2b002"
   end
 
   depends_on "ghostscript"
-
-  patch do
-    url "https://github.com/Homebrew/formula-patches/raw/master/libspectre/libspectre-0.2.7-gs918.patch"
-    sha256 "e4c186ddc6cebc92ee0aee24bc79c7f5fff147a0c0d9cadf7ebdc3906d44711c"
-  end
 
   def install
     ENV.append "CFLAGS", "-I#{Formula["ghostscript"].opt_include}/ghostscript"

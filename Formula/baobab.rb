@@ -1,31 +1,34 @@
 class Baobab < Formula
   desc "Gnome disk usage analyzer"
   homepage "https://wiki.gnome.org/Apps/Baobab"
-  url "https://download.gnome.org/sources/baobab/3.32/baobab-3.32.0.tar.xz"
-  sha256 "39414ce94045b35768acddf72d341e7d436cd71298994379d9cec50b57d2632c"
-  revision 1
+  url "https://download.gnome.org/sources/baobab/41/baobab-41.0.tar.xz"
+  sha256 "cad6278d2dcc80c84b57105aa5bb58d8a30ce98d6fabd767519ddb86c857e855"
+  license "GPL-2.0-or-later"
 
   bottle do
-    sha256 "720156b89e707645562c7d4bbe6f630dd85a371588a69dca181356d21d445500" => :mojave
-    sha256 "754b24a65120fc1aa7d289fc357ed45c7305e802d5d0d71962bd8fde886b3d67" => :high_sierra
-    sha256 "881bb64db834d11db421bd419195c4bda0b750094f24cbd4dbdb469684af7d88" => :sierra
+    sha256 arm64_monterey: "b990d423bdfd5cc9a8756a1e6cac732718eccdfe53d1c28bb951b0509288720c"
+    sha256 arm64_big_sur:  "99df49e1259144e3b641e6cd6b8b71b30a10cf6d6dec12e2b137914708daf9bc"
+    sha256 monterey:       "e4457c4ed768ee2bb061f7c1995997d1ef87fdab1cb317d47e4b9d693ebe4ab9"
+    sha256 big_sur:        "9dfe596e51e700f6973aeccdbcd4047000b63994e3e6d8af62913d684edfc68b"
+    sha256 catalina:       "d873858d8bf8c7358f9840d280f94f5247a11393dc079ebbb659ada5bc7660f3"
+    sha256 mojave:         "46b4cfbbfe550d56996a7275049e53f2e8d653c46c750ec4cd48e618cd1c83e1"
   end
 
   depends_on "itstool" => :build
   depends_on "meson" => :build
   depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "python" => :build
   depends_on "vala" => :build
   depends_on "adwaita-icon-theme"
   depends_on "gtk+3"
   depends_on "hicolor-icon-theme"
+  depends_on "libhandy"
 
   def install
     # stop meson_post_install.py from doing what needs to be done in the post_install step
     ENV["DESTDIR"] = "/"
     mkdir "build" do
-      system "meson", "--prefix=#{prefix}", ".."
+      system "meson", *std_meson_args, ".."
       system "ninja"
       system "ninja", "install"
     end

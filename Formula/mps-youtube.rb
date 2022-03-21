@@ -3,28 +3,29 @@ class MpsYoutube < Formula
 
   desc "Terminal based YouTube player and downloader"
   homepage "https://github.com/mps-youtube/mps-youtube"
-  url "https://github.com/mps-youtube/mps-youtube/archive/v0.2.8.tar.gz"
-  sha256 "d5f2c4bc1f57f0566242c4a0a721a5ceaa6d6d407f9d6dd29009a714a0abec74"
-  revision 8
+  url "https://files.pythonhosted.org/packages/b1/8e/5156416119545e3f5ba16ec0fdbb2c7d0b57fad9e19ee8554856cd4a41ad/mps-youtube-0.2.8.tar.gz"
+  sha256 "59ce3944626fbd1a041e1e1b15714bbd138ebc71ceb89e32ea9470d8152af083"
+  license "GPL-3.0-or-later"
+  revision 12
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "b56f49aefecf4225eda480219282235aa452247037ea5d4cbc54f51eec14e2af" => :mojave
-    sha256 "9f648ee048f0e967eabb2b1135f74c5ccc22869c038d395661170fdbea656a76" => :high_sierra
-    sha256 "121a21ce674c3a21e7d2ecd3a98c6f91cf26ebe8be3ce7ac81199991bcafa28e" => :sierra
+    sha256 cellar: :any_skip_relocation, monterey:     "4427c42e4efe37f8c550288610f1404a88d3124815cd19d5749eafbf9a9d6272"
+    sha256 cellar: :any_skip_relocation, big_sur:      "4427c42e4efe37f8c550288610f1404a88d3124815cd19d5749eafbf9a9d6272"
+    sha256 cellar: :any_skip_relocation, catalina:     "4427c42e4efe37f8c550288610f1404a88d3124815cd19d5749eafbf9a9d6272"
+    sha256 cellar: :any_skip_relocation, x86_64_linux: "c5b3fcc9a61653e8cdaa4ae05ef4c8e2fd4edaec0a79a48481ee625adf080b0e"
   end
 
-  depends_on "mpv"
-  depends_on "python"
+  depends_on "mplayer"
+  depends_on "python@3.10"
 
   resource "pafy" do
-    url "https://files.pythonhosted.org/packages/41/cb/ec840c79942fb0788982963b61a361ecd10e4e58ad3dcaef4f0e809ce2fe/pafy-0.5.4.tar.gz"
-    sha256 "e842dc589a339a870b5869cc3802f2e95824edf347f65128223cd5ebdff21024"
+    url "https://files.pythonhosted.org/packages/7e/02/b70f4d2ad64bbc7d2a00018c6545d9b9039208553358534e73e6dd5bbaf6/pafy-0.5.5.tar.gz"
+    sha256 "364f1d1312c89582d97dc7225cf6858cde27cb11dfd64a9c2bab1a2f32133b1e"
   end
 
   resource "youtube_dl" do
-    url "https://files.pythonhosted.org/packages/9c/ef/5cd4138e4b9c04f1c7875d3b64edcddb9355e488019a32df629f9f0dfcec/youtube_dl-2019.4.24.tar.gz"
-    sha256 "b20d110e1bed8d16f5771bb938ab6e5da67f08af62b599af65301cca290f2e15"
+    url "https://files.pythonhosted.org/packages/51/80/d3938814a40163d3598f8a1ced6abd02d591d9bb38e66b3229aebe1e2cd0/youtube_dl-2020.5.3.tar.gz"
+    sha256 "e7a400a61e35b7cb010296864953c992122db4b0d6c9c6e2630f3e0b9a655043"
   end
 
   def install
@@ -35,6 +36,13 @@ class MpsYoutube < Formula
     end
 
     venv.pip_install_and_link buildpath
+  end
+
+  def caveats
+    <<~EOS
+      Install the optional mpv app with Homebrew Cask:
+        brew install --cask mpv
+    EOS
   end
 
   test do

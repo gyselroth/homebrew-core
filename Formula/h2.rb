@@ -1,65 +1,36 @@
 class H2 < Formula
   desc "Java SQL database"
   homepage "https://www.h2database.com/"
-  url "https://www.h2database.com/h2-2018-03-18.zip"
-  version "1.4.197"
-  sha256 "a45e7824b4f54f5d9d65fb89f22e1e75ecadb15ea4dcf8c5d432b80af59ea759"
+  url "https://github.com/h2database/h2database/releases/download/version-2.1.210/h2-2022-01-17.zip"
+  version "2.1.210"
+  sha256 "f3a82b598526270b60ea60d439e21bd290bacc2d18d262512bb9b37748055691"
+  license "MPL-2.0"
 
-  bottle :unneeded
-
-  def script; <<~EOS
-    #!/bin/sh
-    cd #{libexec} && bin/h2.sh "$@"
-  EOS
+  bottle do
+    sha256 cellar: :any_skip_relocation, all: "638ded79dfd9abaaac869f8ef7ef9aec709766e1ada24feb928ff2b22b297da2"
   end
+
+  depends_on "openjdk"
 
   def install
     # Remove windows files
     rm_f Dir["bin/*.bat"]
 
-    # As of 1.4.190, the script contains \r\n line endings,
-    # causing it to fail on macOS. This is a workaround until
-    # upstream publishes a fix.
-    #
-    # https://github.com/h2database/h2database/issues/218
-    h2_script = File.read("bin/h2.sh").gsub("\r\n", "\n")
-    File.open("bin/h2.sh", "w") { |f| f.write h2_script }
-
     # Fix the permissions on the script
+    # upstream issue, https://github.com/h2database/h2database/issues/3254
     chmod 0755, "bin/h2.sh"
 
     libexec.install Dir["*"]
-    (bin+"h2").write script
+    (bin/"h2").write_env_script libexec/"bin/h2.sh", Language::Java.overridable_java_home_env
   end
 
-  plist_options :manual => "h2"
-
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>KeepAlive</key>
-        <false/>
-        <key>ProgramArguments</key>
-        <array>
-            <string>#{opt_bin}/h2</string>
-            <string>-tcp</string>
-            <string>-web</string>
-            <string>-pg</string>
-        </array>
-        <key>WorkingDirectory</key>
-        <string>#{HOMEBREW_PREFIX}</string>
-      </dict>
-    </plist>
-  EOS
+  service do
+    run [opt_bin/"h2", "-tcp", "-web", "-pg"]
+    keep_alive false
+    working_dir HOMEBREW_PREFIX
   end
 
   test do
-    assert_match "Starts the H2 Console", shell_output("#{bin}/h2 -help")
+    assert_match "Usage: java org.h2.tools.GUIConsole", shell_output("#{bin}/h2 -help 2>&1")
   end
 end

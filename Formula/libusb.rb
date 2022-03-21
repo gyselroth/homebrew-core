@@ -1,16 +1,22 @@
 class Libusb < Formula
   desc "Library for USB device access"
   homepage "https://libusb.info/"
-  url "https://github.com/libusb/libusb/releases/download/v1.0.22/libusb-1.0.22.tar.bz2"
-  mirror "https://downloads.sourceforge.net/project/libusb/libusb-1.0/libusb-1.0.22/libusb-1.0.22.tar.bz2"
-  sha256 "75aeb9d59a4fdb800d329a545c2e6799f732362193b465ea198f2aa275518157"
+  url "https://github.com/libusb/libusb/releases/download/v1.0.25/libusb-1.0.25.tar.bz2"
+  sha256 "8a28ef197a797ebac2702f095e81975e2b02b2eeff2774fa909c78a74ef50849"
+  license "LGPL-2.1-or-later"
+
+  livecheck do
+    url :stable
+    strategy :github_latest
+  end
 
   bottle do
-    cellar :any
-    sha256 "6accd1dfe6e66c30aac825ad674e9c7a48b752bcf84561e9e2d397ce188504ff" => :mojave
-    sha256 "7b1fd86a5129620d1bbf048c68c7742ecad450de138b8186bf8e985a752b2302" => :high_sierra
-    sha256 "7f2b65d09525c432a86e46699a1448bab36503f45f16d6e0d8f42be6b1ef55cf" => :sierra
-    sha256 "33575c9f56bc0d57bf985a21e40be019d5c269b432939416be8f24c5921bbb28" => :el_capitan
+    sha256 cellar: :any,                 arm64_monterey: "ff2e884605bc72878fcea2935e4c001e4abd4edf97996ea9eaa779557d07983d"
+    sha256 cellar: :any,                 arm64_big_sur:  "f9b75776c0b3b7fa44eb9876e4b102efdefffd432f019bc6a526e28d82eec991"
+    sha256 cellar: :any,                 monterey:       "95c09d4f1f6e7a036b8d09a5ced561c0b8be29e6caa06030624e77f10ad2521a"
+    sha256 cellar: :any,                 big_sur:        "742a3d523988790f967df5c944b802a8d8f536a99fab123e823acbd6b1ce4fde"
+    sha256 cellar: :any,                 catalina:       "e202da5a53b0955b4310805b09e9f4af3b73eed57de5ae0d44063e84dca5eafd"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "ecdc26816b95a604c156e32005b2199ebef9d17e6ec7ce4537bec2f3dfeb20ee"
   end
 
   head do
@@ -21,20 +27,24 @@ class Libusb < Formula
     depends_on "libtool" => :build
   end
 
+  on_linux do
+    depends_on "systemd"
+  end
+
   def install
     args = %W[--disable-dependency-tracking --prefix=#{prefix}]
 
     system "./autogen.sh" if build.head?
     system "./configure", *args
     system "make", "install"
-    pkgshare.install "examples"
+    (pkgshare/"examples").install Dir["examples/*"] - Dir["examples/Makefile*"]
   end
 
   test do
     cp_r (pkgshare/"examples"), testpath
     cd "examples" do
-      system ENV.cc, "-lusb-1.0", "-L#{lib}", "-I#{include}/libusb-1.0",
-             "listdevs.c", "-o", "test"
+      system ENV.cc, "listdevs.c", "-L#{lib}", "-I#{include}/libusb-1.0",
+             "-lusb-1.0", "-o", "test"
       system "./test"
     end
   end

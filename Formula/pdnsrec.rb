@@ -1,35 +1,61 @@
 class Pdnsrec < Formula
   desc "Non-authoritative/recursing DNS server"
   homepage "https://www.powerdns.com/recursor.html"
-  url "https://downloads.powerdns.com/releases/pdns-recursor-4.1.12.tar.bz2"
-  sha256 "e41c0a9825915084794edd86e31bb9bde558a5efa8e178c168b82546fecdb0c8"
+  url "https://downloads.powerdns.com/releases/pdns-recursor-4.6.0.tar.bz2"
+  sha256 "df06559398aebc594d2e1e27d177f981bdbbc17f968d6306a52aa7d1119fbcf2"
+  license "GPL-2.0-only"
+  revision 1
+
+  livecheck do
+    url "https://downloads.powerdns.com/releases/"
+    regex(/href=.*?pdns-recursor[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "5c4cc0a99b3219b428871573b70b1bbea73009020c1fb77258f7fb4d45aecf6f" => :mojave
-    sha256 "15b220d44b8f2649718b83101515bd1652e000efd32a8a97541cca4b3a659008" => :high_sierra
-    sha256 "815f1334d369a621e301d4305a30226f49a6a6c85499b8d9bf245464547fc173" => :sierra
+    sha256 arm64_monterey: "93e6af47d213003bca88fef675b0a55bfd23776c1d08fe42abb3853debbba35b"
+    sha256 arm64_big_sur:  "4b0eedf1b6832587c77117cd2a26c0c569df5c8f9dca0305401086a8ee757307"
+    sha256 monterey:       "691ae6ba333574a17c2e59da0b46064e9cf8fe93c5f045fabc5f136953ad5cf8"
+    sha256 big_sur:        "35e07bf7ce35984810ef4ffc578b55fa1a2ad5a1563cf9c21e840dcb7161c403"
+    sha256 catalina:       "f5b996bd85d957ac8a0975c1c6bf33e7eeeea8f073d12f369670aee31dd7c7dd"
+    sha256 x86_64_linux:   "e78c1fc783fecc0502dad1ca091825bbbcd8578217dd4cba36a1d96ca7232b33"
   end
 
   depends_on "pkg-config" => :build
   depends_on "boost"
-  depends_on "gcc" if DevelopmentTools.clang_build_version == 600
   depends_on "lua"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
+
+  on_macos do
+    # This shouldn't be needed for `:test`, but there's a bug in `brew`:
+    # CompilerSelectionError: pdnsrec cannot be built with any available compilers.
+    depends_on "llvm" => [:build, :test] if DevelopmentTools.clang_build_version <= 1100
+  end
+
+  on_linux do
+    depends_on "gcc"
+  end
 
   fails_with :clang do
-    build 600
-    cause "incomplete C++11 support"
+    build 1100
+    cause <<-EOS
+      Undefined symbols for architecture x86_64:
+        "MOADNSParser::init(bool, std::__1::basic_string_view<char, std::__1::char_traits<char> > const&)"
+    EOS
   end
+
+  fails_with gcc: "5"
 
   def install
     ENV.cxx11
+    ENV.remove "HOMEBREW_LIBRARY_PATHS", Formula["llvm"].opt_lib
+    ENV.llvm_clang if OS.mac? && (DevelopmentTools.clang_build_version <= 1100)
 
     args = %W[
       --prefix=#{prefix}
       --sysconfdir=#{etc}/powerdns
       --disable-silent-rules
       --with-boost=#{Formula["boost"].opt_prefix}
-      --with-libcrypto=#{Formula["openssl"].opt_prefix}
+      --with-libcrypto=#{Formula["openssl@1.1"].opt_prefix}
       --with-lua
       --without-net-snmp
     ]

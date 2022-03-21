@@ -1,20 +1,28 @@
 class AircrackNg < Formula
   desc "Next-generation aircrack with lots of new features"
   homepage "https://aircrack-ng.org/"
-  url "https://download.aircrack-ng.org/aircrack-ng-1.5.2.tar.gz"
-  sha256 "9e592fe7658046220e0ac0a6d05c4026903f3077b248893e0056ccbe4ee88241"
+  url "https://download.aircrack-ng.org/aircrack-ng-1.6.tar.gz"
+  sha256 "4f0bfd486efc6ea7229f7fbc54340ff8b2094a0d73e9f617e0a39f878999a247"
+  license all_of: ["GPL-2.0-or-later", "BSD-3-Clause", "OpenSSL"]
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?aircrack-ng[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "6aaae61586ea0f80f466e1eaa3740ff64cb5a68d457ee248c6561339778246bf" => :mojave
-    sha256 "795dfb0d851b602176fa1a68383afee62f6860fdbd868b515cbf7cf4fe010b7c" => :high_sierra
-    sha256 "e8302d2bb87a615d341dc907cf4a8e8f87f9fd560a28246a5b4a37230abe9d7b" => :sierra
+    sha256                               big_sur:      "8a131a99a89edd127981b9dc2c91df91ba7a03b7c0d6c74521392e1649fa7d09"
+    sha256                               catalina:     "1b5ecf42ef840c108536eac5107cf63c514ca2f3d7e8c4f32e5b301f088729c1"
+    sha256                               mojave:       "e6bbba9c16ac26aaacaad5ac4935100a79cf702ab8fcb35fa9797e806ec003fe"
+    sha256                               high_sierra:  "fad333ea8e2792d88305c22b62549f63900ea32aa3f856de57d6e8d70740cd49"
+    sha256 cellar: :any_skip_relocation, x86_64_linux: "2d6c32f3dc5f82c6a897a4a5916c70f686ce40c3aeaf7585e8d449ef971a9d4a"
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
   depends_on "pkg-config" => :build
-  depends_on "openssl"
+  depends_on "openssl@1.1"
   depends_on "pcre"
   depends_on "sqlite"
 
@@ -30,9 +38,10 @@ class AircrackNg < Formula
     system "make", "install"
   end
 
-  def caveats; <<~EOS
-    Run `airodump-ng-oui-update` install or update the Airodump-ng OUI file.
-  EOS
+  def caveats
+    <<~EOS
+      Run `airodump-ng-oui-update` install or update the Airodump-ng OUI file.
+    EOS
   end
 
   test do

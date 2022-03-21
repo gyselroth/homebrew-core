@@ -1,20 +1,23 @@
 class Mvnvm < Formula
   desc "Maven version manager"
-  homepage "http://mvnvm.org"
-  url "https://bitbucket.org/mjensen/mvnvm/get/mvnvm-1.0.12.tar.gz"
-  sha256 "0c4c6cc05b25731f621c96fcba500e715875248576b6a0e176db0a14eb8587ef"
-  head "https://bitbucket.org/mjensen/mvnvm.git"
+  homepage "https://mvnvm.org/"
+  url "https://bitbucket.org/mjensen/mvnvm/get/mvnvm-1.0.16.tar.gz"
+  sha256 "a21675dc5816d52b2e90d84c36c3899fd19c66ac3d63f3f635f54d0cd3761176"
+  license "Apache-2.0"
+  head "https://bitbucket.org/mjensen/mvnvm.git", branch: "master"
 
-  bottle :unneeded
+  bottle do
+    sha256 cellar: :any_skip_relocation, all: "c5a3c45b3f4a5df6323b694c4f597ea5c99d59b236e8ce90352d756739e5931e"
+  end
 
-  depends_on :java => "1.7+"
+  depends_on "openjdk"
 
-  conflicts_with "maven", :because => "also installs a 'mvn' executable"
+  conflicts_with "maven", because: "also installs a 'mvn' executable"
 
   def install
     bin.install "mvn"
     bin.install "mvnDebug"
-    bin.env_script_all_files(libexec/"bin", Language::Java.overridable_java_home_env("1.7+"))
+    bin.env_script_all_files libexec/"bin", Language::Java.overridable_java_home_env
   end
 
   test do

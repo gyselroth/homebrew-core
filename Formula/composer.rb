@@ -1,10 +1,30 @@
 class Composer < Formula
   desc "Dependency Manager for PHP"
   homepage "https://getcomposer.org/"
-  url "https://getcomposer.org/download/1.8.6/composer.phar"
-  sha256 "b66f9b53db72c5117408defe8a1e00515fe749e97ce1b0ae8bdaa6a5a43dd542"
+  url "https://getcomposer.org/download/2.2.9/composer.phar"
+  sha256 "48f9fdc9ad93904fee96550b45ae03a51f69718502ee855da894b4ad71d2dfe0"
+  license "MIT"
 
-  bottle :unneeded
+  livecheck do
+    url "https://getcomposer.org/download/"
+    regex(%r{href=.*?/v?(\d+(?:\.\d+)+)/composer\.phar}i)
+  end
+
+  bottle do
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "4a9516e56293e464b22c329f70f5212f50763b1d1dab0d831b9aaa89ac59e94e"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "4a9516e56293e464b22c329f70f5212f50763b1d1dab0d831b9aaa89ac59e94e"
+    sha256 cellar: :any_skip_relocation, monterey:       "5f6972f625509ba417f389d5218ac07f3b7eafd4bdc3902d67858f4f7b8542d7"
+    sha256 cellar: :any_skip_relocation, big_sur:        "5f6972f625509ba417f389d5218ac07f3b7eafd4bdc3902d67858f4f7b8542d7"
+    sha256 cellar: :any_skip_relocation, catalina:       "5f6972f625509ba417f389d5218ac07f3b7eafd4bdc3902d67858f4f7b8542d7"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "4a9516e56293e464b22c329f70f5212f50763b1d1dab0d831b9aaa89ac59e94e"
+  end
+
+  depends_on "php"
+
+  # Keg-relocation breaks the formula when it replaces `/usr/local` with a non-default prefix
+  on_macos do
+    pour_bottle? only_if: :default_prefix if Hardware::CPU.intel?
+  end
 
   def install
     bin.install "composer.phar" => "composer"
@@ -30,7 +50,7 @@ class Composer < Formula
       }
     EOS
 
-    (testpath/"src/HelloWorld/greetings.php").write <<~EOS
+    (testpath/"src/HelloWorld/Greetings.php").write <<~EOS
       <?php
 
       namespace HelloWorld;
@@ -54,6 +74,6 @@ class Composer < Formula
     EOS
 
     system "#{bin}/composer", "install"
-    assert_match /^HelloHomebrew$/, shell_output("php tests/test.php")
+    assert_match(/^HelloHomebrew$/, shell_output("php tests/test.php"))
   end
 end

@@ -1,23 +1,27 @@
 class Cnats < Formula
   desc "C client for the NATS messaging system"
-  homepage "https://github.com/nats-io/cnats"
-  url "https://github.com/nats-io/cnats/archive/v1.8.0.tar.gz"
-  sha256 "aea6b1266ff7f169caeaa0f2b5efaf6081256a9ec17c38de417fdde36dddc4fd"
+  homepage "https://github.com/nats-io/nats.c"
+  url "https://github.com/nats-io/nats.c/archive/refs/tags/v3.2.0.tar.gz"
+  sha256 "8ee6a738396f08254ce507771d1644bb08e01b8528a00a5ad0b47d527963a35f"
+  license "Apache-2.0"
 
   bottle do
-    cellar :any
-    sha256 "32c955ee1bc0a09b634422a54b210091155dd5a9c3328dcc0279f5c719fc3c75" => :mojave
-    sha256 "55a68b75889ad00cfdceeefc319b9fcf1f48d27becc17ee94f2c2bcfe08324f1" => :high_sierra
-    sha256 "ca720f973960eab911465daf560eed2bc7e65ab40d2f106b23fe46060b82c3cc" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "847dfdb3324dae6a6452a9155b69aab20587c7a45cf0073dfd50be3de6b89aa5"
+    sha256 cellar: :any,                 arm64_big_sur:  "f5a30d8c0daff2dbd95f84abd3d776832020aebc0e9f72fd2afaec9276b52783"
+    sha256 cellar: :any,                 monterey:       "bba0d7868221e0330d9dbbd143799b6c00a9ff61c7df4da6c958c991781b7cc3"
+    sha256 cellar: :any,                 big_sur:        "1ea56afadea04ddab2a54c1025324aa21996870faf12932b519592421abaf6f6"
+    sha256 cellar: :any,                 catalina:       "c905b8f2e19e74722dac91b2cb9ae290f39ec1c9cee32bb5bb0ae2e5fe723ac2"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "6146ea64138a2c7acc40881e4498cc3803564b0cc45ba97d4fdcf720fa75fe3c"
   end
 
   depends_on "cmake" => :build
   depends_on "libevent"
   depends_on "libuv"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
+  depends_on "protobuf-c"
 
   def install
-    system "cmake", ".", "-DNATS_INSTALL_PREFIX=#{prefix}",
+    system "cmake", ".", "-DCMAKE_INSTALL_PREFIX=#{prefix}",
                          "-DBUILD_TESTING=OFF", *std_cmake_args
     system "make", "install"
   end

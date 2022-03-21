@@ -1,29 +1,25 @@
 class Elvish < Formula
   desc "Friendly and expressive shell"
   homepage "https://github.com/elves/elvish"
-  url "https://github.com/elves/elvish/archive/0.12.tar.gz"
-  sha256 "edd03f4acf50beb03a663804e4da8b9d13805d471245c47c1b71f24c125cb9a2"
-  head "https://github.com/elves/elvish.git"
+  url "https://github.com/elves/elvish/archive/v0.17.0.tar.gz"
+  sha256 "0e255849723129d8c4dc24f67656e651b4e4b7566bc16009109ba76099681fa1"
+  license "BSD-2-Clause"
+  head "https://github.com/elves/elvish.git", branch: "master"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "a5b8320c45af0fd83e8ce937ec25d697e796e7fc89a4fddc9c0c5b1aff57da72" => :mojave
-    sha256 "a747baee9d6fdb09d9593a9afcb3a5dc0ed5a6a2d34eda0d4dded49cc4da6895" => :high_sierra
-    sha256 "387f1854614fc77af4321aab808a09df3c978a1364a233cdc0ff57c0d25485e1" => :sierra
-    sha256 "6f5b6d0c3a5b05a876f278b73c44efcaccb2b02a2b2f23ca4936992fd22555f2" => :el_capitan
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "33e1bd7c5b826d749e9d9c5230061a750e99c1412a0eccd240526442d161de96"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "beb963831ef475de4031c539af501109a1d3feb4da3354abd2ade85ffc50ba79"
+    sha256 cellar: :any_skip_relocation, monterey:       "322407431bcee76924ecee9f066d6aa15e6f474b73cf85263cd90e708087394c"
+    sha256 cellar: :any_skip_relocation, big_sur:        "27500b6c67ee49bc28c2c52c46cd52a8e50f37f13f7a323057d22fbbc6522dd7"
+    sha256 cellar: :any_skip_relocation, catalina:       "e388fef325ccae706bd8d1e5807bd90ea60d3067bd386f1343f9f59e6e8afc16"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "908e3198e823605e9704f43db9a34e201f6ca7481f2adf0f5b78abd63777d50e"
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    (buildpath/"src/github.com/elves/elvish").install buildpath.children
-    cd "src/github.com/elves/elvish" do
-      system "go", "build", "-ldflags",
-             "-X github.com/elves/elvish/buildinfo.Version=#{version}", "-o",
-             bin/"elvish"
-      prefix.install_metafiles
-    end
+    system "go", "build",
+      *std_go_args(ldflags: "-s -w -X src.elv.sh/pkg/buildinfo.VersionSuffix="), "./cmd/elvish"
   end
 
   test do

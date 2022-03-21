@@ -1,14 +1,17 @@
 class Nvc < Formula
   desc "VHDL compiler and simulator"
   homepage "https://github.com/nickg/nvc"
-  url "https://github.com/nickg/nvc/releases/download/r1.4.0/nvc-1.4.0.tar.gz"
-  sha256 "1a874bde284408c137a93b22f8f12b5b8c3368cefe30f3a5458ccdeffa0c6ad6"
+  url "https://github.com/nickg/nvc/releases/download/r1.6.1/nvc-1.6.1.tar.gz"
+  sha256 "d41c501b3bb3be8030ef07ceabc3f95c29ab169495af6a8cf2ba665ad84eb5c5"
+  license "GPL-3.0-or-later"
 
   bottle do
-    sha256 "b80db7d1bf860cf294e21504ca5016949379eb09f5e91f2ada221f7c93e0a470" => :mojave
-    sha256 "b7652f61cc91018c76c1c3ca245125b9a1bd13aacf0f7e3791d62748a0af89c8" => :high_sierra
-    sha256 "baeed30af5a9e5dfe7dd8c5fdddb7b731912bbfb99f32127e30ae9c366bb8215" => :sierra
-    sha256 "e5a6b787e66d0b9e599a86d8e780e81c7aa9ca9240e1ab8446b471e044f9b0b1" => :el_capitan
+    sha256 arm64_monterey: "018608bfd3bebece7e5f5af5e71f1fdc49a5e551ee3202f85772fb95d734e692"
+    sha256 arm64_big_sur:  "6eb178d6b617aafe7992943730cf697e4b2634a335f209644e789e183a9a4337"
+    sha256 monterey:       "57b66b4450bac6e24fa778812f085ae66bb31cee339ad8a218399880b2139d37"
+    sha256 big_sur:        "8cc7631d16d716f1072e4636bac84f972503cd4e2af1245843fa52f9a86942a8"
+    sha256 catalina:       "3918cf90bfe1581ee3224891fa3d8437741a3209b92690036670a42f5b7d8d0f"
+    sha256 x86_64_linux:   "59564f4fa3dec44747ee7c5bd44e7406bea7ad7cce46053214af7791a41e26b6"
   end
 
   head do
@@ -19,26 +22,34 @@ class Nvc < Formula
   end
 
   depends_on "check" => :build
-  depends_on "llvm" => :build
   depends_on "pkg-config" => :build
+  depends_on "llvm"
 
-  resource "vim-hdl-examples" do
+  uses_from_macos "flex" => :build
+
+  fails_with gcc: "5" # LLVM is built with GCC
+
+  resource "homebrew-test" do
     url "https://github.com/suoto/vim-hdl-examples.git",
-        :revision => "c112c17f098f13719784df90c277683051b61d05"
+        revision: "fcb93c287c8e4af7cc30dc3e5758b12ee4f7ed9b"
   end
 
   def install
     system "./autogen.sh" if build.head?
-    system "./tools/fetch-ieee.sh"
+    # Avoid hardcoding path to the `ld` shim.
+    inreplace "configure", "\\\"$linker_path\\\"", "\\\"ld\\\"" if OS.linux?
     system "./configure", "--with-llvm=#{Formula["llvm"].opt_bin}/llvm-config",
                           "--prefix=#{prefix}",
-                          "--with-system-cc=/usr/bin/clang"
-    system "make"
-    system "make", "install"
+                          "--with-system-cc=#{ENV.cc}",
+                          "--enable-vhpi",
+                          "--disable-silent-rules"
+    ENV.deparallelize
+    system "make", "V=1"
+    system "make", "V=1", "install"
   end
 
   test do
-    resource("vim-hdl-examples").stage testpath
+    resource("homebrew-test").stage testpath
     system "#{bin}/nvc", "-a", "#{testpath}/basic_library/very_common_pkg.vhd"
   end
 end

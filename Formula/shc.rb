@@ -1,15 +1,21 @@
 class Shc < Formula
   desc "Shell Script Compiler"
   homepage "https://neurobin.github.io/shc"
-  url "https://github.com/neurobin/shc/archive/4.0.2.tar.gz"
-  sha256 "43fef6d59a4376d20c0bfef2bbbf606284fa54194b3fdb522b1bac38e4e8ca45"
-  head "https://github.com/neurobin/shc.git"
+  url "https://github.com/neurobin/shc/archive/4.0.3.tar.gz"
+  sha256 "7d7fa6a9f5f53d607ab851d739ae3d3b99ca86e2cb1425a6cab9299f673aee16"
+  license "GPL-3.0"
+  head "https://github.com/neurobin/shc.git", branch: "master"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "239f2094c8e79dfe1b51d67b4e07b8e8d47b47ac769eae623929d045c1ce6ec0" => :mojave
-    sha256 "6ab21bfcf0b7b3b37c6ec3e886e61981b937aeddd67badc8338f35b5b6a3d457" => :high_sierra
-    sha256 "bd8f1f3e707ec3dc1d0702059abf4633a9ec8fe97f494dc61181663525afef22" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "e84ca021ebfbeaa652c74a9e07b3eddfc390c4193f64effdd93d835958d7e90c"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "fd153e413029832fb17b013fb15d43aab1e1e22b618d58c768a049ac31e0759c"
+    sha256 cellar: :any_skip_relocation, monterey:       "8896b46bb8b312f24f98ae842c8edb5c7ba1321c21f9441c32c8218a15c596c9"
+    sha256 cellar: :any_skip_relocation, big_sur:        "3866195be89821e424dca28e390d36060ad52be9030677498a300e39b7ece548"
+    sha256 cellar: :any_skip_relocation, catalina:       "cdfc62c7d9bd39ed7e956066f8d55a189c58b185b6abf7e45b5d8c63a6abe2d5"
+    sha256 cellar: :any_skip_relocation, mojave:         "ff3c55ef1d10c16066e97a20143dbd1e7781ceb9a2c5c8b46d140f6711bc79fa"
+    sha256 cellar: :any_skip_relocation, high_sierra:    "c19f4586119be579006eace517045998138d83a17e2b5c8ec00ad73ea007b68c"
+    sha256 cellar: :any_skip_relocation, sierra:         "6e1834ac7b4cc64ba972a59189512bb9ff9e0ec307df78f9e0fc1fee42378f6d"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "2a659b8f040806dcf7303f42a3cc50eb61acf894c9d2066acefd897dc71f1452"
   end
 
   def install

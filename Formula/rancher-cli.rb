@@ -1,28 +1,33 @@
 class RancherCli < Formula
-  desc "The Rancher CLI is a unified tool to manage your Rancher server"
+  desc "Unified tool to manage your Rancher server"
   homepage "https://github.com/rancher/cli"
-  url "https://github.com/rancher/cli/archive/v2.2.0.tar.gz"
-  sha256 "b41bf4637c9df174a6a9d813eeea5b60c9b407dfcea379a5112097393d416052"
+  url "https://github.com/rancher/cli/archive/v2.6.0.tar.gz"
+  sha256 "6821730df16cc1c5b012ee0be54f480de70b373a6b95379b6bbf99243aedad5b"
+  license "Apache-2.0"
+  head "https://github.com/rancher/cli.git", branch: "master"
+
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "88afc29ccbe080da761bee57ee5b80c1a1f300cba13447b87c0cad577ad349bf" => :mojave
-    sha256 "1cb11955d2e394ae1732c0444b2de52c5a1d91252761e0e0b26f55f972a52b81" => :high_sierra
-    sha256 "9038728e3401099e6b8c2ee9f3843b4c476180e939425c3ffd20b9bbd64b47dd" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "b397d2ad74522057780cc9b13ff34a659f88be1cbdc3cf317f6525412d6844c9"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "26fa0a39de61895d4cd5605115d13cdf107d50b295c66389d0677b65d86c82d9"
+    sha256 cellar: :any_skip_relocation, monterey:       "8d9e68b84185c5d84dc29f08e6abbe8634211376008105e538b7cc19c994d9f0"
+    sha256 cellar: :any_skip_relocation, big_sur:        "33a3f0c8a3ec2c4afc7214a8e8436af6d8359a503892935b4f57b60fce49b49a"
+    sha256 cellar: :any_skip_relocation, catalina:       "409f6e114c3dcabbe8a02fac709ece676537419a4327c7cfb8734a87ad57814c"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "74f4ad722b06ee9209a9a8304cc941de7ad7452cc32dc99a338114fbe8a94414"
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    (buildpath/"src/github.com/rancher/cli/").install Dir["*"]
-    system "go", "build", "-ldflags",
-           "-w -X github.com/rancher/cli/version.VERSION=#{version}",
-           "-o", "#{bin}/rancher",
-           "-v", "github.com/rancher/cli/"
+    system "go", "build", *std_go_args(ldflags: "-s -w -X main.VERSION=#{version}"), "-o", bin/"rancher"
   end
 
   test do
-    system bin/"rancher", "help"
+    assert_match "Failed to parse SERVERURL", shell_output("#{bin}/rancher login localhost -t foo 2>&1", 1)
+    assert_match "invalid token", shell_output("#{bin}/rancher login https://127.0.0.1 -t foo 2>&1", 1)
   end
 end

@@ -2,16 +2,20 @@ class Bartycrouch < Formula
   desc "Incrementally update/translate your Strings files"
   homepage "https://github.com/Flinesoft/BartyCrouch"
   url "https://github.com/Flinesoft/BartyCrouch.git",
-      :tag      => "4.0.2",
-      :revision => "7d4cfec9530c7364727a4461712b54909f8d4a90"
-  head "https://github.com/Flinesoft/BartyCrouch.git"
+      tag:      "4.9.0",
+      revision: "0aa807a2e853a146ea55808edeb1431e1994b070"
+  license "MIT"
+  head "https://github.com/Flinesoft/BartyCrouch.git", branch: "main"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "3ccf1146ffb56b4bf49fd15cccdf1982d92c79a3eaba4577b0fabce4b6f8be76" => :mojave
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "70be38e64705f2ce9d8c17a3726f5bb8985107442968b452a9c20896d5a020e9"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "01b027a64112756fb762a39e689ec55fee526c0521fb6847447851f6728e20e2"
+    sha256 cellar: :any_skip_relocation, monterey:       "739e9a0ba1d6d4482d935b8e6ec01aa36791fc5b72bb8e4319f4a7239308c2c1"
+    sha256 cellar: :any_skip_relocation, big_sur:        "38fa4742fe695b7b88ace488d89941c83027f17dca38c4dd871e0491f2a9ef18"
   end
 
-  depends_on :xcode => ["10.2", :build]
+  depends_on xcode: ["12.5", :build]
+  depends_on :macos
 
   def install
     system "make", "install", "prefix=#{prefix}"
@@ -34,7 +38,7 @@ class Bartycrouch < Formula
     EOS
 
     system bin/"bartycrouch", "update"
-    assert_match /"oldKey" = "/, File.read("en.lproj/Localizable.strings")
-    assert_match /"test" = "/, File.read("en.lproj/Localizable.strings")
+    assert_match '"oldKey" = "', File.read("en.lproj/Localizable.strings")
+    assert_match '"test" = "', File.read("en.lproj/Localizable.strings")
   end
 end

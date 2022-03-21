@@ -3,19 +3,22 @@ require "language/node"
 class Autorest < Formula
   desc "Swagger (OpenAPI) Specification code generator"
   homepage "https://github.com/Azure/autorest"
-  url "https://registry.npmjs.org/autorest/-/autorest-3.0.5200.tgz"
-  sha256 "91dc45f1103160dde83a86eb7f699d98c092845b4e9c63cf1e1a25ac072b028f"
+  url "https://registry.npmjs.org/autorest/-/autorest-3.6.0.tgz"
+  sha256 "aa21f1abc78bebb586d59a5936222dade5981247e08edac211db56965165dca4"
+  license "MIT"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "0f876ec85254016d266e5c194b1438ffeed42e789efed5a369f298ebb417cdfb" => :mojave
-    sha256 "be830d2ae2ed14ddaffdf16b4f69fa184460469d7ad6de439b8b69e58b0b22e0" => :high_sierra
-    sha256 "60af123b9d4afef0fd26389191e722ae66d49c1acc0251c284d806c4101f0cf8" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "8eaa1639b25a6878602092d78d3841e2f2c2f363542a60fb67d070dc403a3ab9"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "8eaa1639b25a6878602092d78d3841e2f2c2f363542a60fb67d070dc403a3ab9"
+    sha256 cellar: :any_skip_relocation, monterey:       "b5fbb8a8239c44630d21f2633fec1f9c5f6ce6e203f020bbea61ede4efced4b1"
+    sha256 cellar: :any_skip_relocation, big_sur:        "b5fbb8a8239c44630d21f2633fec1f9c5f6ce6e203f020bbea61ede4efced4b1"
+    sha256 cellar: :any_skip_relocation, catalina:       "b5fbb8a8239c44630d21f2633fec1f9c5f6ce6e203f020bbea61ede4efced4b1"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "8eaa1639b25a6878602092d78d3841e2f2c2f363542a60fb67d070dc403a3ab9"
   end
 
   depends_on "node"
 
-  resource "petstore" do
+  resource "homebrew-petstore" do
     url "https://raw.githubusercontent.com/Azure/autorest/5c170a02c009d032e10aa9f5ab7841e637b3d53b/Samples/1b-code-generation-multilang/petstore.yaml"
     sha256 "e981f21115bc9deba47c74e5c533d92a94cf5dbe880c4304357650083283ce13"
   end
@@ -26,9 +29,9 @@ class Autorest < Formula
   end
 
   test do
-    resource("petstore").stage do
+    resource("homebrew-petstore").stage do
       system (bin/"autorest"), "--input-file=petstore.yaml",
-                               "--nodejs",
+                               "--typescript",
                                "--output-folder=petstore"
       assert_includes File.read("petstore/package.json"), "Microsoft Corporation"
     end

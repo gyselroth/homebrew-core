@@ -1,13 +1,23 @@
 class Pdns < Formula
   desc "Authoritative nameserver"
   homepage "https://www.powerdns.com"
-  url "https://downloads.powerdns.com/releases/pdns-4.1.8.tar.bz2"
-  sha256 "94561132f46c08f646399511b680ce8cda150fd2b8e3d38c0b90b4187163e617"
+  url "https://downloads.powerdns.com/releases/pdns-4.6.0.tar.bz2"
+  sha256 "b9effb7968a7badbb91eea431c73346482a67592684d84660edd8b7528cc1325"
+  license "GPL-2.0-or-later"
+  revision 1
+
+  livecheck do
+    url "https://downloads.powerdns.com/releases/"
+    regex(/href=.*?pdns[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "44cef8a6fdbb901422ff37309f5080bbeda9eeafc7297cfe241c5b7e6daea09b" => :mojave
-    sha256 "3f1dc45321b7c14074baec9a9a53d7fb3cd5ca069ccca589f70fa15ff83e446d" => :high_sierra
-    sha256 "4196afa3c93a17356a69d96458e2792c5636c9005363892add5a9a9311c0f8f3" => :sierra
+    sha256 arm64_monterey: "334db8dc8d54c6fbdcc468b38c65edaa10d4739625c92366704b729dc397fc38"
+    sha256 arm64_big_sur:  "db64572ebb4e56b58b66eed8de689e706e09b1eb52c9a75e0769fb52d45560a7"
+    sha256 monterey:       "156638102833357e96c24bd695cd652f650d19425f314123d7d3fc4317413310"
+    sha256 big_sur:        "1e6dcd422466787c2d294e3eccb0c007dc7c19c57fca0c26c14f373d7fd0c66b"
+    sha256 catalina:       "17470dcf7e06e20d8f0ae61ed32816b27e5e9e44d949aac472d523a0ceb0d6af"
+    sha256 x86_64_linux:   "fde20ea04ff5af88a89af9fb3d543d9d6dd77e0884b11c9bee55048e9b386a3c"
   end
 
   head do
@@ -22,18 +32,23 @@ class Pdns < Formula
   depends_on "pkg-config" => :build
   depends_on "boost"
   depends_on "lua"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
   depends_on "sqlite"
 
-  def install
-    # Fix "configure: error: cannot find boost/program_options.hpp"
-    ENV["SDKROOT"] = MacOS.sdk_path if MacOS.version == :sierra
+  uses_from_macos "curl"
 
+  on_linux do
+    depends_on "gcc" # for C++17
+  end
+
+  fails_with gcc: "5"
+
+  def install
     args = %W[
       --prefix=#{prefix}
       --sysconfdir=#{etc}/powerdns
       --with-lua
-      --with-openssl=#{Formula["openssl"].opt_prefix}
+      --with-libcrypto=#{Formula["openssl@1.1"].opt_prefix}
       --with-sqlite3
       --with-modules=gsqlite3
     ]
@@ -43,29 +58,9 @@ class Pdns < Formula
     system "make", "install"
   end
 
-  plist_options :manual => "pdns_server start"
-
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>KeepAlive</key>
-      <true/>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_bin}/pdns_server</string>
-      </array>
-      <key>EnvironmentVariables</key>
-      <key>KeepAlive</key>
-      <true/>
-      <key>SHAuthorizationRight</key>
-      <string>system.preferences</string>
-    </dict>
-    </plist>
-  EOS
+  service do
+    run opt_sbin/"pdns_server"
+    keep_alive true
   end
 
   test do

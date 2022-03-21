@@ -1,107 +1,142 @@
 class Vtk < Formula
   desc "Toolkit for 3D computer graphics, image processing, and visualization"
   homepage "https://www.vtk.org/"
-  url "https://www.vtk.org/files/release/8.2/VTK-8.2.0.tar.gz"
-  sha256 "34c3dc775261be5e45a8049155f7228b6bd668106c72a3c435d95730d17d57bb"
-  head "https://github.com/Kitware/VTK.git"
+  url "https://www.vtk.org/files/release/9.1/VTK-9.1.0.tar.gz"
+  sha256 "8fed42f4f8f1eb8083107b68eaa9ad71da07110161a3116ad807f43e5ca5ce96"
+  license "BSD-3-Clause"
+  revision 3
+  head "https://github.com/Kitware/VTK.git", branch: "master"
 
   bottle do
-    sha256 "6048bdb469ac541f9714b278c697427afd9d8ac30b0263b307871c1877c94933" => :mojave
-    sha256 "2964017670fb49e932b0aaa7c263d872bcb579facc83f898e4aba4d1069eb512" => :high_sierra
-    sha256 "a0388d85d98c235ed9f93e8f89272442c34682c24c262a9bae9a99d1acc6546f" => :sierra
+    rebuild 1
+    sha256                               arm64_monterey: "db69b8415e3e2c71e72324a2f345d2bc203b1be420ffef34103581616e875c1b"
+    sha256                               arm64_big_sur:  "6cf53d599728a6e8d0b718e42ded3e7e53a669b2f8ac50b0d74aedf12fbebf63"
+    sha256                               monterey:       "832720e811171ac16fd250f795b9c4786bce6f2cb30f86b25446f29344d0079f"
+    sha256                               big_sur:        "d00fb169c11c9609dc895c1678f6641b60b7aad9fac5433c78d5da860ff2d5a2"
+    sha256                               catalina:       "1e656d21849e1e191e61c8ffe1b917765e8ba7e0b122538b2c1bbcf2a06d3b11"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "9947d6db68fe92e18f2c728e1c0cb3d2243e8c1c7699c246850482b1dcdafd10"
   end
 
-  depends_on "cmake" => :build
+  depends_on "cmake" => [:build, :test]
   depends_on "boost"
+  depends_on "double-conversion"
+  depends_on "eigen"
   depends_on "fontconfig"
+  depends_on "gl2ps"
+  depends_on "glew"
   depends_on "hdf5"
   depends_on "jpeg"
+  depends_on "jsoncpp"
+  depends_on "libogg"
   depends_on "libpng"
   depends_on "libtiff"
+  depends_on "lz4"
   depends_on "netcdf"
-  depends_on "pyqt"
-  depends_on "python"
-  depends_on "qt"
+  depends_on "pugixml"
+  depends_on "pyqt@5"
+  depends_on "python@3.9"
+  depends_on "qt@5"
+  depends_on "sqlite"
+  depends_on "theora"
+  depends_on "utf8cpp"
+  depends_on "xz"
+
+  uses_from_macos "expat"
+  uses_from_macos "libxml2"
+  uses_from_macos "tcl-tk"
+  uses_from_macos "zlib"
+
+  on_linux do
+    depends_on "gcc"
+    depends_on "szip"
+    depends_on "mesa-glu"
+  end
+
+  fails_with gcc: "5"
 
   def install
-    python_executable = `which python3`.strip
-    python_prefix = `#{python_executable} -c 'import sys;print(sys.prefix)'`.chomp
-    python_include = `#{python_executable} -c 'from distutils import sysconfig;print(sysconfig.get_python_inc(True))'`.chomp
-    python_version = "python" + `#{python_executable} -c 'import sys;print(sys.version[:3])'`.chomp
-    py_site_packages = "#{lib}/#{python_version}/site-packages"
-
     args = std_cmake_args + %W[
-      -DBUILD_SHARED_LIBS=ON
-      -DBUILD_TESTING=OFF
-      -DCMAKE_INSTALL_NAME_DIR:STRING=#{lib}
-      -DCMAKE_INSTALL_RPATH:STRING=#{lib}
-      -DModule_vtkInfovisBoost=ON
-      -DModule_vtkInfovisBoostGraphAlgorithms=ON
-      -DModule_vtkRenderingFreeTypeFontConfig=ON
-      -DVTK_REQUIRED_OBJCXX_FLAGS=''
-      -DVTK_USE_COCOA=ON
-      -DVTK_USE_SYSTEM_EXPAT=ON
-      -DVTK_USE_SYSTEM_HDF5=ON
-      -DVTK_USE_SYSTEM_JPEG=ON
-      -DVTK_USE_SYSTEM_LIBXML2=ON
-      -DVTK_USE_SYSTEM_NETCDF=ON
-      -DVTK_USE_SYSTEM_PNG=ON
-      -DVTK_USE_SYSTEM_TIFF=ON
-      -DVTK_USE_SYSTEM_ZLIB=ON
-      -DVTK_WRAP_PYTHON=ON
-      -DPYTHON_EXECUTABLE='#{python_executable}'
-      -DPYTHON_INCLUDE_DIR='#{python_include}'
-      -DVTK_INSTALL_PYTHON_MODULE_DIR='#{py_site_packages}/'
+      -DBUILD_SHARED_LIBS:BOOL=ON
+      -DBUILD_TESTING:BOOL=OFF
+      -DCMAKE_INSTALL_NAME_DIR:STRING=#{opt_lib}
+      -DCMAKE_INSTALL_RPATH:STRING=#{rpath}
+      -DCMAKE_DISABLE_FIND_PACKAGE_ICU:BOOL=ON
+      -DVTK_WRAP_PYTHON:BOOL=ON
+      -DVTK_PYTHON_VERSION:STRING=3
+      -DVTK_LEGACY_REMOVE:BOOL=ON
+      -DVTK_MODULE_ENABLE_VTK_InfovisBoost:STRING=YES
+      -DVTK_MODULE_ENABLE_VTK_InfovisBoostGraphAlgorithms:STRING=YES
+      -DVTK_MODULE_ENABLE_VTK_RenderingFreeTypeFontConfig:STRING=YES
+      -DVTK_MODULE_USE_EXTERNAL_VTK_doubleconversion:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_eigen:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_expat:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_gl2ps:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_glew:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_hdf5:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_jpeg:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_jsoncpp:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_libxml2:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_lz4:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_lzma:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_netcdf:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_ogg:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_png:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_pugixml:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_sqlite:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_theora:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_tiff:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_utf8:BOOL=ON
+      -DVTK_MODULE_USE_EXTERNAL_VTK_zlib:BOOL=ON
+      -DPython3_EXECUTABLE:FILEPATH=#{Formula["python@3.9"].opt_bin}/python3
+      -DVTK_GROUP_ENABLE_Qt:STRING=YES
       -DVTK_QT_VERSION:STRING=5
-      -DVTK_Group_Qt=ON
-      -DVTK_WRAP_PYTHON_SIP=ON
-      -DSIP_PYQT_DIR='#{Formula["pyqt5"].opt_share}/sip'
     ]
 
-    # CMake picks up the system's python dylib, even if we have a brewed one.
-    if File.exist? "#{python_prefix}/Python"
-      args << "-DPYTHON_LIBRARY='#{python_prefix}/Python'"
-    elsif File.exist? "#{python_prefix}/lib/lib#{python_version}.a"
-      args << "-DPYTHON_LIBRARY='#{python_prefix}/lib/lib#{python_version}.a'"
-    elsif File.exist? "#{python_prefix}/lib/lib#{python_version}.dylib"
-      args << "-DPYTHON_LIBRARY='#{python_prefix}/lib/lib#{python_version}.dylib'"
-    else
-      odie "No libpythonX.Y.{dylib|a} file found!"
-    end
+    # https://github.com/Homebrew/linuxbrew-core/pull/21654#issuecomment-738549701
+    args << "-DOpenGL_GL_PREFERENCE=LEGACY"
+
+    args << "-DVTK_USE_COCOA:BOOL=ON" if OS.mac?
 
     mkdir "build" do
       system "cmake", "..", *args
       system "make"
       system "make", "install"
     end
-
-    # Avoid hard-coding Python's Cellar paths
-    inreplace Dir["#{lib}/cmake/**/vtkPython.cmake"].first,
-      Formula["python"].prefix.realpath,
-      Formula["python"].opt_prefix
-
-    # Avoid hard-coding HDF5's Cellar path
-    inreplace Dir["#{lib}/cmake/**/vtkhdf5.cmake"].first,
-      Formula["hdf5"].prefix.realpath,
-      Formula["hdf5"].opt_prefix
   end
 
   test do
-    vtk_include = Dir[opt_include/"vtk-*"].first
-    major, minor = vtk_include.match(/.*-(.*)$/)[1].split(".")
+    (testpath/"CMakeLists.txt").write <<~EOS
+      cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
+      project(Distance2BetweenPoints LANGUAGES CXX)
+      find_package(VTK REQUIRED COMPONENTS vtkCommonCore CONFIG)
+      add_executable(Distance2BetweenPoints Distance2BetweenPoints.cxx)
+      target_link_libraries(Distance2BetweenPoints PRIVATE ${VTK_LIBRARIES})
+    EOS
 
-    (testpath/"version.cpp").write <<~EOS
-      #include <vtkVersion.h>
-      #include <assert.h>
-      int main(int, char *[]) {
-        assert (vtkVersion::GetVTKMajorVersion()==#{major});
-        assert (vtkVersion::GetVTKMinorVersion()==#{minor});
-        return EXIT_SUCCESS;
+    (testpath/"Distance2BetweenPoints.cxx").write <<~EOS
+      #include <cassert>
+      #include <vtkMath.h>
+      int main() {
+        double p0[3] = {0.0, 0.0, 0.0};
+        double p1[3] = {1.0, 1.0, 1.0};
+        assert(vtkMath::Distance2BetweenPoints(p0, p1) == 3.0);
+        return 0;
       }
     EOS
 
-    system ENV.cxx, "-std=c++11", "version.cpp", "-I#{vtk_include}"
-    system "./a.out"
-    system "#{bin}/vtkpython", "-c", "exit()"
+    vtk_dir = Dir[opt_lib/"cmake/vtk-*"].first
+    system "cmake", "-DCMAKE_BUILD_TYPE=Debug", "-DCMAKE_VERBOSE_MAKEFILE=ON",
+      "-DVTK_DIR=#{vtk_dir}", "."
+    system "make"
+    system "./Distance2BetweenPoints"
+
+    (testpath/"Distance2BetweenPoints.py").write <<~EOS
+      import vtk
+      p0 = (0, 0, 0)
+      p1 = (1, 1, 1)
+      assert vtk.vtkMath.Distance2BetweenPoints(p0, p1) == 3
+    EOS
+
+    system bin/"vtkpython", "Distance2BetweenPoints.py"
   end
 end

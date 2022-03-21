@@ -1,20 +1,33 @@
 class SpiceProtocol < Formula
   desc "Headers for SPICE protocol"
   homepage "https://www.spice-space.org/"
-  url "https://www.spice-space.org/download/releases/spice-protocol-0.12.15.tar.bz2"
-  sha256 "8b4db23baa4b1337a50d049d9bf43f932331dd95f204836c0ce46c4962306419"
+  url "https://www.spice-space.org/download/releases/spice-protocol-0.14.4.tar.xz"
+  sha256 "04ffba610d9fd441cfc47dfaa135d70096e60b1046d2119d8db2f8ea0d17d912"
+  license "BSD-3-Clause"
+
+  livecheck do
+    url "https://www.spice-space.org/download/releases/"
+    regex(/href=.*?spice-protocol[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "b899ebffaf616bb0801dd3ad1b0f87b9b05b756257875a3311534c4408aecc08" => :mojave
-    sha256 "0d946742733d9edd6fcb9c2b6ca5c50dda97655cec7e1baa4f4032875e4eed4e" => :high_sierra
-    sha256 "0d946742733d9edd6fcb9c2b6ca5c50dda97655cec7e1baa4f4032875e4eed4e" => :sierra
+    sha256 cellar: :any_skip_relocation, all: "c95213126a4de3d3ab508fbfc7f23f11ece2f0011d3a6d251d7f79034376066e"
+  end
+
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
+
+  on_linux do
+    # Test fails on gcc-5: spice/macros.h:68:32: error: expected '}' before '__attribute__'
+    depends_on "gcc" => :test
   end
 
   def install
-    system "./configure", "--disable-silent-rules",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *std_meson_args, ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
+    end
   end
 
   test do
@@ -24,9 +37,13 @@ class SpiceProtocol < Formula
         return (SPICE_LINK_ERR_OK == 0) ? 0 : 1;
       }
     EOS
-    system ENV.cc, "test.cpp",
-                   "-I#{include}/spice-1",
-                   "-o", "test"
+
+    cc = ENV.cc
+    on_linux do
+      cc = Formula["gcc"].opt_bin/"gcc-#{Formula["gcc"].any_installed_version.major}"
+    end
+
+    system cc, "test.cpp", "-I#{include}/spice-1", "-o", "test"
     system "./test"
   end
 end

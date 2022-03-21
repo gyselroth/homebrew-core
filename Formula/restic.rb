@@ -1,23 +1,28 @@
 class Restic < Formula
   desc "Fast, efficient and secure backup program"
   homepage "https://restic.github.io/"
-  url "https://github.com/restic/restic/archive/v0.9.5.tar.gz"
-  sha256 "e22208e946ede07f56ef60c1c89de817b453967663ce4867628dff77761bd429"
-  head "https://github.com/restic/restic.git"
+  url "https://github.com/restic/restic/archive/v0.12.1.tar.gz"
+  sha256 "a9c88d5288ce04a6cc78afcda7590d3124966dab3daa9908de9b3e492e2925fb"
+  license "BSD-2-Clause"
+  head "https://github.com/restic/restic.git", branch: "master"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "9f9218c65c562b2eace35015cff1a2dafd5a59dc5973165f3b59d7165f7d0a6c" => :mojave
-    sha256 "1775322bbdcd094cd3cded9097b5e07588fdd4c40e447fd2db319e37e8f2704e" => :high_sierra
-    sha256 "450abee766d22cd546b03beac010cef7e9b268aa0f9a223519697e3660985805" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "ac34f5a9df926e51febf7fc69df6ca57c7fd2c5705f9b1fe057a9e36cf8ac952"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "c42f5dc067e1f3d2fc001bceb623564bff4b2bc692c486e2bc69911fc4db932e"
+    sha256 cellar: :any_skip_relocation, monterey:       "189c9d1377a6a0d3569a6c9ce5f716df4bb75d685623e46201829d018567b2ac"
+    sha256 cellar: :any_skip_relocation, big_sur:        "b776b9a367a6a290d7ba970ecb560e1bca188534a868020ed37f5e7d8bcb33a7"
+    sha256 cellar: :any_skip_relocation, catalina:       "c8ad9c03fcad3d00e354208d4225f5a625185f2b7179e78f93f759748b80cf8f"
+    sha256 cellar: :any_skip_relocation, mojave:         "a3f6155d24196e1f49fda7cad19da3753428ce1cae63e283dc1b66e623a0c756"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "2ce82bf169c87af5f42b0b564179148d06ed6b19ae1bde13b10e04a8ccce5e3a"
   end
 
   depends_on "go" => :build
 
   def install
     ENV["GOPATH"] = HOMEBREW_CACHE/"go_cache"
+    ENV["CGO_ENABLED"] = "1"
 
-    system "go", "run", "build.go"
+    system "go", "run", "-mod=vendor", "build.go", "--enable-cgo"
 
     mkdir "completions"
     system "./restic", "generate", "--bash-completion", "completions/restic"

@@ -1,31 +1,46 @@
 class Yaz < Formula
   desc "Toolkit for Z39.50/SRW/SRU clients/servers"
-  homepage "https://www.indexdata.com/yaz"
-  url "http://ftp.indexdata.dk/pub/yaz/yaz-5.27.0.tar.gz"
-  sha256 "3db834b30aad941aaee67a3daf0cfc33d6f81e724dd8d54227be201ad93c18f3"
-  revision 2
+  homepage "https://www.indexdata.com/resources/software/yaz/"
+  license "BSD-3-Clause"
+  revision 1
+
+  stable do
+    url "https://ftp.indexdata.com/pub/yaz/yaz-5.31.1.tar.gz"
+    sha256 "14cc34d19fd1fd27e544619f4c13300f14dc807088a1acc69fcb5c28d29baa15"
+  end
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?yaz[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    cellar :any
-    sha256 "7b44b490916fb2b697ccb22fa5bc0c39315662f18c0695b0368f71795011452f" => :mojave
-    sha256 "184f4b43656683e32406816ffd0476b18906431f6f7c73ba63328350a80129c7" => :high_sierra
-    sha256 "dec2393d36f09c69475a47ed19f1dccb80c2640ebfe7ec47650fa18b5fe49ca8" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "b3d5d69e2d5b5df5fb851e9ad0b302d1322808f853cc6b124a5fd0862f5c68dd"
+    sha256 cellar: :any,                 arm64_big_sur:  "5a5abf48bfe9a0cd943190e777cdbc1a5708a73be0e8d2ac66561a8a7cbb9219"
+    sha256 cellar: :any,                 monterey:       "d300cd7ccc95ae7f7fec2e1402a21b59997016ba37a5565da3500626eaefb979"
+    sha256 cellar: :any,                 big_sur:        "9b2c35223337b640ec59268d9b6ed6bb7526cef30868e34fa5c0d967e1b659f6"
+    sha256 cellar: :any,                 catalina:       "93ced5be6bc4dba6ed4b90a3e714cc818e4dac511d2cc9eec1b316b2edfc494e"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "ead1748e64497a12fc41535281a728351af6b95440ce582c049a35e039c77061"
   end
 
   head do
-    url "https://github.com/indexdata/yaz.git"
+    url "https://github.com/indexdata/yaz.git", branch: "master"
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
   depends_on "pkg-config" => :build
+  depends_on "gnutls"
   depends_on "icu4c"
+
+  uses_from_macos "libxml2"
 
   def install
     system "./buildconf.sh" if build.head?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
+                          "--with-gnutls",
                           "--with-xml2"
     system "make", "install"
   end

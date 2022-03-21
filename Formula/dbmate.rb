@@ -1,25 +1,28 @@
 class Dbmate < Formula
   desc "Lightweight, framework-agnostic database migration tool"
   homepage "https://github.com/amacneil/dbmate"
-  url "https://github.com/amacneil/dbmate/archive/v1.6.0.tar.gz"
-  sha256 "b73c6edf57a125b9d5bb51d2eac0067dae6f8049d7ff9aa891b2acaa2882f4d5"
-  head "https://github.com/amacneil/dbmate.git"
+  url "https://github.com/amacneil/dbmate/archive/v1.14.0.tar.gz"
+  sha256 "226397b9a0d2a145e9e5898fe923f68e61817e68489791b81bf3ebbc40f1c879"
+  license "MIT"
+  head "https://github.com/amacneil/dbmate.git", branch: "main"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "7e8b233775e3f4916fc0a342e1dd30a5af8fe5d59ac59ab961d2957b9918e2af" => :mojave
-    sha256 "79784ca8ce7c443219a3c66fb4089cdda76dec37a1f0b08235d6efa59326aa33" => :high_sierra
-    sha256 "f23e60c78dbcd764ea0ddf42c6ad6c858edcc7046024001839c3aabbed16ece3" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "70848522f0c4423142f568e2f86ab3e8b7a6abf364092db41c9ecc5f86990393"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "d755d286c80f78f403e9861cf45f71a967a3583d1baaf81729808fd281f9a76f"
+    sha256 cellar: :any_skip_relocation, monterey:       "02ee01ea88bc8b99ef575ba619db20e314b6bacf4bd1c190c4d1946277450b29"
+    sha256 cellar: :any_skip_relocation, big_sur:        "5621dcb08777c80c64a11f202c852536fbeff6d7746d5f45544954aada58515b"
+    sha256 cellar: :any_skip_relocation, catalina:       "c307185bf0c0f4e815b13275bb13db6f5396d71327c1516b979cf707f1946387"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "a324736891341d3c3f1109c3db11863df97d3685b3ac5c218fc3449a6b4bc034"
   end
 
   depends_on "go" => :build
 
   def install
-    system "go", "build", "-ldflags", "-s", "-o", bin/"dbmate", "."
+    system "go", "build", *std_go_args(ldflags: "-s -w"), "-tags", "sqlite_omit_load_extension,sqlite_json"
   end
 
   test do
-    (testpath/".env").write("DATABASE_URL=sqlite3:///test.sqlite3")
+    (testpath/".env").write("DATABASE_URL=sqlite3:test.sqlite3")
     system bin/"dbmate", "create"
     assert_predicate testpath/"test.sqlite3", :exist?, "failed to create test.sqlite3"
   end

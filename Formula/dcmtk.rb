@@ -1,25 +1,38 @@
 class Dcmtk < Formula
   desc "OFFIS DICOM toolkit command-line utilities"
   homepage "https://dicom.offis.de/dcmtk.php.en"
-  url "https://dicom.offis.de/download/dcmtk/dcmtk364/dcmtk-3.6.4.tar.gz"
-  sha256 "a93ff354fae091689a0740a1000cde7d4378fdf733aef9287a70d7091efa42c0"
-  head "https://git.dcmtk.org/dcmtk.git"
+  url "https://dicom.offis.de/download/dcmtk/dcmtk366/dcmtk-3.6.6.tar.gz"
+  sha256 "6859c62b290ee55677093cccfd6029c04186d91cf99c7642ae43627387f3458e"
+  head "https://git.dcmtk.org/dcmtk.git", branch: "master"
+
+  livecheck do
+    url "https://dicom.offis.de/download/dcmtk/release/"
+    regex(/href=.*?dcmtk[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "46d767ca45268ce74114db9d9593e28acd17ac31ffb055c00653702f11795102" => :mojave
-    sha256 "322ad228d11c068ddab0ce532106aeddfbebd6019c433a918d3ee90eb53d7bee" => :high_sierra
-    sha256 "09ed452dbde3f7eae5233d475a1bbf07824505773729dcc55f6f00b90378d8fd" => :sierra
+    sha256 monterey:     "1dc612a4f94de16b6d967b0d7bfddbd887524a38b660d6be77900f74927d5dc8"
+    sha256 big_sur:      "14f0ad1188c09414ce0c38a5b1daad58031c490dedcb0e602d3a9d8946a7513c"
+    sha256 catalina:     "b7169841e5ae53c3641392130e2d72190a859eb566e0445d16f58131a0bfe34a"
+    sha256 mojave:       "ba2af245944fd723362c4fd758aaa90a9f3b651e3422ce1326078bcdc4cad093"
+    sha256 x86_64_linux: "b7835228c2d0f5a9fb9a87970d75b34415f1629e24ee0c10dc953722595163af"
   end
 
   depends_on "cmake" => :build
   depends_on "libpng"
   depends_on "libtiff"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
+
+  uses_from_macos "libxml2"
 
   def install
     mkdir "build" do
-      system "cmake", *std_cmake_args, ".."
+      system "cmake", "-DBUILD_SHARED_LIBS=OFF", *std_cmake_args, ".."
       system "make", "install"
+      system "cmake", "-DBUILD_SHARED_LIBS=ON", *std_cmake_args, ".."
+      system "make", "install"
+
+      inreplace lib/"cmake/dcmtk/DCMTKConfig.cmake", Superenv.shims_path, ""
     end
   end
 

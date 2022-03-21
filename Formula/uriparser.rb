@@ -1,47 +1,30 @@
 class Uriparser < Formula
   desc "URI parsing library (strictly RFC 3986 compliant)"
   homepage "https://uriparser.github.io/"
-  url "https://github.com/uriparser/uriparser/releases/download/uriparser-0.9.1/uriparser-0.9.1.tar.bz2"
-  sha256 "75248f3de3b7b13c8c9735ff7b86ebe72cbb8ad043291517d7d53488e0893abe"
+  url "https://github.com/uriparser/uriparser/releases/download/uriparser-0.9.6/uriparser-0.9.6.tar.bz2"
+  sha256 "9ce4c3f151e78579f23937b44abecb428126863ad02e594e115e882353de905b"
+  license "BSD-3-Clause"
+  head "https://github.com/uriparser/uriparser.git", branch: "master"
 
   bottle do
-    cellar :any
-    sha256 "69c5e0b1aad68761b9737618740c57339c06fa5b33ca42f8739af1e795cc6645" => :mojave
-    sha256 "aecf626254251f0f3eecca369bf8cda28f530a14bdf2bb493063a8eb78b402bc" => :high_sierra
-    sha256 "0657e76e94b481bc0b859ba68b8e31d460dce44e7ec3fcc573cb5bfd6bb89839" => :sierra
-  end
-
-  head do
-    url "https://github.com/uriparser/uriparser.git"
-
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
+    sha256 cellar: :any,                 arm64_monterey: "3f134b815c73529b29e59b870500d5b66f3643a3f77d26f0ae160d02114713c0"
+    sha256 cellar: :any,                 arm64_big_sur:  "e873b79a8af0b5331dcd4e51af7d4f52c88e6bf638b842f89cfeafa6606a6d1e"
+    sha256 cellar: :any,                 monterey:       "ed815b10b6d13b85d1dcc744bdb27c619d7cea1065e0b225587fb15f530feaf2"
+    sha256 cellar: :any,                 big_sur:        "2e8ad9cd04d73bb1be69799562415023d2d5b3010e0cf1a5d3196ca5695912f8"
+    sha256 cellar: :any,                 catalina:       "e57fd509a1cf3725b9b95cdc75e387702d876065975e1401f83a634e442a7f92"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "95d5ad1a9ad35dd79d6c7215349715c2f9f53ae1eec02d38506973a92d0706cc"
   end
 
   depends_on "cmake" => :build
-  depends_on "pkg-config" => :build
 
-  conflicts_with "libkml", :because => "both install `liburiparser.dylib`"
-
-  resource "gtest" do
-    url "https://github.com/google/googletest/archive/release-1.8.1.tar.gz"
-    sha256 "9bf1fe5182a604b4135edc1a425ae356c9ad15e9b23f9f12a02e80184c3a249c"
-  end
+  conflicts_with "libkml", because: "both install `liburiparser.dylib`"
 
   def install
-    (buildpath/"gtest").install resource("gtest")
-    (buildpath/"gtest/googletest").cd do
-      system "cmake", "."
-      system "make"
-    end
-    ENV["GTEST_CFLAGS"] = "-I./gtest/googletest/include"
-    ENV["GTEST_LIBS"] = "-L./gtest/googletest/ -lgtest"
-    system "./autogen.sh" if build.head?
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}",
-                          "--disable-doc"
-    system "make", "check"
+    system "cmake", ".", "-DURIPARSER_BUILD_TESTS=OFF",
+                         "-DURIPARSER_BUILD_DOCS=OFF",
+                         "-DCMAKE_INSTALL_RPATH=#{rpath}",
+                         *std_cmake_args
+    system "make"
     system "make", "install"
   end
 

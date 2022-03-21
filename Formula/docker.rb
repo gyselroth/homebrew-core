@@ -1,32 +1,48 @@
 class Docker < Formula
   desc "Pack, ship and run any application as a lightweight container"
   homepage "https://www.docker.com/"
-  url "https://github.com/docker/docker-ce.git",
-      :tag      => "v18.09.6",
-      :revision => "481bc7715621adba10752357e0d537c8dc86507d"
+  url "https://github.com/docker/cli.git",
+      tag:      "v20.10.13",
+      revision: "a224086349269551becacce16e5842ceeb2a98d6"
+  license "Apache-2.0"
+  head "https://github.com/docker/cli.git", branch: "master"
+
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)(?:[._-]ce)?$/i)
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "eefe44ffb39bc0de3c88c3ef5bd7fedee6aded52eb1c4b4d07dc94158ba18b16" => :mojave
-    sha256 "866049a99ebb37632098eb96d856827242ccd9fcdcb3e95dcf1ff793bc0296b5" => :high_sierra
-    sha256 "90d63ee350c17eac5c98fe8615f77af7cf7b1233ce4bd417c9120f8b7619818f" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "2208142e499908b16079d7910eaf5e0f18d7075efc44fc412266cf84765b56ab"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "12112178ed50faba4f0223429ab2bb0648bdc657ea1d44909a65f9b23d26bb04"
+    sha256 cellar: :any_skip_relocation, monterey:       "933dc4d32c59abe7ad65bd2a1f8b4d65567e6e6cfc6e4f4a55ab1397117600c5"
+    sha256 cellar: :any_skip_relocation, big_sur:        "6a7a5886a368dd08f527387d50cfcfc8d576f230b75d7c90159319580dd6ae35"
+    sha256 cellar: :any_skip_relocation, catalina:       "47240e65d97f818f31063c75b8ea01b6ce5ab7d6ad2b0b45fc96fc95a1251996"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "67818b3680fe8dd8f4be0bf4dab0d0908c1160a7a81127549e22a6263a1a0489"
   end
 
   depends_on "go" => :build
+  depends_on "go-md2man" => :build
+
+  conflicts_with "docker-completion", because: "docker already includes these completion scripts"
 
   def install
     ENV["GOPATH"] = buildpath
+    ENV["GO111MODULE"] = "auto"
     dir = buildpath/"src/github.com/docker/cli"
-    dir.install (buildpath/"components/cli").children
+    dir.install (buildpath/"").children
     cd dir do
-      commit = Utils.popen_read("git rev-parse --short HEAD").chomp
-      build_time = Utils.popen_read("date -u +'%Y-%m-%dT%H:%M:%SZ' 2> /dev/null").chomp
-      ldflags = ["-X \"github.com/docker/cli/cli.BuildTime=#{build_time}\"",
-                 "-X github.com/docker/cli/cli.GitCommit=#{commit}",
-                 "-X github.com/docker/cli/cli.Version=#{version}",
-                 "-X \"github.com/docker/cli/cli.PlatformName=Docker Engine - Community\""]
-      system "go", "build", "-o", bin/"docker", "-ldflags", ldflags.join(" "),
-             "github.com/docker/cli/cmd/docker"
+      ldflags = ["-X \"github.com/docker/cli/cli/version.BuildTime=#{time.iso8601}\"",
+                 "-X github.com/docker/cli/cli/version.GitCommit=#{Utils.git_short_head}",
+                 "-X github.com/docker/cli/cli/version.Version=#{version}",
+                 "-X \"github.com/docker/cli/cli/version.PlatformName=Docker Engine - Community\""]
+      system "go", "build", *std_go_args(ldflags: ldflags), "github.com/docker/cli/cmd/docker"
+
+      Pathname.glob("man/*.[1-8].md") do |md|
+        section = md.to_s[/\.(\d+)\.md\Z/, 1]
+        (man/"man#{section}").mkpath
+        system "go-md2man", "-in=#{md}", "-out=#{man/"man#{section}"/md.stem}"
+      end
 
       bash_completion.install "contrib/completion/bash/docker"
       fish_completion.install "contrib/completion/fish/docker.fish"
@@ -35,6 +51,15 @@ class Docker < Formula
   end
 
   test do
-    system "#{bin}/docker", "--version"
+    assert_match "Docker version #{version}", shell_output("#{bin}/docker --version")
+
+    on_macos do
+      assert_match "ERROR: Cannot connect to the Docker daemon", shell_output("#{bin}/docker info", 1)
+    end
+
+    on_linux do
+      assert_match "ERROR: Got permission denied while trying to connect to the Docker daemon socket",
+        shell_output("#{bin}/docker info", 1)
+    end
   end
 end

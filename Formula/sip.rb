@@ -1,108 +1,92 @@
 class Sip < Formula
+  include Language::Python::Virtualenv
+
   desc "Tool to create Python bindings for C and C++ libraries"
   homepage "https://www.riverbankcomputing.com/software/sip/intro"
-  url "https://dl.bintray.com/homebrew/mirror/sip-4.19.8.tar.gz"
-  mirror "https://downloads.sourceforge.net/project/pyqt/sip/sip-4.19.8/sip-4.19.8.tar.gz"
-  sha256 "7eaf7a2ea7d4d38a56dd6d2506574464bddf7cf284c960801679942377c297bc"
-  revision 11
-  head "https://www.riverbankcomputing.com/hg/sip", :using => :hg
+  url "https://files.pythonhosted.org/packages/de/c1/9ac5596c10f6ce28abc1849ed1b6299b3953af0b6ff21e227024991a517e/sip-6.5.1.tar.gz"
+  sha256 "204f0240db8999a749d638a987b351861843e69239b811ec3d1881412c3706a6"
+  license any_of: ["GPL-2.0-only", "GPL-3.0-only"]
+  head "https://www.riverbankcomputing.com/hg/sip", using: :hg
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "6590c0f0e1e0b58333adbcb56354248389db9dbec3d6a3bfd6e02c4a20a89031" => :mojave
-    sha256 "546eb0374f78a0071c2bd3c5fb8cf98504535ba5ad74554ad6af0017ab3369de" => :high_sierra
-    sha256 "8c7a0a48d80dc991c875e6078b850b8cabca6b81374a7c8f699e5cdec744e98c" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "679ab5ed54d08cd2c73b83580061d4458da33fd7670b206c43a9ed55a787b900"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "27edf0c915d0f92a6618e4cb02f700152890aba90cb0860d70cf21b47e36a3bc"
+    sha256 cellar: :any_skip_relocation, monterey:       "4ddcf1aa1e86bfe6cf560c1280524543057cef2cc18e855ebd91e939a794b0f9"
+    sha256 cellar: :any_skip_relocation, big_sur:        "5bc3fed653bb7f9db814eaf37b8ee7e3fbbf4515f7ed9c5dc5fef98a989d7beb"
+    sha256 cellar: :any_skip_relocation, catalina:       "951a9b7ecdf226b80238c81d9c90879f11f520e78749bdde278d25b8db705631"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "f01fcca9f49930582b3fb5c923093a9e087f74a0cd1d319f41533370d8758b69"
   end
 
-  depends_on "python"
-  depends_on "python@2"
+  depends_on "python@3.9"
+
+  resource "packaging" do
+    url "https://files.pythonhosted.org/packages/df/9e/d1a7217f69310c1db8fdf8ab396229f55a699ce34a203691794c5d1cad0c/packaging-21.3.tar.gz"
+    sha256 "dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"
+  end
+
+  resource "pyparsing" do
+    url "https://files.pythonhosted.org/packages/d6/60/9bed18f43275b34198eb9720d4c1238c68b3755620d20df0afd89424d32b/pyparsing-3.0.7.tar.gz"
+    sha256 "18ee9022775d270c55187733956460083db60b37d0d0fb357445f3094eed3eea"
+  end
+
+  resource "toml" do
+    url "https://files.pythonhosted.org/packages/be/ba/1f744cdc819428fc6b5084ec34d9b30660f6f9daaf70eead706e3203ec3c/toml-0.10.2.tar.gz"
+    sha256 "b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"
+  end
 
   def install
-    ENV.prepend_path "PATH", Formula["python"].opt_libexec/"bin"
-    ENV.delete("SDKROOT") # Avoid picking up /Application/Xcode.app paths
-
-    if build.head?
-      # Link the Mercurial repository into the download directory so
-      # build.py can use it to figure out a version number.
-      ln_s cached_download/".hg", ".hg"
-      # build.py doesn't run with python3
-      system "python", "build.py", "prepare"
+    python = Formula["python@3.9"]
+    venv = virtualenv_create(libexec, python.bin/"python3")
+    resources.each do |r|
+      venv.pip_install r
     end
 
-    ["python2", "python3"].each do |python|
-      version = Language::Python.major_minor_version python
-      system python, "configure.py",
-                     "--deployment-target=#{MacOS.version}",
-                     "--destdir=#{lib}/python#{version}/site-packages",
-                     "--bindir=#{bin}",
-                     "--incdir=#{include}",
-                     "--sipdir=#{HOMEBREW_PREFIX}/share/sip"
-      system "make"
-      system "make", "install"
-      system "make", "clean"
-    end
-  end
+    system python.bin/"python3", *Language::Python.setup_install_args(prefix)
 
-  def post_install
-    (HOMEBREW_PREFIX/"share/sip").mkpath
-  end
-
-  def caveats; <<~EOS
-    The sip-dir for Python is #{HOMEBREW_PREFIX}/share/sip.
-  EOS
+    site_packages = Language::Python.site_packages(python)
+    pth_contents = "import site; site.addsitedir('#{libexec/site_packages}')\n"
+    (prefix/site_packages/"homebrew-sip.pth").write pth_contents
   end
 
   test do
-    (testpath/"test.h").write <<~EOS
-      #pragma once
-      class Test {
-      public:
-        Test();
-        void test();
-      };
-    EOS
-    (testpath/"test.cpp").write <<~EOS
-      #include "test.h"
-      #include <iostream>
-      Test::Test() {}
-      void Test::test()
-      {
-        std::cout << "Hello World!" << std::endl;
-      }
-    EOS
-    (testpath/"test.sip").write <<~EOS
-      %Module test
-      class Test {
-      %TypeHeaderCode
-      #include "test.h"
-      %End
-      public:
-        Test();
-        void test();
-      };
-    EOS
-    (testpath/"generate.py").write <<~EOS
-      from sipconfig import SIPModuleMakefile, Configuration
-      m = SIPModuleMakefile(Configuration(), "test.build")
-      m.extra_libs = ["test"]
-      m.extra_lib_dirs = ["."]
-      m.generate()
-    EOS
-    (testpath/"run.py").write <<~EOS
-      from test import Test
-      t = Test()
-      t.test()
-    EOS
-    system ENV.cxx, "-shared", "-Wl,-install_name,#{testpath}/libtest.dylib",
-                    "-o", "libtest.dylib", "test.cpp"
-    system bin/"sip", "-b", "test.build", "-c", ".", "test.sip"
+    (testpath/"pyproject.toml").write <<~EOS
+      # Specify sip v6 as the build system for the package.
+      [build-system]
+      requires = ["sip >=6, <7"]
+      build-backend = "sipbuild.api"
 
-    ["python2", "python3"].each do |python|
-      version = Language::Python.major_minor_version python
-      ENV["PYTHONPATH"] = lib/"python#{version}/site-packages"
-      system python, "generate.py"
-      system "make", "-j1", "clean", "all"
-      system python, "run.py"
-    end
+      # Specify the PEP 566 metadata for the project.
+      [tool.sip.metadata]
+      name = "fib"
+    EOS
+
+    (testpath/"fib.sip").write <<~EOS
+      // Define the SIP wrapper to the (theoretical) fib library.
+
+      %Module(name=fib, language="C")
+
+      int fib_n(int n);
+      %MethodCode
+          if (a0 <= 0)
+          {
+              sipRes = 0;
+          }
+          else
+          {
+              int a = 0, b = 1, c, i;
+
+              for (i = 2; i <= a0; i++)
+              {
+                  c = a + b;
+                  a = b;
+                  b = c;
+              }
+
+              sipRes = b;
+          }
+      %End
+    EOS
+
+    system "sip-install", "--target-dir", "."
   end
 end

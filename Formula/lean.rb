@@ -1,26 +1,51 @@
 class Lean < Formula
   desc "Theorem prover"
-  homepage "https://leanprover.github.io/"
-  url "https://github.com/leanprover/lean/archive/v3.4.2.tar.gz"
-  sha256 "ec4488be8473577666f38dec81123d0f7b26476139d3caa2e175a571f6c00d87"
-  head "https://github.com/leanprover/lean.git"
+  homepage "https://leanprover-community.github.io/"
+  url "https://github.com/leanprover-community/lean/archive/v3.41.0.tar.gz"
+  sha256 "1147d5cc990ea1d8c3a39df8e895a6401b12fe545dac984206fc024db3650f69"
+  license "Apache-2.0"
+  head "https://github.com/leanprover-community/lean.git", branch: "master"
+
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+    strategy :git do |tags, regex|
+      tags.map do |tag|
+        version = tag[regex, 1]
+        next if version == "9.9.9" # Omit a problematic version tag
+
+        version
+      end
+    end
+  end
 
   bottle do
-    cellar :any
-    sha256 "a4e42293767b2c39d46ededd68ccdbae0deddc8280a8d5a0004390091e91acd4" => :mojave
-    sha256 "31506dc58b1108625510415a551fea963739898ad675d8cb3023af6e3922e109" => :high_sierra
-    sha256 "a5df8afdccd0db40f4a9c8184d9197a8a66a47b2c2bbf7451e05976b13274025" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "e8e216c5cb0d4256f9ff0aba3bbc1082b5c0561a3faedfce45d8d09b89f4c1aa"
+    sha256 cellar: :any,                 arm64_big_sur:  "77e133cf7b5dc915a060463052204692c1574de0ea16db2814cb1e5c91000864"
+    sha256 cellar: :any,                 monterey:       "62c1c694df08ff40079650639e0868890a898d172adc45b4d92e5ccd5aef6aff"
+    sha256 cellar: :any,                 big_sur:        "6aba51e50f11072a0f1f5eac281a63712d9a99eecad8f2eb33aa73fb76db451e"
+    sha256 cellar: :any,                 catalina:       "b67d23339d7489e3381e67a4c1dc675bb012255bff6075085edb82e11e1fdb06"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "055a52d6d18cb5c867ea1317bbf404fc83b6cf2ce71fc49c2b2f7326e03a24b9"
   end
 
   depends_on "cmake" => :build
+  depends_on "coreutils"
   depends_on "gmp"
   depends_on "jemalloc"
+  depends_on macos: :mojave
+
+  conflicts_with "elan-init", because: "`lean` and `elan-init` install the same binaries"
+
+  fails_with gcc: "5"
 
   def install
-    mkdir "src/build" do
-      system "cmake", "..", *std_cmake_args
-      system "make", "install"
-    end
+    args = std_cmake_args + %w[
+      -DCMAKE_CXX_FLAGS='-std=c++14'
+    ]
+
+    system "cmake", "-S", "src", "-B", "src/build", *args
+    system "cmake", "--build", "src/build"
+    system "cmake", "--install", "src/build"
   end
 
   test do
@@ -36,6 +61,7 @@ class Lean < Formula
           split, repeat { assumption }
       end
     EOS
-    system "#{bin}/lean", testpath/"hello.lean"
+    system bin/"lean", testpath/"hello.lean"
+    system bin/"leanpkg", "help"
   end
 end

@@ -1,27 +1,30 @@
 class Sccache < Formula
   desc "Used as a compiler wrapper and avoids compilation when possible"
   homepage "https://github.com/mozilla/sccache"
-  url "https://github.com/mozilla/sccache/archive/0.2.8.tar.gz"
-  sha256 "e0ed93c5ce26d240e0f737e9409decf80cdae762f21eb51d3d4c26539bdbd468"
-  head "https://github.com/mozilla/sccache.git"
+  url "https://github.com/mozilla/sccache/archive/v0.2.15.tar.gz"
+  sha256 "7dbe71012f9b0b57d8475de6b36a9a3b4802e44a135e886f32c5ad1b0eb506e0"
+  license "Apache-2.0"
+  head "https://github.com/mozilla/sccache.git", branch: "master"
 
   bottle do
-    cellar :any
-    sha256 "34dbac945a8df83497f5aae52a3bd915a280e5b12e1b3928b8d9001c04a43695" => :mojave
-    sha256 "f9d8d617558c29f78dc3631f4e7b32071d7cac8aa65d6de0a9b72fc42b0554cf" => :high_sierra
-    sha256 "e40cd1d872fe3b16f81160ad0cb6426e9dbbe0204513bd3f1ca1421119f64166" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "68be9e4b51263bdec2273ae094b1fae607de5ba1d09410d8faa39917f4a18cac"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "e7674f3df1e319c5829551d64b4f2e25486ce7c68e2af84be9d13c496c296fbe"
+    sha256 cellar: :any_skip_relocation, monterey:       "335c5f7e025f237591ece1ab13c842a270075b80e8da3ab4c0e6e500558a5415"
+    sha256 cellar: :any_skip_relocation, big_sur:        "76080d09cb0b9bf50e7ef37609dc3e797b97b3c0f9deb4d71213b91524d67ab9"
+    sha256 cellar: :any_skip_relocation, catalina:       "d79d0f596f68b457b821a2d16444a53a93faa198049e4810b1a9016ef39fc7fe"
+    sha256 cellar: :any_skip_relocation, mojave:         "76a1c87457acd3fbdd5f6352726911d2d0a524afce4639617f7559e80b6ae849"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "3af380852b2e95b2831efd6ac43320e57a64c1d396ba2d64c1fb62eee95040ec"
   end
 
   depends_on "rust" => :build
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
   def install
     # Ensure that the `openssl` crate picks up the intended library.
     # https://crates.io/crates/openssl#manual-configuration
-    ENV["OPENSSL_DIR"] = Formula["openssl"].opt_prefix
+    ENV["OPENSSL_DIR"] = Formula["openssl@1.1"].opt_prefix
 
-    system "cargo", "install", "--root", prefix, "--path", ".",
-                               "--features", "all"
+    system "cargo", "install", "--features", "all", *std_cargo_args
   end
 
   test do

@@ -1,23 +1,28 @@
 class Yara < Formula
   desc "Malware identification and classification tool"
   homepage "https://github.com/VirusTotal/yara/"
-  url "https://github.com/VirusTotal/yara/archive/v3.10.0.tar.gz"
-  sha256 "3281d43d6b49a4ca8d3a5d2521e06a0b72863702022f981b051856c2b83449c2"
-  head "https://github.com/VirusTotal/yara.git"
+  url "https://github.com/VirusTotal/yara/archive/refs/tags/v4.2.0.tar.gz"
+  sha256 "6f567d4e4b79a210cd57a820f59f19ee69b024188ef4645b1fc11488a4660951"
+  license "BSD-3-Clause"
+  head "https://github.com/VirusTotal/yara.git", branch: "master"
 
   bottle do
-    cellar :any
-    sha256 "96e4ce1d68bf111eb31a83380383176e3fc2d79221751e2d301e01cf5a043fe0" => :mojave
-    sha256 "da1fb89ba681a95d0841a5be0b07621cd88223d1af66564a2217c144739b2b5f" => :high_sierra
-    sha256 "eb6429e5275ef5ebcb5ba7f6669349363cc797cbef8991e33aaa1377ed263973" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "46f44b445feb55960f9c579963cb8b77f6a15e33c09fb0a9894a5c61156032fe"
+    sha256 cellar: :any,                 arm64_big_sur:  "61dd945991de18a48484da4aa98db52fbdd49b194cb23b54e44e21a52f6661b7"
+    sha256 cellar: :any,                 monterey:       "d6151508ccb1252641d3a534f8c048058d0fd5921e0a35cfcfbaec35e16106e0"
+    sha256 cellar: :any,                 big_sur:        "c9dbf2388e260d2aeab61edfcf2b80a71636ef64c5aea361076b87d15a08df8b"
+    sha256 cellar: :any,                 catalina:       "cc02c80c157626b4e6849cf8dd9a5bd5dac23b6fc716b4b52c8cd244446698ab"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "a7b22961cc5ae9b3b6fe93fcaa2df81056aeb01c934e0aef51b62b2cb21bfa99"
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
+  depends_on "pkg-config" => :build
   depends_on "jansson"
   depends_on "libmagic"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
+  depends_on "protobuf-c"
 
   def install
     system "./bootstrap.sh"

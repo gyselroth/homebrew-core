@@ -1,36 +1,31 @@
 class Numpy < Formula
   desc "Package for scientific computing with Python"
   homepage "https://www.numpy.org/"
-  url "https://files.pythonhosted.org/packages/d3/4b/f9f4b96c0b1ba43d28a5bdc4b64f0b9d3fbcf31313a51bc766942866a7c7/numpy-1.16.4.zip"
-  sha256 "7242be12a58fec245ee9734e625964b97cf7e3f2f7d016603f9e56660ce479c7"
-  head "https://github.com/numpy/numpy.git"
+  url "https://files.pythonhosted.org/packages/64/4a/b008d1f8a7b9f5206ecf70a53f84e654707e7616a771d84c05151a4713e9/numpy-1.22.3.zip"
+  sha256 "dbc7601a3b7472d559dc7b933b18b4b66f9aa7452c120e87dfb33d02008c8a18"
+  license "BSD-3-Clause"
+  head "https://github.com/numpy/numpy.git", branch: "main"
 
   bottle do
-    cellar :any
-    sha256 "9f2a8c3995cf8006fead37307be70846d54fe0df3c6a45ee7362ca59c8976076" => :mojave
-    sha256 "3467b05ecef335d207da6962c9ab590cc1a15fa15dcac0153814aed96e1130d0" => :high_sierra
-    sha256 "c360813a390241fad7104d8f0f848739c0752def0e147df4c48411df24a9ba80" => :sierra
+    sha256 cellar: :any, arm64_monterey: "0a82053a086d3fdabb49ba60be5088ddfd192a59e5301c47b964a15e04b47c9b"
+    sha256 cellar: :any, arm64_big_sur:  "1e57920ffffc06e4f2cf676aded79b3a0bd1b1a8f264c6f57df731c55076e10f"
+    sha256 cellar: :any, monterey:       "cf646852b393e1907969538fa3ce3cb6788427cc5d0ec2a333e9c78c212073e7"
+    sha256 cellar: :any, big_sur:        "87184fc6f1976c958f4b192f741914634664f400c82be9d21dd9591e04b464b8"
+    sha256 cellar: :any, catalina:       "63889b2b8c2d804c5561cb28ee18ed3b4aea0b516698973235a57c6d77027e8e"
+    sha256               x86_64_linux:   "4a5591fa46462c0f7b4d589c3854c8a3bc3e21f0f04065c2c4596840f6df3ef0"
   end
 
+  depends_on "cython" => :build
   depends_on "gcc" => :build # for gfortran
   depends_on "openblas"
-  depends_on "python"
-  depends_on "python@2"
+  depends_on "python@3.9"
 
-  resource "Cython" do
-    url "https://files.pythonhosted.org/packages/69/ab/b18f7f2e61c12e5e859c86b6d37f73971679d5f5c5c97d6cc7ff8916468a/Cython-0.29.9.tar.gz"
-    sha256 "b88e033c06d29f3f3c760a3fb9837dce6e124d627bd562d1cdf93e9da16df215"
-  end
-
-  resource "nose" do
-    url "https://files.pythonhosted.org/packages/58/a5/0dc93c3ec33f4e281849523a5a913fa1eea9a3068acfa754d44d88107a44/nose-1.3.7.tar.gz"
-    sha256 "f1bffef9cbc82628f6e7d7b40d7e255aefaa1adb6a1b1d26c69a8b79e6208a98"
-  end
+  fails_with gcc: "5"
 
   def install
     openblas = Formula["openblas"].opt_prefix
     ENV["ATLAS"] = "None" # avoid linking against Accelerate.framework
-    ENV["BLAS"] = ENV["LAPACK"] = "#{openblas}/lib/libopenblas.dylib"
+    ENV["BLAS"] = ENV["LAPACK"] = "#{openblas}/lib/#{shared_library("libopenblas")}"
 
     config = <<~EOS
       [openblas]
@@ -41,49 +36,26 @@ class Numpy < Formula
 
     Pathname("site.cfg").write config
 
-    ["python2", "python3"].each do |python|
-      version = Language::Python.major_minor_version python
-      dest_path = lib/"python#{version}/site-packages"
-      dest_path.mkpath
-
-      nose_path = libexec/"nose/lib/python#{version}/site-packages"
-      resource("nose").stage do
-        system python, *Language::Python.setup_install_args(libexec/"nose")
-        (dest_path/"homebrew-numpy-nose.pth").write "#{nose_path}\n"
+    xy = Language::Python.major_minor_version Formula["python@3.9"].opt_bin/"python3"
+    ENV.prepend_create_path "PYTHONPATH", Formula["cython"].opt_libexec/"lib/python#{xy}/site-packages"
+    ENV.prepend_path "PYTHONPATH", buildpath/"temp/lib/python#{xy}/site-packages"
+    resources.each do |r|
+      r.stage do
+        system "python3", *Language::Python.setup_install_args(buildpath/"temp")
       end
-
-      ENV.prepend_create_path "PYTHONPATH", buildpath/"tools/lib/python#{version}/site-packages"
-      resource("Cython").stage do
-        system python, *Language::Python.setup_install_args(buildpath/"tools")
-      end
-
-      system python, "setup.py",
-        "build", "--fcompiler=gnu95", "--parallel=#{ENV.make_jobs}",
-        "install", "--prefix=#{prefix}",
-        "--single-version-externally-managed", "--record=installed.txt"
     end
-  end
 
-  def caveats
-    homebrew_site_packages = Language::Python.homebrew_site_packages
-    user_site_packages = Language::Python.user_site_packages "python"
-    <<~EOS
-      If you use system python (that comes - depending on the OS X version -
-      with older versions of numpy, scipy and matplotlib), you may need to
-      ensure that the brewed packages come earlier in Python's sys.path with:
-        mkdir -p #{user_site_packages}
-        echo 'import sys; sys.path.insert(1, "#{homebrew_site_packages}")' >> #{user_site_packages}/homebrew.pth
-    EOS
+    system Formula["python@3.9"].opt_bin/"python3", "setup.py", "build",
+        "--fcompiler=#{Formula["gcc"].opt_bin}/gfortran", "--parallel=#{ENV.make_jobs}"
+    system Formula["python@3.9"].opt_bin/"python3", *Language::Python.setup_install_args(prefix)
   end
 
   test do
-    ["python2", "python3"].each do |python|
-      system python, "-c", <<~EOS
-        import numpy as np
-        t = np.ones((3,3), int)
-        assert t.sum() == 9
-        assert np.dot(t, t).sum() == 27
-      EOS
-    end
+    system Formula["python@3.9"].opt_bin/"python3", "-c", <<~EOS
+      import numpy as np
+      t = np.ones((3,3), int)
+      assert t.sum() == 9
+      assert np.dot(t, t).sum() == 27
+    EOS
   end
 end

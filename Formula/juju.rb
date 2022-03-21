@@ -1,27 +1,43 @@
 class Juju < Formula
   desc "DevOps management tool"
-  homepage "https://jujucharms.com/"
-  url "https://launchpad.net/juju/2.6/2.6.4/+download/juju-core_2.6.4.tar.gz"
-  sha256 "feeaa406d8f4eefd5c22972fb95a8bbdd75d1ab34bf9766ad1af89038ec5d44a"
+  homepage "https://juju.is/"
+  url "https://github.com/juju/juju.git",
+      tag:      "juju-2.9.27",
+      revision: "acb32588d1752e813b36e3491f0eb44cde7c0684"
+  license "AGPL-3.0-only"
+  version_scheme 1
+  head "https://github.com/juju/juju.git", branch: "develop"
+
+  livecheck do
+    url :stable
+    regex(/^juju[._-]v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "c4ac757cc8c75a8b4b3aafc2c7048a04cd63a94095e8f4b76e40085e30e697ef" => :mojave
-    sha256 "e25a6e030017137870e83a544cc6f54703b8ec39cf10e1c8df4d0556aa8533cb" => :high_sierra
-    sha256 "40513511e05fb7097e035d7ee9f6b1332ad4e8dc2dbb8f69a70112ec6c26a11e" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "7742dd2d4b869539c476e2c17503735dabc5c7f928977efb351e9991866ac750"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "70d98a2819a978d79d32d07d8623abf36a321e515b594651730645acf84c0cf8"
+    sha256 cellar: :any_skip_relocation, monterey:       "ece121f0238d81b412a05e3deab5dcfea5269cd9c623a90f6f74019a75d4c677"
+    sha256 cellar: :any_skip_relocation, big_sur:        "c5adfe03e81f17de6db4b56de349223b23aed1ef3cb3de3aaa0fc4e97f460224"
+    sha256 cellar: :any_skip_relocation, catalina:       "2bbb10bc03c41ca88ccfb79b11448d08bd2123586e6f37a43867f185443f3cc8"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "8e99d9509c5348ba24f792b15f17b5628186d2c292bca9b8d0d39589c12df28d"
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    system "go", "build", "github.com/juju/juju/cmd/juju"
-    system "go", "build", "github.com/juju/juju/cmd/plugins/juju-metadata"
-    bin.install "juju", "juju-metadata"
-    bash_completion.install "src/github.com/juju/juju/etc/bash_completion.d/juju"
+    ld_flags = %W[
+      -s -w
+      -X version.GitCommit=#{Utils.git_head}
+      -X version.GitTreeState=clean
+    ]
+    system "go", "build", *std_go_args(ldflags: ld_flags), "./cmd/juju"
+    system "go", "build", *std_go_args(output: bin/"juju-metadata", ldflags: ld_flags), "./cmd/plugins/juju-metadata"
+    bash_completion.install "etc/bash_completion.d/juju"
   end
 
   test do
     system "#{bin}/juju", "version"
+    assert_match "No controllers registered", shell_output("#{bin}/juju list-users 2>&1", 1)
+    assert_match "No controllers registered", shell_output("#{bin}/juju-metadata list-images 2>&1", 2)
   end
 end

@@ -1,12 +1,16 @@
 class TomeeWebprofile < Formula
-  desc "All-Apache Java EE 6 Web Profile stack"
+  desc "All-Apache Java EE 7 Web Profile stack"
   homepage "https://tomee.apache.org/"
-  url "https://www.apache.org/dyn/closer.cgi?path=tomee/tomee-7.1.0/apache-tomee-7.1.0-webprofile.tar.gz"
-  sha256 "ae15d81d960ea5ec875a6c8fd056458fa32bbd1ca87bbfa41e236d3cebbb9b49"
+  url "https://www.apache.org/dyn/closer.lua?path=tomee/tomee-8.0.10/apache-tomee-8.0.10-webprofile.tar.gz"
+  mirror "https://archive.apache.org/dist/tomee/tomee-8.0.10/apache-tomee-8.0.10-webprofile.tar.gz"
+  sha256 "8886682389b5b4c53b127e3876ce5837b4a3a40cd7243751ae126fcf42d0b951"
+  license "Apache-2.0"
 
-  bottle :unneeded
+  bottle do
+    sha256 cellar: :any_skip_relocation, all: "491e32a197c4274a3a8a68893dcc871d827d4fc2ab5212631d57aaddedd0b234"
+  end
 
-  depends_on :java => "1.8"
+  depends_on "openjdk"
 
   def install
     # Remove Windows scripts
@@ -17,22 +21,21 @@ class TomeeWebprofile < Formula
     # Install files
     prefix.install %w[NOTICE LICENSE RELEASE-NOTES RUNNING.txt]
     libexec.install Dir["*"]
-    libexec.install_symlink "#{libexec}/bin/startup.sh" => "tomee-webprofile-startup"
-    env = Language::Java.java_home_env("1.8")
-    env[:JRE_HOME] = "$(#{Language::Java.java_home_cmd("1.8")})"
-    (bin/"tomee-webprofile-startup").write_env_script libexec/"tomee-webprofile-startup", env
-    (bin/"tomee-webprofile-configtest").write_env_script libexec/"bin/configtest.sh", env
+    (bin/"tomee-webprofile-startup").write_env_script "#{libexec}/bin/startup.sh",
+                                                      Language::Java.overridable_java_home_env
   end
 
-  def caveats; <<~EOS
-    The home of Apache TomEE Web is:
-      #{opt_libexec}
-    To run Apache TomEE:
-      #{opt_libexec}/bin/tomee-webprofile-startup
-  EOS
+  def caveats
+    <<~EOS
+      The home of Apache TomEE Web is:
+        #{opt_libexec}
+      To run Apache TomEE:
+        #{opt_libexec}/bin/tomee-webprofile-startup
+    EOS
   end
 
   test do
-    system "#{bin}/tomee-webprofile-configtest"
+    ENV["JAVA_HOME"] = Formula["openjdk"].opt_prefix
+    system "#{opt_libexec}/bin/configtest.sh"
   end
 end

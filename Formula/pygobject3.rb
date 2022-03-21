@@ -1,39 +1,33 @@
 class Pygobject3 < Formula
   desc "GNOME Python bindings (based on GObject Introspection)"
   homepage "https://wiki.gnome.org/Projects/PyGObject"
-  url "https://download.gnome.org/sources/pygobject/3.32/pygobject-3.32.1.tar.xz"
-  sha256 "32c99def94b8dea5ce9e4bc99576ef87591ea779b4db77cfdca7af81b76d04d8"
+  url "https://download.gnome.org/sources/pygobject/3.42/pygobject-3.42.0.tar.xz"
+  sha256 "9b12616e32cfc792f9dc841d9c472a41a35b85ba67d3a6eb427e307a6fe4367b"
+  license "LGPL-2.1-or-later"
+  revision 1
 
   bottle do
-    cellar :any
-    sha256 "cf2738f0f61ac488ac4b2a67f10c2740b3249728e807b5169c531d14357f08de" => :mojave
-    sha256 "ab1cde8cc940917da59401934c8f3a0b3f65c41efc8fdb02816a9bc3f668b91a" => :high_sierra
-    sha256 "7b8c52ed0c05cefe12583337129192fa21aba265ad88bc16c8ef4316655cf713" => :sierra
+    sha256 cellar: :any, arm64_monterey: "a5589e885345d3680de0c7f4a93fb13940bb2ccb3615bcc28ecf98e8edf72f70"
+    sha256 cellar: :any, arm64_big_sur:  "435f6c7f01bcba010ceb53edf6ca9df8a31fffebf239d91a217e38d823c6f3fa"
+    sha256 cellar: :any, monterey:       "0de11a74ba9e4783a5009ed99fc0939b69a48490b60c15ecdd73eeffae1da3d6"
+    sha256 cellar: :any, big_sur:        "f9f1c60b23478993fc7ad3df87314c44dd172bcce440c4fccaf4222849834541"
+    sha256 cellar: :any, catalina:       "44bee3904b07d3e6bf3866e0e4de6ed4f4bfb0641a781e132a6d2c52de38332c"
+    sha256 cellar: :any, mojave:         "1d4bdcfee7b2dac4300170e7f9cb5d94ae27b35b7127e5f7d9972b89f9130dfc"
+    sha256               x86_64_linux:   "a34ce5794cfd73a3ac9864260aec1525b96967b9859a19286a884270b35afede"
   end
 
   depends_on "meson" => :build
   depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "gobject-introspection"
-  depends_on "py2cairo"
   depends_on "py3cairo"
-  depends_on "python"
-  depends_on "python@2"
+  depends_on "python@3.9"
 
   def install
-    mkdir "buildpy2" do
-      system "meson", "--prefix=#{prefix}",
-                      "-Dpycairo=true",
-                      "-Dpython=python2.7",
-                      ".."
-      system "ninja", "-v"
-      system "ninja", "install", "-v"
-    end
-
     mkdir "buildpy3" do
-      system "meson", "--prefix=#{prefix}",
-                      "-Dpycairo=true",
-                      "-Dpython=python3",
+      system "meson", *std_meson_args,
+                      "-Dpycairo=enabled",
+                      "-Dpython=#{Formula["python@3.9"].opt_bin}/python3",
                       ".."
       system "ninja", "-v"
       system "ninja", "install", "-v"
@@ -48,14 +42,9 @@ class Pygobject3 < Formula
       from gi.repository import GLib
       assert(31 == GLib.Date.get_days_in_month(GLib.DateMonth.JANUARY, 2000))
     EOS
-    pythons = [
-      Formula["python@2"].opt_bin/"python2",
-      Formula["python"].opt_bin/"python3",
-    ]
-    pythons.each do |python|
-      pyversion = Language::Python.major_minor_version(python)
-      ENV.prepend_path "PYTHONPATH", lib/"python#{pyversion}/site-packages"
-      system python, "test.py"
-    end
+
+    pyversion = Language::Python.major_minor_version Formula["python@3.9"].opt_bin/"python3"
+    ENV.prepend_path "PYTHONPATH", lib/"python#{pyversion}/site-packages"
+    system Formula["python@3.9"].opt_bin/"python3", "test.py"
   end
 end

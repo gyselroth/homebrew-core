@@ -2,30 +2,35 @@ class Vim < Formula
   desc "Vi 'workalike' with many additional features"
   homepage "https://www.vim.org/"
   # vim should only be updated every 50 releases on multiples of 50
-  url "https://github.com/vim/vim/archive/v8.1.1550.tar.gz"
-  sha256 "34ce15edd9ec3e696ddbad539e49e18b67ddb3750d3064b18db0f218c218d4bc"
-  head "https://github.com/vim/vim.git"
+  url "https://github.com/vim/vim/archive/v8.2.4600.tar.gz"
+  sha256 "3a49148998c19946bb4dd78ee764b763647c83203f0b9692a76e13acd1f68288"
+  license "Vim"
+  head "https://github.com/vim/vim.git", branch: "master"
 
   bottle do
-    sha256 "4b7926f024a025b5c4ccd2c51014e5c1ed3a3ae4db2ee96b0f44d42dc1529d4c" => :mojave
-    sha256 "1133c40eed1ec6dd8541b72b786a2a47bbffd090b766fb94010016a65b12b133" => :high_sierra
-    sha256 "901f375e0bfc4e62121cbe5218341842e595f9809bf8207643c3b1fb84f39176" => :sierra
+    sha256 arm64_monterey: "4ac5e569dcd8ca5119e9af7710ae47e211ccabddfa76a5e864267e464ae1bc48"
+    sha256 arm64_big_sur:  "27b6d4db1b63caa762069841c0ef77c5622e49be946cde3bfdd79da63c21dc5e"
+    sha256 monterey:       "e3c62cecdec747a7e0f2aa249b48fe019dbcfd0c76bd08979f0961ded3f6d35f"
+    sha256 big_sur:        "a3861d691f56a02fa090a836219c440021e7c5d5e86721a22e9019b640518675"
+    sha256 catalina:       "a290e16e466700797bf7f6fb91c96e4c58e6fdb9b2255eef54defb1b2a1c5307"
+    sha256 x86_64_linux:   "27878adcffee94a3d6528b1fe0a1dc840b04d358c275b8dcd59c153dd86a2e94"
   end
 
   depends_on "gettext"
   depends_on "lua"
+  depends_on "ncurses"
   depends_on "perl"
-  depends_on "python"
+  depends_on "python@3.10"
   depends_on "ruby"
 
   conflicts_with "ex-vi",
-    :because => "vim and ex-vi both install bin/ex and bin/view"
+    because: "vim and ex-vi both install bin/ex and bin/view"
 
   conflicts_with "macvim",
-    :because => "vim and macvim both install vi* binaries"
+    because: "vim and macvim both install vi* binaries"
 
   def install
-    ENV.prepend_path "PATH", Formula["python"].opt_libexec/"bin"
+    ENV.prepend_path "PATH", Formula["python@3.10"].opt_libexec/"bin"
 
     # https://github.com/Homebrew/homebrew-core/pull/1046
     ENV.delete("SDKROOT")
@@ -43,9 +48,9 @@ class Vim < Formula
                           "--mandir=#{man}",
                           "--enable-multibyte",
                           "--with-tlib=ncurses",
+                          "--with-compiledby=Homebrew",
                           "--enable-cscope",
                           "--enable-terminal",
-                          "--with-compiledby=Homebrew",
                           "--enable-perlinterp",
                           "--enable-rubyinterp",
                           "--enable-python3interp",

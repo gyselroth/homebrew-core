@@ -1,59 +1,68 @@
 class ClangFormat < Formula
   desc "Formatting tools for C, C++, Obj-C, Java, JavaScript, TypeScript"
   homepage "https://clang.llvm.org/docs/ClangFormat.html"
-  version "2019-01-18"
+  # The LLVM Project is under the Apache License v2.0 with LLVM Exceptions
+  license "Apache-2.0"
+  version_scheme 1
+  head "https://github.com/llvm/llvm-project.git", branch: "main"
 
   stable do
-    depends_on "subversion" => :build
-    url "https://llvm.org/svn/llvm-project/llvm/tags/google/stable/2019-01-18/", :using => :svn
+    url "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.1/llvm-13.0.1.src.tar.xz"
+    sha256 "ec6b80d82c384acad2dc192903a6cf2cdbaffb889b84bfb98da9d71e630fc834"
 
     resource "clang" do
-      url "https://llvm.org/svn/llvm-project/cfe/tags/google/stable/2019-01-18/", :using => :svn
+      url "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.1/clang-13.0.1.src.tar.xz"
+      sha256 "787a9e2d99f5c8720aa1773e4be009461cd30d3bd40fdd24591e473467c917c9"
     end
+  end
 
-    resource "libcxx" do
-      url "https://releases.llvm.org/7.0.0/libcxx-7.0.0.src.tar.xz"
-      sha256 "9b342625ba2f4e65b52764ab2061e116c0337db2179c6bce7f9a0d70c52134f0"
-    end
+  livecheck do
+    url :stable
+    strategy :github_latest
+    regex(%r{href=.*?/tag/llvmorg[._-]v?(\d+(?:\.\d+)+)}i)
   end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "e21e425f294cb6daf81dce2de430401dbc00369fc7cc2c3ff76770eee50b149f" => :mojave
-    sha256 "2937b78b833fa1ad75a170e31d90fda274b400bad21e509797fe1d6fa95812fd" => :high_sierra
-    sha256 "d88400e9a753ad87ff398d0a9d270110d39d34129894c109f1f1612394b2d942" => :sierra
-  end
-
-  head do
-    url "https://git.llvm.org/git/llvm.git"
-
-    resource "clang" do
-      url "https://git.llvm.org/git/clang.git"
-    end
-
-    resource "libcxx" do
-      url "https://git.llvm.org/git/libcxx.git"
-    end
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "7b7e4600348068a6992ffdcf1dd5b15805b06602f0fbcd3618e0a5f9485dfe62"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "024d9bfd4e595d4570f3d4f69079de27d30b3be451ddb838706bc3b1031a1a82"
+    sha256 cellar: :any_skip_relocation, monterey:       "9266402a97d01407dfd553af9ab209d7d11ed07ab4179ec9d388548405088a4a"
+    sha256 cellar: :any_skip_relocation, big_sur:        "603d31d8ccff511e6c5e90e7fd4bc78c292f8f4cfc9a0d45034818ab8d855e0f"
+    sha256 cellar: :any_skip_relocation, catalina:       "2a4ddc3215e486474d7a06450aff058396799b8bf4440b3e1c31453651df7e7f"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "91e643eb54d035de3ad87987d060a6830ede1b16b8bb63c61af60670d84c1c44"
   end
 
   depends_on "cmake" => :build
   depends_on "ninja" => :build
 
-  def install
-    (buildpath/"projects/libcxx").install resource("libcxx")
-    (buildpath/"tools/clang").install resource("clang")
+  uses_from_macos "libxml2"
+  uses_from_macos "ncurses"
+  uses_from_macos "python", since: :catalina
+  uses_from_macos "zlib"
 
-    mkdir "build" do
+  on_linux do
+    keg_only "it conflicts with llvm"
+  end
+
+  def install
+    if build.head?
+      ln_s buildpath/"clang", buildpath/"llvm/tools/clang"
+    else
+      (buildpath/"tools/clang").install resource("clang")
+    end
+
+    llvmpath = build.head? ? buildpath/"llvm" : buildpath
+
+    mkdir llvmpath/"build" do
       args = std_cmake_args
-      args << "-DCMAKE_OSX_SYSROOT=/" unless MacOS::Xcode.installed?
-      args << "-DLLVM_ENABLE_LIBCXX=ON"
+      args << "-DLLVM_EXTERNAL_PROJECTS=\"clang\""
       args << ".."
       system "cmake", "-G", "Ninja", *args
       system "ninja", "clang-format"
-      bin.install "bin/clang-format"
     end
-    bin.install "tools/clang/tools/clang-format/git-clang-format"
-    (share/"clang").install Dir["tools/clang/tools/clang-format/clang-format*"]
+
+    bin.install llvmpath/"build/bin/clang-format"
+    bin.install llvmpath/"tools/clang/tools/clang-format/git-clang-format"
+    (share/"clang").install Dir[llvmpath/"tools/clang/tools/clang-format/clang-format*"]
   end
 
   test do

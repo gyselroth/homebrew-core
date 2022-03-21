@@ -1,24 +1,44 @@
 class Parallel < Formula
   desc "Shell command parallelization utility"
   homepage "https://savannah.gnu.org/projects/parallel/"
-  url "https://ftp.gnu.org/gnu/parallel/parallel-20190522.tar.bz2"
-  mirror "https://ftpmirror.gnu.org/parallel/parallel-20190522.tar.bz2"
-  sha256 "5bc60a65902102eb080690cd4cf168bc99f74a467ee9c7ff98ea0dbd3c4f7f78"
-  head "https://git.savannah.gnu.org/git/parallel.git"
+  url "https://ftp.gnu.org/gnu/parallel/parallel-20220222.tar.bz2"
+  mirror "https://ftpmirror.gnu.org/parallel/parallel-20220222.tar.bz2"
+  sha256 "f81682b863ead7fb9a114754001e9286f954550a57a3cf36c9003a8047a6a445"
+  license "GPL-3.0-or-later"
+  version_scheme 1
+  head "https://git.savannah.gnu.org/git/parallel.git", branch: "master"
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "db9c56f3e2d8603975441b7b45acea082919309b2a8d92e9eafbd96b03b8d13f" => :mojave
-    sha256 "db9c56f3e2d8603975441b7b45acea082919309b2a8d92e9eafbd96b03b8d13f" => :high_sierra
-    sha256 "f82c897d474f83defa00f9d47c3f02ee26bb8e662b8b29595313c2504134068d" => :sierra
+  livecheck do
+    url :homepage
+    regex(/GNU Parallel v?(\d{6,8}).*? released/i)
   end
 
-  conflicts_with "moreutils",
-    :because => "both install a `parallel` executable."
+  bottle do
+    sha256 cellar: :any_skip_relocation, all: "325e8f2343c7b0cda8ca4b3d60ebf7fbb8ed4ad0652ef628a19354d9b30b4c0b"
+  end
+
+  conflicts_with "moreutils", because: "both install a `parallel` executable"
 
   def install
     system "./configure", "--prefix=#{prefix}"
     system "make", "install"
+
+    inreplace_files = [
+      bin/"parallel",
+      doc/"parallel.texi",
+      doc/"parallel_design.texi",
+      man1/"parallel.1",
+      man7/"parallel_design.7",
+    ]
+    inreplace inreplace_files, "/usr/local", HOMEBREW_PREFIX
+  end
+
+  def caveats
+    <<~EOS
+      To use the --csv option, the Perl Text::CSV module has to be installed.
+      You can install it via:
+        perl -MCPAN -e'install Text::CSV'
+    EOS
   end
 
   test do

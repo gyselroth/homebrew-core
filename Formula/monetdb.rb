@@ -1,46 +1,71 @@
 class Monetdb < Formula
   desc "Column-store database"
   homepage "https://www.monetdb.org/"
-  url "https://www.monetdb.org/downloads/sources/Apr2019/MonetDB-11.33.3.tar.xz"
-  sha256 "f69e7312a77407bef2d970e6d8edfc0ca687d5b31c6b4714bd9132fa468a12e9"
+  url "https://www.monetdb.org/downloads/sources/Jan2022-SP1/MonetDB-11.43.9.tar.xz"
+  sha256 "19b01e195e4323b6cee7aafae7aebe7226153f9b11dc96f1d97fbd6f0b8a8ef4"
+  license "MPL-2.0"
+  head "https://dev.monetdb.org/hg/MonetDB", using: :hg
+
+  livecheck do
+    url "https://www.monetdb.org/downloads/sources/archive/"
+    regex(/href=.*?MonetDB[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "98754982eb7de2da55d57923901c2b4e888cba24045a63bdf362fb343dbdc8dc" => :mojave
-    sha256 "001a6ae3a8cf8c602789403d75f92d7cbcbc18ca223f1a7dc2f80a8e28966151" => :high_sierra
-    sha256 "5ae1ba5352b0d8d4eea311e77ca94671446c7d8c977cb3060fb91dbdad2add9c" => :sierra
+    sha256 arm64_monterey: "f518bd44bba3316f6f7dbabfe3f44484f109541cb4b92216f82f83f647dbba92"
+    sha256 arm64_big_sur:  "ce384ed83b6e56ae7b38541e2b6f0bab92e4a0fff296224f8408764254a6a1a1"
+    sha256 monterey:       "9edbd8c0072484fec1bedd7bf1272fc0c496f4d278e68cd5a6da9aba23ce1290"
+    sha256 big_sur:        "b0047a7d8f96beb63a892ef456cb563b96ebe74a8a0b4670e70bd4f88557b579"
+    sha256 catalina:       "e667d4cf7e47d9d9910cb03f9ab3ba98ec84338dd39c4ac16d6ce2699855c332"
+    sha256 x86_64_linux:   "b5aa6fd317cb02a040932d75a1e6649774253ffeed6bb4c75d78544ee46729cc"
   end
 
-  head do
-    url "https://dev.monetdb.org/hg/MonetDB", :using => :hg
-
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "gettext" => :build
-    depends_on "libtool" => :build
-  end
-
-  depends_on "libatomic_ops" => :build
+  depends_on "bison" => :build # macOS bison is too old
+  depends_on "cmake" => :build
   depends_on "pkg-config" => :build
-  depends_on "openssl"
+  depends_on "python@3.10" => :build
+  depends_on "lz4"
+  depends_on "openssl@1.1"
   depends_on "pcre"
   depends_on "readline" # Compilation fails with libedit
+  depends_on "xz"
 
   def install
-    ENV["M4DIRS"] = "#{Formula["gettext"].opt_share}/aclocal" if build.head?
-    system "./bootstrap" if build.head?
-
-    system "./configure", "--prefix=#{prefix}",
-                          "--enable-assert=no",
-                          "--enable-debug=no",
-                          "--enable-optimize=yes",
-                          "--enable-testing=no",
-                          "--with-readline=#{Formula["readline"].opt_prefix}",
-                          "--disable-rintegration"
-    system "make"
-    system "make", "install"
+    mkdir "build" do
+      system "cmake", "..", *std_cmake_args,
+                      "-DRELEASE_VERSION=ON",
+                      "-DASSERT=OFF",
+                      "-DSTRICT=OFF",
+                      "-DTESTING=OFF",
+                      "-DFITS=OFF",
+                      "-DGEOM=OFF",
+                      "-DNETCDF=OFF",
+                      "-DODBC=OFF",
+                      "-DPY3INTEGRATION=OFF",
+                      "-DRINTEGRATION=OFF",
+                      "-DSHP=OFF",
+                      "-DWITH_BZ2=ON",
+                      "-DWITH_CMOCKA=OFF",
+                      "-DWITH_CURL=ON",
+                      "-DWITH_LZ4=ON",
+                      "-DWITH_LZMA=ON",
+                      "-DWITH_PCRE=ON",
+                      "-DWITH_PROJ=OFF",
+                      "-DWITH_SNAPPY=OFF",
+                      "-DWITH_XML2=ON",
+                      "-DWITH_ZLIB=ON",
+                      "-DOPENSSL_ROOT_DIR=#{Formula["openssl@1.1"].opt_prefix}",
+                      "-DREADLINE_ROOT=#{Formula["readline"].opt_prefix}"
+      # remove reference to shims directory from compilation/linking info
+      inreplace "tools/mserver/monet_version.c", %r{"/[^ ]*/}, "\""
+      system "cmake", "--build", "."
+      system "cmake", "--build", ".", "--target", "install"
+    end
   end
 
   test do
-    assert_match "Usage", shell_output("#{bin}/mclient --help 2>&1")
+    # assert_match "Usage", shell_output("#{bin}/mclient --help 2>&1")
+    system("#{bin}/monetdbd", "create", "#{testpath}/dbfarm")
+    assert_predicate testpath/"dbfarm", :exist?
   end
 end

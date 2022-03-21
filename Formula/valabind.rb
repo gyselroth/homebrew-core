@@ -1,24 +1,30 @@
 class Valabind < Formula
   desc "Vala bindings for radare, reverse engineering framework"
   homepage "https://github.com/radare/valabind"
-  url "https://github.com/radare/valabind/archive/1.7.1.tar.gz"
-  sha256 "b463b18419de656e218855a2f30a71051f03a9c4540254b4ceaea475fb79102e"
+  url "https://github.com/radare/valabind/archive/1.8.0.tar.gz"
+  sha256 "3eba8c36c923eda932a95b8d0c16b7b30e8cdda442252431990436519cf87cdd"
+  license "GPL-3.0-or-later"
   revision 2
-  head "https://github.com/radare/valabind.git"
+  head "https://github.com/radare/valabind.git", branch: "master"
 
   bottle do
-    cellar :any
-    sha256 "80c600b2b30861288dfe1a9738a23194e6ef6248d19c157f99432db87872e50d" => :mojave
-    sha256 "113b9207da77e4bd15732cdac43b0ad7ac7aad4a511a4ad9e9ff87fc0922826e" => :high_sierra
-    sha256 "f1166c36f5ca7b5bd95b88ddfa95d03e8e7aa049289450d4591778426709221c" => :sierra
+    sha256 cellar: :any,                 arm64_big_sur: "e3ab92ce9929d10db47821cb54a99943397f7708bcf9bac7fba29e5c1a5a184d"
+    sha256 cellar: :any,                 monterey:      "bf9c0b7132a821fa243686e1f2dd8d7642405c98937c5b9ba662f2bc9bb42d7c"
+    sha256 cellar: :any,                 big_sur:       "bef04beaf352699df3774e1d26423b16cdd487836553755d6777b5d3a20e4413"
+    sha256 cellar: :any,                 catalina:      "d1013e81b20cf4c4981b7840c12d281fb2042aebb874317e8dff44d550915954"
+    sha256 cellar: :any,                 mojave:        "ca8cb97fd10e22e1ac1a8966889c9eda14f33bedeeae8395811c55748e2740cc"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:  "d60a5907d80687fc3bf619f357d525ed856aaedf23dbad26fcd8c80636b37698"
   end
 
   depends_on "pkg-config" => :build
   depends_on "swig"
   depends_on "vala"
 
+  uses_from_macos "bison" => :build
+  uses_from_macos "flex" => :build
+
   def install
-    system "make"
+    system "make", "VALA_PKGLIBDIR=#{Formula["vala"].opt_lib}/vala-#{Formula["vala"].version.major_minor}"
     system "make", "install", "PREFIX=#{prefix}"
   end
 

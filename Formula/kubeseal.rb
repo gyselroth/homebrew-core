@@ -1,27 +1,38 @@
 class Kubeseal < Formula
   desc "Kubernetes controller and tool for one-way encrypted Secrets"
   homepage "https://github.com/bitnami-labs/sealed-secrets"
-  url "https://github.com/bitnami-labs/sealed-secrets/archive/v0.7.0.tar.gz"
-  sha256 "9254c11ecbb55a87fd6cfc6025a1a41d6fb7ad6bb11d248a3e6c2f9ee9cc74bd"
+  url "https://github.com/bitnami-labs/sealed-secrets.git",
+      tag:      "v0.17.3",
+      revision: "a509b7054df8410d0581f8086fc02098a442c154"
+  license "Apache-2.0"
+
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "99ee78122f26f43c836cf29fa746138997896df6b4a01bd3dce9a4b6525cb267" => :mojave
-    sha256 "2df510d796d6d1a0b58bc5786e659efb5a8b497f7aa0219d9417fbcbe89c09a0" => :high_sierra
-    sha256 "e2f578be802be280ee0d6ce581a5a357b2c48cba0d2d5f8ba2ab11aafd8c5f82" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "ab40e4dd6ca09bc8244d9814a623bb13f694ca291c9d6d4407753373cc677634"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "0853d42240602ebb50b8f5f6dfc81f7cb379d63d7a55dbc4bf4a0467645cdb77"
+    sha256 cellar: :any_skip_relocation, monterey:       "aa4c37fdd5ed03896aa46b1969d682851f6b125959634e6fcf0628cf097fa995"
+    sha256 cellar: :any_skip_relocation, big_sur:        "4a68cd8c2102df2acd2f70e3ca4e5846a0fbf53c7b6eeac7f61d485f37f1c3e2"
+    sha256 cellar: :any_skip_relocation, catalina:       "fc31202bbf41f57ccead8a45265490d5cc26e27f95fbbb783292168252f609f1"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "e63ac9f046d0f906a17d2fa9ea40cc6c7cde4f3dbdc1bd4e756f83ff3b25eda8"
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    kubesealpath = buildpath/"src/github.com/bitnami-labs/sealed-secrets"
-    kubesealpath.install Dir["*"]
-    system "make", "-C", kubesealpath, "kubeseal"
-    bin.install kubesealpath/"kubeseal"
+    system "make", "kubeseal", "DIRTY="
+    bin.install "kubeseal"
   end
 
   test do
+    # ensure build reports the (git tag) version
+    output = shell_output("#{bin}/kubeseal --version")
+    assert_equal "kubeseal version: v#{version}", output.strip
+
+    # ensure kubeseal can seal secrets
     secretyaml = [
       "apiVersion: v1",
       "kind: Secret",

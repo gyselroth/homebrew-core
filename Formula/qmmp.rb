@@ -1,49 +1,87 @@
 class Qmmp < Formula
   desc "Qt-based Multimedia Player"
-  homepage "http://qmmp.ylsoftware.com/"
-  url "http://qmmp.ylsoftware.com/files/qmmp-1.2.4.tar.bz2"
-  sha256 "224904f073e3921a080dca008e6c99e3d606f5442d1df08835cba000a069ae66"
-  revision 2
-  head "https://svn.code.sf.net/p/qmmp-dev/code/branches/qmmp-1.2/"
+  homepage "https://qmmp.ylsoftware.com/"
+  url "https://qmmp.ylsoftware.com/files/qmmp/2.0/qmmp-2.0.3.tar.bz2"
+  sha256 "a0c22071bedfcc44deb37428faeeecafb095b7a0ce28ade8907adb300453542e"
+  license "GPL-2.0-or-later"
+  revision 1
 
-  bottle do
-    sha256 "7c1b47197fe2ac57e24412a1b98ab6566d45ef84693c48ba5b9c5da3d6b4a501" => :mojave
-    sha256 "5e24216b88f75d6542d6be523ee9ebbad1fd6cda199b3790c2e2db81fb0e89cc" => :high_sierra
-    sha256 "119ac7be32b53b1bc2b40ebf291d0a044d7a8e0fddc7ed109d0a4aee28c399ad" => :sierra
+  livecheck do
+    url "https://qmmp.ylsoftware.com/downloads.php"
+    regex(/href=.*?qmmp[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on "cmake" => :build
+  bottle do
+    sha256 big_sur:  "da5200ac2ce8e5cd13f7203f5749198c58d688c034d9957532ea218317c74131"
+    sha256 catalina: "9fd0f5adf6d3917e37738345432f6ce3747a45aa1d65ac410742d95f2f338b4b"
+  end
+
+  depends_on "cmake"      => :build
+  depends_on "pkg-config" => :build
+
+  # TODO: on linux: pipewire
   depends_on "faad2"
   depends_on "ffmpeg"
   depends_on "flac"
+  depends_on "game-music-emu"
+  depends_on "jack"
+  depends_on "libarchive"
   depends_on "libbs2b"
+  depends_on "libcddb"
+  depends_on "libcdio"
   depends_on "libmms"
+  depends_on "libmodplug"
   depends_on "libogg"
   depends_on "libsamplerate"
+  depends_on "libshout"
   depends_on "libsndfile"
   depends_on "libsoxr"
   depends_on "libvorbis"
+  depends_on "libxcb"
+  depends_on "libxmp"
   depends_on "mad"
   depends_on "mplayer"
   depends_on "musepack"
   depends_on "opus"
   depends_on "opusfile"
+  depends_on "projectm"
+  depends_on "pulseaudio"
   depends_on "qt"
   depends_on "taglib"
+  depends_on "wavpack"
+  depends_on "wildmidi"
+
+  uses_from_macos "curl"
+
+  fails_with gcc: "5" # ffmpeg is compiled with GCC
+
+  resource "qmmp-plugin-pack" do
+    url "https://qmmp.ylsoftware.com/files/qmmp-plugin-pack/2.0/qmmp-plugin-pack-2.0.1.tar.bz2"
+    sha256 "73f0d5c62b518eb1843546c8440f528a5de6795f1f4c3740f28b8ed0d4c3dbca"
+  end
 
   def install
-    system "cmake", "./", "-USE_SKINNED", "-USE_ENCA", "-USE_QMMP_DIALOG", *std_cmake_args
-    system "make", "install"
+    cmake_args = std_cmake_args + %W[
+      -DCMAKE_STAGING_PREFIX=#{prefix}
+      -DUSE_SKINNED=ON
+      -DUSE_ENCA=ON
+      -DUSE_QMMP_DIALOG=ON
+      -DCMAKE_EXE_LINKER_FLAGS=-Wl,-undefined,dynamic_lookup
+      -DCMAKE_SHARED_LINKER_FLAGS=-Wl,-undefined,dynamic_lookup
+      -DCMAKE_MODULE_LINKER_FLAGS=-Wl,-undefined,dynamic_lookup
 
-    # fix linkage
-    cd (lib.to_s) do
-      Dir["*.dylib", "qmmp/*/*.so"].select { |f| File.ftype(f) == "file" }.each do |f|
-        MachO::Tools.dylibs(f).select { |d| d.start_with?("/tmp") }.each do |d|
-          bname = File.dirname(d)
-          d_new = d.sub(bname, opt_lib.to_s)
-          MachO::Tools.change_install_name(f, d, d_new)
-        end
-      end
+      -S .
+    ]
+
+    system "cmake", *cmake_args
+    system "cmake", "--build", "."
+    system "cmake", "--install", "."
+
+    ENV.append_path "PKG_CONFIG_PATH", lib/"pkgconfig"
+    resource("qmmp-plugin-pack").stage do
+      system "cmake", ".", *std_cmake_args
+      system "cmake", "--build", "."
+      system "cmake", "--install", "."
     end
   end
 

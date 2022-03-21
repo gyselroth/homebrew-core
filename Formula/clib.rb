@@ -1,18 +1,27 @@
 class Clib < Formula
   desc "Package manager for C programming"
   homepage "https://github.com/clibs/clib"
-  url "https://github.com/clibs/clib/archive/1.8.1.tar.gz"
-  sha256 "f5718e316771571971cb4e5a0142f91b47c6bfe32997fd869fc5a90ec091a066"
-  head "https://github.com/clibs/clib.git"
+  url "https://github.com/clibs/clib/archive/2.8.0.tar.gz"
+  sha256 "be474f6697d9a9918cbe4d3cc65a16cba2fbe0aee35d40eaca7b67557e89bce4"
+  license "MIT"
+  head "https://github.com/clibs/clib.git", branch: "master"
+
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "e7fa3d823b125697f59f95c5671ddc591b91223e45cc59555ee62de7e5df752d" => :mojave
-    sha256 "0dee597cc5870323ea38804337d3c3bd7b681a53303031399d31c12e1c1f1f55" => :high_sierra
-    sha256 "054b42c0cb78315e454759303b7f25945a9ed18ee76f32a14d58a6911861f37d" => :sierra
-    sha256 "64a97a9de695bc96f596d5a626428b8758ae0365b67c161bcd9519ccdf7dcfc4" => :el_capitan
-    sha256 "ea221a1093f4bdb63209c30fc29a888ae5312baa9f50f1bc8c5b56dac75cbb46" => :yosemite
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "dd7b0294eee70146184cc38c4d0f177e98e37243def58d237279642d835019be"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "44f5920711c2eb79e334cd7bc4b5972c9b3010a0345607b8c59ee71b1e2391c1"
+    sha256 cellar: :any_skip_relocation, monterey:       "40549f7255b1cdbbefebe03deccd815fbbf6477c3b603703615a287b6329a054"
+    sha256 cellar: :any_skip_relocation, big_sur:        "8a4af428b5c74fed903aca3337334bf0d418fd9765ea50d73ac2f308c60f7061"
+    sha256 cellar: :any_skip_relocation, catalina:       "b1d926918eab64e133117b5089f17c51f0a0888d7ed33448fd3247e05a15e919"
+    sha256 cellar: :any_skip_relocation, mojave:         "277176751578539b28b96e3d18f1ca9efa576b270e6ee6a42a7f4fdea317c061"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "732a47d87de00dc02478feb7dede8ba1a5941ce10ededd895cf96f5111e71f4e"
   end
+
+  uses_from_macos "curl"
 
   def install
     ENV["PREFIX"] = prefix

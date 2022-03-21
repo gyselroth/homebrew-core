@@ -1,19 +1,29 @@
 class Tfenv < Formula
   desc "Terraform version manager inspired by rbenv"
   homepage "https://github.com/tfutils/tfenv"
-  url "https://github.com/tfutils/tfenv/archive/v1.0.0.tar.gz"
-  sha256 "a05756db765903aad63c8ce7661c8006768937d1b1414b7e4913ed35012c4b4e"
-  head "https://github.com/tfutils/tfenv.git"
+  url "https://github.com/tfutils/tfenv/archive/v2.2.3.tar.gz"
+  sha256 "0b42330aeed675ad3e5dd6063dbd1daabecb36180e515cca1c6e105dd7a1fa49"
+  license "MIT"
+  head "https://github.com/tfutils/tfenv.git", branch: "master"
 
-  bottle :unneeded
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
-  conflicts_with "terraform", :because => "tfenv symlinks terraform binaries"
+  bottle do
+    sha256 cellar: :any_skip_relocation, all: "d58555c2a79b2425a495e4bcdf48297067578c42c863493845030ed8f51e8d53"
+  end
+
+  uses_from_macos "unzip"
+
+  conflicts_with "terraform", because: "tfenv symlinks terraform binaries"
 
   def install
-    prefix.install ["bin", "libexec"]
+    prefix.install %w[bin lib libexec share]
   end
 
   test do
-    system bin/"tfenv", "list-remote"
+    assert_match "0.10.0", shell_output("#{bin}/tfenv list-remote")
   end
 end

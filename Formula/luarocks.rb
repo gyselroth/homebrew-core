@@ -1,19 +1,31 @@
 class Luarocks < Formula
   desc "Package manager for the Lua programming language"
   homepage "https://luarocks.org/"
-  url "https://luarocks.org/releases/luarocks-3.0.1.tar.gz"
-  sha256 "b989c4b60d6c9edcd65169e5e42fcffbd39cdbebe6b138fa5aea45102f8d9ec0"
+  url "https://luarocks.org/releases/luarocks-3.8.0.tar.gz"
+  sha256 "56ab9b90f5acbc42eb7a94cf482e6c058a63e8a1effdf572b8b2a6323a06d923"
+  license "MIT"
+  head "https://github.com/luarocks/luarocks.git", branch: "master"
+
+  livecheck do
+    url :homepage
+    regex(%r{/luarocks[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "a1acb2e90bea4f3056dd34e95335bbd916034a47ec53813d7b4d0cba9c34fb08" => :mojave
-    sha256 "7a23c8cd3129369ae7502801765242e2e8a1f4afaf6c58d09b812654d5ba2dd3" => :high_sierra
-    sha256 "7a23c8cd3129369ae7502801765242e2e8a1f4afaf6c58d09b812654d5ba2dd3" => :sierra
-    sha256 "7a23c8cd3129369ae7502801765242e2e8a1f4afaf6c58d09b812654d5ba2dd3" => :el_capitan
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "3c1d3b809e453e3754e920e6b915ebe9ad2562e7de23bcea9dff62e253681882"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "3c1d3b809e453e3754e920e6b915ebe9ad2562e7de23bcea9dff62e253681882"
+    sha256 cellar: :any_skip_relocation, monterey:       "ec37b14a1f45298f16f6a4c001b1240c10bc8bdeaa0eac187d2155cd14cef1d0"
+    sha256 cellar: :any_skip_relocation, big_sur:        "ec37b14a1f45298f16f6a4c001b1240c10bc8bdeaa0eac187d2155cd14cef1d0"
+    sha256 cellar: :any_skip_relocation, catalina:       "ec37b14a1f45298f16f6a4c001b1240c10bc8bdeaa0eac187d2155cd14cef1d0"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "3c1d3b809e453e3754e920e6b915ebe9ad2562e7de23bcea9dff62e253681882"
   end
 
   depends_on "lua@5.1" => :test
+  depends_on "lua@5.3" => :test
+  depends_on "luajit-openresty" => :test
   depends_on "lua"
+
+  uses_from_macos "unzip"
 
   def install
     system "./configure", "--prefix=#{prefix}",
@@ -22,42 +34,60 @@ class Luarocks < Formula
     system "make", "install"
   end
 
-  def caveats; <<~EOS
-    LuaRocks supports multiple versions of Lua. By default it is configured
-    to use Lua5.3, but you can require it to use another version at runtime
-    with the `--lua-dir` flag, like this:
+  def caveats
+    <<~EOS
+      LuaRocks supports multiple versions of Lua. By default it is configured
+      to use Lua#{Formula["lua"].version.major_minor}, but you can require it to use another version at runtime
+      with the `--lua-dir` flag, like this:
 
-      luarocks --lua-dir=#{Formula["lua@5.1"].opt_prefix} install say
-  EOS
+        luarocks --lua-dir=#{Formula["lua@5.1"].opt_prefix} install say
+    EOS
   end
 
   test do
-    ENV["LUA_PATH"] = "#{testpath}/share/lua/5.3/?.lua"
-    ENV["LUA_CPATH"] = "#{testpath}/lib/lua/5.3/?.so"
+    luas = [
+      Formula["lua"],
+      Formula["lua@5.3"],
+      Formula["lua@5.1"],
+    ]
 
-    (testpath/"lfs_53test.lua").write <<~EOS
-      require("lfs")
-      print(lfs.currentdir())
-    EOS
+    luas.each do |lua|
+      luaversion = lua.version.major_minor
+      luaexec = "#{lua.bin}/lua-#{luaversion}"
+      ENV["LUA_PATH"] = "#{testpath}/share/lua/#{luaversion}/?.lua"
+      ENV["LUA_CPATH"] = "#{testpath}/lib/lua/#{luaversion}/?.so"
 
-    system "#{bin}/luarocks", "--tree=#{testpath}", "install", "luafilesystem"
-    system "lua", "-e", "require('lfs')"
-    assert_match testpath.to_s, shell_output("lua lfs_53test.lua")
+      system "#{bin}/luarocks", "install",
+                                "luafilesystem",
+                                "--tree=#{testpath}",
+                                "--lua-dir=#{lua.opt_prefix}"
 
-    ENV["LUA_PATH"] = "#{testpath}/share/lua/5.1/?.lua"
-    ENV["LUA_CPATH"] = "#{testpath}/lib/lua/5.1/?.so"
+      system luaexec, "-e", "require('lfs')"
 
-    (testpath/"lfs_51test.lua").write <<~EOS
-      require("lfs")
-      lfs.mkdir("blank_space")
-    EOS
+      case luaversion
+      when "5.1"
+        (testpath/"lfs_#{luaversion}test.lua").write <<~EOS
+          require("lfs")
+          lfs.mkdir("blank_space")
+        EOS
 
-    system "#{bin}/luarocks", "--tree=#{testpath}",
-                              "--lua-dir=#{Formula["lua@5.1"].opt_prefix}",
-                              "install", "luafilesystem"
-    system "lua5.1", "-e", "require('lfs')"
-    system "lua5.1", "lfs_51test.lua"
-    assert_predicate testpath/"blank_space", :directory?,
-      "Luafilesystem failed to create the expected directory"
+        system luaexec, "lfs_#{luaversion}test.lua"
+        assert_predicate testpath/"blank_space", :directory?,
+          "Luafilesystem failed to create the expected directory"
+
+        # LuaJIT is compatible with lua5.1, so we can also test it here
+        rmdir testpath/"blank_space"
+        system "#{Formula["luajit-openresty"].bin}/luajit", "lfs_#{luaversion}test.lua"
+        assert_predicate testpath/"blank_space", :directory?,
+          "Luafilesystem failed to create the expected directory"
+      else
+        (testpath/"lfs_#{luaversion}test.lua").write <<~EOS
+          require("lfs")
+          print(lfs.currentdir())
+        EOS
+
+        assert_match testpath.to_s, shell_output("#{luaexec} lfs_#{luaversion}test.lua")
+      end
+    end
   end
 end

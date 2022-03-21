@@ -1,19 +1,16 @@
 class Lesspipe < Formula
   desc "Input filter for the pager less"
   homepage "https://www-zeuthen.desy.de/~friebel/unix/lesspipe.html"
-  url "https://downloads.sourceforge.net/project/lesspipe/lesspipe/1.83/lesspipe-1.83.tar.gz"
-  sha256 "d616f0d51852e60fb0d0801eec9c31b10e0acc6fdfdc62ec46ef7bfd60ce675e"
+  url "https://github.com/wofr06/lesspipe/archive/v2.04.tar.gz"
+  sha256 "b65ee79b7b51510e6f2097a22d3c7985805a53d9e33b0afdfe129f2a1f89cc23"
+  license "GPL-2.0-only"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "d4100c11c32401370733ea6a049e7016093fd51f41b1e62fca1f6cfeb70f3bf6" => :mojave
-    sha256 "01c6ea7862d5b23ef49ce9c271e9cecf49c7ecd5372d9602b3ceb88b9171312b" => :high_sierra
-    sha256 "f22864d81a8eb648fc4501665af743d285fcf0fa7c81edb21fd71f2593addedd" => :sierra
-    sha256 "f22864d81a8eb648fc4501665af743d285fcf0fa7c81edb21fd71f2593addedd" => :el_capitan
-    sha256 "f22864d81a8eb648fc4501665af743d285fcf0fa7c81edb21fd71f2593addedd" => :yosemite
+    sha256 cellar: :any_skip_relocation, all: "320498e365aba7d2afcf9f61107bff812c299588134f3274e86bf4107b0b17ad"
   end
 
   def install
+    inreplace "configure", "/etc/bash_completion.d", bash_completion
     system "./configure", "--prefix=#{prefix}", "--yes"
     man1.mkpath
     system "make", "install"
@@ -22,7 +19,7 @@ class Lesspipe < Formula
   def caveats
     <<~EOS
       Append the following to your #{shell_profile}:
-      export LESSOPEN="|#{HOMEBREW_PREFIX}/bin/lesspipe.sh %s" LESS_ADVANCED_PREPROCESSOR=1
+      export LESSOPEN="|#{HOMEBREW_PREFIX}/bin/lesspipe.sh %s"
     EOS
   end
 
@@ -32,6 +29,6 @@ class Lesspipe < Formula
     system "tar", "-cvzf", "homebrew.tar.gz", "file1.txt", "file2.txt"
 
     assert_predicate testpath/"homebrew.tar.gz", :exist?
-    assert_match /file2.txt/, shell_output("tar tvzf homebrew.tar.gz | #{bin}/tarcolor")
+    assert_match "file2.txt", pipe_output(bin/"archive_color", shell_output("tar -tvzf homebrew.tar.gz"))
   end
 end

@@ -1,47 +1,41 @@
 class VapoursynthSub < Formula
   desc "VapourSynth filters - Subtitling filter"
-  homepage "http://www.vapoursynth.com"
-  url "https://github.com/vapoursynth/vapoursynth/archive/R45.1.tar.gz"
-  sha256 "4f43e5bb8c4817fdebe572d82febe4abac892918c54e1cb71aa6f6eb3677a877"
-  head "https://github.com/vapoursynth/vapoursynth.git"
+  homepage "https://www.vapoursynth.com"
+  url "https://github.com/vapoursynth/subtext/archive/R2.tar.gz"
+  sha256 "509fd9b00f44fd3db5ad0de4bfac6ccff3e458882281d479a11c10ac7dfc37e4"
+  license "MIT"
+  revision 1
+  version_scheme 1
+
+  head "https://github.com/vapoursynth/subtext.git", branch: "master"
 
   bottle do
-    cellar :any
-    sha256 "3f18667ff79b4320548cbbd584b5ea37493fd819e1946f83e48aaad8649e406f" => :mojave
-    sha256 "4dc5ed3a87f9eb830fabcbb45a13857ac90db6efcd6de33159c6c98e656b349a" => :high_sierra
-    sha256 "a2f0a16cbfd13c6852afcb7602b60f15e849db51782ffc7aad46255903ed43c6" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "1d566a35094458188b0ef7503f4313d564b3d39d14698ba3d6ad33e812395934"
+    sha256 cellar: :any,                 arm64_big_sur:  "5be9a2f65b43236d03eebbc934971f1146cb5d442a9ef925b07c4087112a7d92"
+    sha256 cellar: :any,                 monterey:       "1343035d03a7207ed4fb65dcffcc1a53e742b855709993acc71b6f1b1eb3c6a0"
+    sha256 cellar: :any,                 big_sur:        "5ec53b9369f41673d1787985213f4984d4c6ff29b9f311882834193b4e80af69"
+    sha256 cellar: :any,                 catalina:       "d54510ddb431b6a0f959e402d5c3b02476e34b4d14a4a03ac94a40187c3f260b"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "0b19e13e669af79fef8f897b445e4d72da584e739974bc5d7f759aa2bf8e8e97"
   end
 
-  depends_on "autoconf" => :build
-  depends_on "automake" => :build
-  depends_on "libtool" => :build
-  depends_on "nasm" => :build
+  depends_on "cmake" => :build
   depends_on "pkg-config" => :build
-
   depends_on "ffmpeg"
   depends_on "libass"
   depends_on "vapoursynth"
 
-  def install
-    system "./autogen.sh"
-    inreplace "Makefile.in", "pkglibdir = $(libdir)", "pkglibdir = $(exec_prefix)"
-    system "./configure", "--prefix=#{prefix}",
-                          "--disable-core",
-                          "--disable-vsscript",
-                          "--disable-plugins",
-                          "--enable-subtext"
-    system "make", "install"
-    rm prefix/"vapoursynth/libsubtext.la"
-  end
+  fails_with gcc: "5" # ffmpeg is compiled with GCC
 
-  def post_install
-    (HOMEBREW_PREFIX/"lib/vapoursynth").mkpath
-    (HOMEBREW_PREFIX/"lib/vapoursynth").install_symlink prefix/"vapoursynth/libsubtext.dylib" => "libsubtext.dylib"
+  def install
+    # A meson-based install method has been added but is not present
+    # in this release. Switch to it in the next release to avoid
+    # manually installing the shared library.
+    system "cmake", "-S", ".", "-B", "build"
+    system "cmake", "--build", "build"
+    (lib/"vapoursynth").install "build/#{shared_library("libsubtext")}"
   end
 
   test do
-    py3 = Language::Python.major_minor_version "python3"
-    ENV.prepend_path "PYTHONPATH", lib/"python#{py3}/site-packages"
-    system "python3", "-c", "from vapoursynth import core; core.sub"
+    system Formula["python@3.9"].opt_bin/"python3", "-c", "from vapoursynth import core; core.sub"
   end
 end

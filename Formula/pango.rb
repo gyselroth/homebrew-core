@@ -1,45 +1,43 @@
 class Pango < Formula
   desc "Framework for layout and rendering of i18n text"
-  homepage "https://www.pango.org/"
-  url "https://download.gnome.org/sources/pango/1.42/pango-1.42.4.tar.xz"
-  sha256 "1d2b74cd63e8bd41961f2f8d952355aa0f9be6002b52c8aa7699d9f5da597c9d"
-  revision 2
+  homepage "https://pango.gnome.org"
+  url "https://download.gnome.org/sources/pango/1.50/pango-1.50.5.tar.xz"
+  sha256 "6d136872da6207fe88c5cd2c95c36bcaf4ed29402b854663a86cd7efe99b0cf5"
+  license "LGPL-2.0-or-later"
+  head "https://gitlab.gnome.org/GNOME/pango.git", branch: "main"
 
   bottle do
-    sha256 "00b769ae7c76db06f9828398023c60597b11f33410b9f5b7c3f321b34fb7e0a9" => :mojave
-    sha256 "6d9f9ce407e6847a262eeea81f3bd93237f0ed4648d885a97c1409d95d26d892" => :high_sierra
-    sha256 "d400c90576eebb989be229742fc0fbdeb91c27e14bd98af94c05a84d2bcd7ca9" => :sierra
-  end
-
-  head do
-    url "https://gitlab.gnome.org/GNOME/pango.git"
-
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "gtk-doc" => :build
-    depends_on "libtool" => :build
+    sha256 cellar: :any, arm64_monterey: "b5e081e40a0c39a952be8e912d28d74f4a7a3f4db4b33bdbadbad340b2af836e"
+    sha256 cellar: :any, arm64_big_sur:  "a5bd533f40412a4b9f040065b0b1f0d2fe46c89e57b39b0d938c91b0cb125ba4"
+    sha256 cellar: :any, monterey:       "c31df18daf1198d322091f6d77c6e6474d4c84b2a125bc1adce540666b5cac0f"
+    sha256 cellar: :any, big_sur:        "f6dc158aa9a6e5029b7eacd00a4453a65343d421be50c8acf637c8b7b1ad51ef"
+    sha256 cellar: :any, catalina:       "fa79f73d332b1493a664c7144bf3347e1d94dfec57292a29810a577f04b2585f"
+    sha256               x86_64_linux:   "4aad9250d37c0f9b845f634c7dc898007c6cf8cc98401bad9bce204983e8fd2c"
   end
 
   depends_on "gobject-introspection" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "cairo"
   depends_on "fontconfig"
+  depends_on "freetype"
   depends_on "fribidi"
   depends_on "glib"
   depends_on "harfbuzz"
 
   def install
-    system "./autogen.sh" if build.head?
-    system "./configure", "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--prefix=#{prefix}",
-                          "--with-html-dir=#{share}/doc",
-                          "--enable-introspection=yes",
-                          "--enable-static",
-                          "--without-xft"
-
-    system "make"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *std_meson_args,
+                      "-Ddefault_library=both",
+                      "-Dintrospection=enabled",
+                      "-Dfontconfig=enabled",
+                      "-Dcairo=enabled",
+                      "-Dfreetype=enabled",
+                      ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
+    end
   end
 
   test do
@@ -62,6 +60,7 @@ class Pango < Formula
     freetype = Formula["freetype"]
     gettext = Formula["gettext"]
     glib = Formula["glib"]
+    harfbuzz = Formula["harfbuzz"]
     libpng = Formula["libpng"]
     pixman = Formula["pixman"]
     flags = %W[
@@ -71,6 +70,7 @@ class Pango < Formula
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include
+      -I#{harfbuzz.opt_include}/harfbuzz
       -I#{include}/pango-1.0
       -I#{libpng.opt_include}/libpng16
       -I#{pixman.opt_include}/pixman-1
@@ -82,10 +82,12 @@ class Pango < Formula
       -lcairo
       -lglib-2.0
       -lgobject-2.0
-      -lintl
       -lpango-1.0
       -lpangocairo-1.0
     ]
+    on_macos do
+      flags << "-lintl"
+    end
     system ENV.cc, "test.c", "-o", "test", *flags
     system "./test"
   end

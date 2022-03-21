@@ -1,36 +1,27 @@
 class Meson < Formula
+  include Language::Python::Virtualenv
+
   desc "Fast and user friendly build system"
   homepage "https://mesonbuild.com/"
-  url "https://github.com/mesonbuild/meson/releases/download/0.50.1/meson-0.50.1.tar.gz"
-  sha256 "f68f56d60c80a77df8fc08fa1016bc5831605d4717b622c96212573271e14ecc"
-  head "https://github.com/mesonbuild/meson.git"
+  url "https://github.com/mesonbuild/meson/releases/download/0.61.3/meson-0.61.3.tar.gz"
+  sha256 "9c884434469471f3fe0cbbceb9b9ea0c8047f19e792940e1df6595741aae251b"
+  license "Apache-2.0"
+  head "https://github.com/mesonbuild/meson.git", branch: "master"
 
   bottle do
-    cellar :any_skip_relocation
-    rebuild 1
-    sha256 "ca178fb13cb8a3152875fb98c572e7a1f436ab97e408667479fcccb28cd9a815" => :mojave
-    sha256 "ca178fb13cb8a3152875fb98c572e7a1f436ab97e408667479fcccb28cd9a815" => :high_sierra
-    sha256 "ef9198b9fb068aa7f805fcb7a2de846c71390c495d4cbc07c6d9c50366811441" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "e869d1bccc483c8048c4d34b0ec7f6cf60e60094135569763fd2fd6cf6d3bc9d"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "3b33231e644e839ee9872594b7311e4833ffd0c390c4f30117233224177c4558"
+    sha256 cellar: :any_skip_relocation, monterey:       "a9d8f942d207b4801f80470b432dd1ab8af169824623374ddb81e6ff68e54290"
+    sha256 cellar: :any_skip_relocation, big_sur:        "18f6084128226bae2452c5cdf58b2a41be20c3af31eba0261712fef4630a0c5d"
+    sha256 cellar: :any_skip_relocation, catalina:       "29ec98d0196028cc9a70dda833554085b7bdd1ef0a4c100d7b59b60ec4362f9c"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "c919806f5f6bd77f01ba8b6acfa875e71ee254f476c8f3d023c52d5f770b3ee1"
   end
 
   depends_on "ninja"
-  depends_on "python"
-
-  # Fixes support for Xcode 11.
-  # Backported from https://github.com/mesonbuild/meson/commit/b28e76f6bf6898a7de01f5dd103d5ad7c54bea45
-  # Should be in the next release.
-  patch do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/bd45b828dc74b33b35a89dc02dd1f556064d227f/meson/xcode_11.patch"
-    sha256 "7b03f81036478d234d94aa8731d7248007408e56917b07d083f1c4db9bb48c8b"
-  end
+  depends_on "python@3.10"
 
   def install
-    version = Language::Python.major_minor_version("python3")
-    ENV["PYTHONPATH"] = lib/"python#{version}/site-packages"
-
-    system "python3", *Language::Python.setup_install_args(prefix)
-
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    virtualenv_install_with_resources
   end
 
   test do
@@ -46,7 +37,7 @@ class Meson < Formula
     EOS
 
     mkdir testpath/"build" do
-      system "#{bin}/meson", ".."
+      system bin/"meson", ".."
       assert_predicate testpath/"build/build.ninja", :exist?
     end
   end

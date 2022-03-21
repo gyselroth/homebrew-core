@@ -1,26 +1,40 @@
 class Libomp < Formula
   desc "LLVM's OpenMP runtime library"
   homepage "https://openmp.llvm.org/"
-  url "https://releases.llvm.org/8.0.0/openmp-8.0.0.src.tar.xz"
-  sha256 "f7b1705d2f16c4fc23d6531f67d2dd6fb78a077dd346b02fed64f4b8df65c9d5"
+  url "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.1/openmp-13.0.1.src.tar.xz"
+  sha256 "6b79261371616c31fea18cd3ee1797c79ee38bcaf8417676d4fa366a24c96b4f"
+  license "MIT"
+
+  livecheck do
+    url "https://llvm.org/"
+    regex(/LLVM (\d+\.\d+\.\d+)/i)
+  end
 
   bottle do
-    cellar :any
-    sha256 "6c8f66a6582efa00620593e16a41f3649018778a300cc772afbe79c711c2c396" => :mojave
-    sha256 "4cc6fd69f1558f29165608c3e52aed88be6c56e3b0da10c9f6912ea3345daf3a" => :high_sierra
-    sha256 "e5d63a6b2cfeb05ded546b5f8d381acc592a2a37767cbae20569981229c66ac8" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "c56a6e4de05ecc20e307afe3a04502bd8245d78118d8d8431ecf321f3ad6bcc4"
+    sha256 cellar: :any,                 arm64_big_sur:  "ad8604a13319a9959ce6a4adc769b114a78d7c2cb81e08116e499310d1ba518e"
+    sha256 cellar: :any,                 monterey:       "c751c4d5205f057c553ac87e132a8eac004e864140b495ef72cb6ecbdfd627a6"
+    sha256 cellar: :any,                 big_sur:        "4a4c9a2eecb72ee98bd8510c98d8e0318e63e1400758399ccb5bc1474d34ba68"
+    sha256 cellar: :any,                 catalina:       "ea04abaec05a603b3c76f33be974659a6a4cc58bd5a59fb7a1112ceafe2fe663"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "7daf56ed8b602f30782e77645f7fa3d4eb473e9f82f3da0baf58f9346c2211a2"
   end
 
   depends_on "cmake" => :build
-  depends_on :macos => :yosemite
+  uses_from_macos "llvm" => :build
+
+  on_linux do
+    keg_only "provided by LLVM, which is not keg-only on Linux"
+  end
 
   def install
     # Disable LIBOMP_INSTALL_ALIASES, otherwise the library is installed as
     # libgomp alias which can conflict with GCC's libgomp.
-    system "cmake", ".", *std_cmake_args, "-DLIBOMP_INSTALL_ALIASES=OFF"
+    args = ["-DLIBOMP_INSTALL_ALIASES=OFF"]
+    args << "-DOPENMP_ENABLE_LIBOMPTARGET=OFF" if OS.linux?
+
+    system "cmake", ".", *std_cmake_args, *args
     system "make", "install"
-    system "cmake", ".", "-DLIBOMP_ENABLE_SHARED=OFF", *std_cmake_args,
-                         "-DLIBOMP_INSTALL_ALIASES=OFF"
+    system "cmake", ".", "-DLIBOMP_ENABLE_SHARED=OFF", *std_cmake_args, *args
     system "make", "install"
   end
 
@@ -41,7 +55,7 @@ class Libomp < Formula
             return 1;
       }
     EOS
-    system ENV.cxx, "-Werror", "-Xpreprocessor", "-fopenmp", "test.cpp",
+    system ENV.cxx, "-Werror", "-Xpreprocessor", "-fopenmp", "test.cpp", "-std=c++11",
                     "-L#{lib}", "-lomp", "-o", "test"
     system "./test"
   end

@@ -1,16 +1,26 @@
 class Dbhash < Formula
   desc "Computes the SHA1 hash of schema and content of a SQLite database"
   homepage "https://www.sqlite.org/dbhash.html"
-  url "https://sqlite.org/2019/sqlite-src-3280000.zip"
-  version "3.28.0"
-  sha256 "905279142d81c23e0a8803e44c926a23abaf47e2b274eda066efae11c23a6597"
+  url "https://sqlite.org/2022/sqlite-src-3380100.zip"
+  version "3.38.1"
+  sha256 "177aefda817fa9f52825e1748587f7c27a9b5e6b53a481cd43461f2746d931d8"
+  license "blessing"
+
+  livecheck do
+    formula "sqlite"
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "d579372c8b7fc498cd545ead0b47d133178602117770f3d3996a9c1175d11760" => :mojave
-    sha256 "168d83b2b8e53d2fac99912b8dc61be5126117bef0eece2ed6e7ac173f47a6d7" => :high_sierra
-    sha256 "b13eb7ca09d90230bd4858879be635b0e4418b45d5a7d1c30a4cd844144987e6" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "35c747bdf0146af29a4b2b4af1904d99128eec397d6e3948e1dd1b995585707a"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "7cc580a3906fc58e50b1cfce2cef63f0c7a65ef52af741c243257ed1bfaa709d"
+    sha256 cellar: :any_skip_relocation, monterey:       "dfa72be3472e7bed4cd464c5dfd7ad832198587ad2d167256767775e7e092c7d"
+    sha256 cellar: :any_skip_relocation, big_sur:        "b3c447ffdbbc1fe28b25af757a1058aea6a7d31c1351337a59fdaae5837177bf"
+    sha256 cellar: :any_skip_relocation, catalina:       "c713a57ff08feb92f8475acbdbc5029023634f698b8b0b11c6683ef4bf49032c"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "da0d6591e78d73032ba11ba857c3d7535f9247f5bad07e4d8ae5d6f3f7e69c9f"
   end
+
+  uses_from_macos "tcl-tk" => :build
+  uses_from_macos "sqlite" => :test
 
   def install
     system "./configure", "--disable-debug", "--prefix=#{prefix}"
@@ -22,7 +32,7 @@ class Dbhash < Formula
     dbpath = testpath/"test.sqlite"
     sqlpath = testpath/"test.sql"
     sqlpath.write "create table test (name text);"
-    system "/usr/bin/sqlite3 #{dbpath} < #{sqlpath}"
+    system "sqlite3 #{dbpath} < #{sqlpath}"
     assert_equal "b6113e0ce62c5f5ca5c9f229393345ce812b7309",
                  shell_output("#{bin}/dbhash #{dbpath}").strip.split.first
   end

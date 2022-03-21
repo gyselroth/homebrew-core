@@ -1,15 +1,23 @@
 class Graphicsmagick < Formula
   desc "Image processing tools collection"
   homepage "http://www.graphicsmagick.org/"
-  url "https://downloads.sourceforge.net/project/graphicsmagick/graphicsmagick/1.3.31/GraphicsMagick-1.3.31.tar.xz"
-  sha256 "096bbb59d6f3abd32b562fc3b34ea90d88741dc5dd888731d61d17e100394278"
-  head "http://hg.code.sf.net/p/graphicsmagick/code", :using => :hg
+  url "https://downloads.sourceforge.net/project/graphicsmagick/graphicsmagick/1.3.37/GraphicsMagick-1.3.37.tar.xz"
+  sha256 "90dc22f1a7bd240e4c9065a940962bf13da43c99bcc36cb111cc3c1a0d7477d4"
+  license "MIT"
+  revision 1
+  head "http://hg.code.sf.net/p/graphicsmagick/code", using: :hg
+
+  livecheck do
+    url "https://sourceforge.net/projects/graphicsmagick/rss?path=/graphicsmagick"
+  end
 
   bottle do
-    rebuild 1
-    sha256 "f5d9f2e78344f2cbe8fa1b2501fad25a197f3a9e494391ba6cd9ad0061d06b95" => :mojave
-    sha256 "3b4c0a4ac3a704617fd885c00a36dcd92d18caa1265da2016c7da8a80ea948f4" => :high_sierra
-    sha256 "dd3e5e9c22e07ce195de6bafc066b11f39a07e9b291d820f4a6fa5ec1bc77794" => :sierra
+    sha256 arm64_monterey: "319d87f145b215cba30aaa3d1f8833f52472b67807a298fa6b63f3277985ec04"
+    sha256 arm64_big_sur:  "41b4e1a6e9820b8cdabfc6555c3d5e96fed52b54a447c91ea88863bd8954a25e"
+    sha256 monterey:       "35116969eab459fc1e4ccc1562ea894ac1c78e1b8411b1770f8bf4c376dcbb32"
+    sha256 big_sur:        "9b56a9e0cb6ecede62950218794fb88358de577a6dd78e8139a563e6c2e4c056"
+    sha256 catalina:       "fbfda29e643b21b269279e144c1dcb060c273ec934a0ea7d9636a3bd2beeb63e"
+    sha256 x86_64_linux:   "70d5ff183bc56898f699203a72988d7524ec1b5669432500e20aef0dc7e7c5be"
   end
 
   depends_on "pkg-config" => :build
@@ -21,6 +29,10 @@ class Graphicsmagick < Formula
   depends_on "libtool"
   depends_on "little-cms2"
   depends_on "webp"
+
+  uses_from_macos "bzip2"
+  uses_from_macos "libxml2"
+  uses_from_macos "zlib"
 
   skip_clean :la
 

@@ -1,41 +1,76 @@
 class RomTools < Formula
   desc "Tools for Multiple Arcade Machine Emulator"
   homepage "https://mamedev.org/"
-  url "https://github.com/mamedev/mame/archive/mame0209.tar.gz"
-  version "0.209"
-  sha256 "9442e88bd87cfe407eb093a2ecb42a3850cabe31cd52c4efdef1bf7f584a8eab"
-  head "https://github.com/mamedev/mame.git"
+  url "https://github.com/mamedev/mame/archive/mame0241.tar.gz"
+  version "0.241"
+  sha256 "008b8b9fd0cfbea63bc589ab4e9e5af6d63f865c6edf6e6378352e4dbfcb47ff"
+  license "GPL-2.0-or-later"
+  head "https://github.com/mamedev/mame.git", branch: "master"
 
-  bottle do
-    cellar :any
-    sha256 "809592bc53245a584072281b38831bc434d560cfd0b605116a380b369b92be84" => :mojave
-    sha256 "60048cf134052444f598c6610d2c5e45cf203619e458e20b6087d0700eb8d6a3" => :high_sierra
+  livecheck do
+    formula "mame"
   end
 
-  depends_on "asio" => :build
+  bottle do
+    sha256 cellar: :any,                 arm64_monterey: "d89018c3ff7aaf1966faed975ae9429b83d0fa92005289209c13ed3dd41caa32"
+    sha256 cellar: :any,                 arm64_big_sur:  "e0c831fdfcefb4f1f94498b88cb7eed6adb99f565527c6325a9c95941f7b39cb"
+    sha256 cellar: :any,                 monterey:       "ad4c3f20d0bf0c4492ad7c887330e85c4f966327c0b5bb2dee723decbe213ae8"
+    sha256 cellar: :any,                 big_sur:        "4b2e56c29bde114a6fb623013b1208d08328f8fb6f046a815e270d401279d4e7"
+    sha256 cellar: :any,                 catalina:       "718147f56938fb896409f4636048eeaf48c70939ea18b39d860218298be794e3"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "f008b8b7cf38b1dc48991fcfae8ec12004db875c4c386ac5eccfafd0f99f6387"
+  end
+
   depends_on "pkg-config" => :build
+  depends_on "python@3.9" => :build
   depends_on "flac"
-  # Need C++ compiler and standard library support C++14.
-  # Build failure on Sierra, see:
-  # https://github.com/Homebrew/homebrew-core/pull/39388
-  depends_on :macos => :high_sierra
+  # Need C++ compiler and standard library support C++17.
+  depends_on macos: :high_sierra
   depends_on "sdl2"
   depends_on "utf8proc"
 
+  uses_from_macos "expat"
+  uses_from_macos "zlib"
+
+  on_linux do
+    depends_on "portaudio" => :build
+    depends_on "portmidi" => :build
+    depends_on "pulseaudio" => :build
+    depends_on "qt@5" => :build
+    depends_on "sdl2_ttf" => :build
+    depends_on "gcc" # for C++17
+  end
+
+  fails_with gcc: "5"
+  fails_with gcc: "6"
+
   def install
+    # Cut sdl2-config's invalid option.
     inreplace "scripts/src/osd/sdl.lua", "--static", ""
-    system "make", "TOOLS=1",
-                   "USE_LIBSDL=1",
-                   "USE_SYSTEM_LIB_EXPAT=1",
-                   "USE_SYSTEM_LIB_ZLIB=1",
-                   "USE_SYSTEM_LIB_ASIO=1",
-                   "USE_SYSTEM_LIB_FLAC=1",
-                   "USE_SYSTEM_LIB_UTF8PROC=1"
+
+    # Use bundled asio instead of latest version.
+    # See: <https://github.com/mamedev/mame/issues/5721>
+    args = %W[
+      PYTHON_EXECUTABLE=#{Formula["python@3.9"].opt_bin}/python3
+      TOOLS=1
+      USE_LIBSDL=1
+      USE_SYSTEM_LIB_EXPAT=1
+      USE_SYSTEM_LIB_ZLIB=1
+      USE_SYSTEM_LIB_ASIO=
+      USE_SYSTEM_LIB_FLAC=1
+      USE_SYSTEM_LIB_UTF8PROC=1
+    ]
+    if OS.linux?
+      args << "USE_SYSTEM_LIB_PORTAUDIO=1"
+      args << "USE_SYSTEM_LIB_PORTMIDI=1"
+    end
+    system "make", *args
+
     bin.install %w[
-      aueffectutil castool chdman floptool imgtool jedutil ldresample ldverify
-      nltool nlwav pngcmp regrep romcmp src2html srcclean testkeys unidasm
+      castool chdman floptool imgtool jedutil ldresample ldverify
+      nltool nlwav pngcmp regrep romcmp srcclean testkeys unidasm
     ]
     bin.install "split" => "rom-split"
+    bin.install "aueffectutil" if OS.mac?
     man1.install Dir["docs/man/*.1"]
   end
 
@@ -55,7 +90,6 @@ class RomTools < Formula
     assert_match "summary", shell_output("#{bin}/regrep 2>&1", 1)
     system "#{bin}/romcmp"
     system "#{bin}/rom-split"
-    assert_match "template", shell_output("#{bin}/src2html 2>&1", 1)
     system "#{bin}/srcclean"
     assert_match "architecture", shell_output("#{bin}/unidasm", 1)
   end

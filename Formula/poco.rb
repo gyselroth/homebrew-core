@@ -1,28 +1,34 @@
 class Poco < Formula
   desc "C++ class libraries for building network and internet-based applications"
   homepage "https://pocoproject.org/"
-  url "https://pocoproject.org/releases/poco-1.9.0/poco-1.9.0-all.tar.gz"
-  sha256 "0387bf0f9d313e2311742e1ad0b64e07f2f3e76039eed20e3b9aa9951b88e187"
-  revision 1
-  head "https://github.com/pocoproject/poco.git", :branch => "develop"
+  url "https://pocoproject.org/releases/poco-1.11.1/poco-1.11.1-all.tar.gz"
+  sha256 "31ccce6020047270003bfb5b0da7e2ad432884c23d3cd509c86f47cf3a5e5d2a"
+  license "BSL-1.0"
+  head "https://github.com/pocoproject/poco.git", branch: "master"
+
+  livecheck do
+    url "https://pocoproject.org/releases/"
+    regex(%r{href=.*?poco[._-]v?(\d+(?:\.\d+)+)/?["' >]}i)
+  end
 
   bottle do
-    cellar :any
-    rebuild 1
-    sha256 "8fcf6c4bfd4bda264b87c4d3ad4813d7c44adc486c2a83d1d3a769d8a17679ba" => :mojave
-    sha256 "b620f2bbd0326a84c6acc7b0bf1765e77198cc690d1141d6ec93ed244ae9886c" => :high_sierra
-    sha256 "a2e2b25aa10903f7976fae5d647238c74206f22d58bf916f6205d332a54cd64d" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "c5803cfda14c21ccc0308d63aee47309308fa8b3a4538769536eb7af15212fdb"
+    sha256 cellar: :any,                 arm64_big_sur:  "48c3e8a3c7bb4839ba4476294912c4c638f7e158c0d665eea66aa854002045f9"
+    sha256 cellar: :any,                 monterey:       "cee35bb37b7d15eff1b7c76c82e423115c53c417528aa54ada947f4de9d05157"
+    sha256 cellar: :any,                 big_sur:        "379a4a4055a10827facf52791873c6040dc349836588cfa18a4d14a938b6e5ae"
+    sha256 cellar: :any,                 catalina:       "9d6965f8ae6b9249dd2d4d9c14b02f8e684d60dde9b1a5e48080f3f34ae29c21"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "15f5fb5a0c2d491148ab5cb029d987fc555a07b47d9799e6aa62bdf5eb0adf3c"
   end
 
   depends_on "cmake" => :build
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
   def install
-    ENV.cxx11
-
     mkdir "build" do
-      system "cmake", "..", *std_cmake_args, "-DENABLE_DATA_MYSQL=OFF",
-                            "-DENABLE_DATA_ODBC=OFF"
+      system "cmake", "..", *std_cmake_args,
+                            "-DENABLE_DATA_MYSQL=OFF",
+                            "-DENABLE_DATA_ODBC=OFF",
+                            "-DCMAKE_INSTALL_RPATH=#{rpath}"
       system "make", "install"
     end
   end

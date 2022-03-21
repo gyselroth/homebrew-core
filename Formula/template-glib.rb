@@ -1,31 +1,34 @@
 class TemplateGlib < Formula
   desc "GNOME templating library for GLib"
   homepage "https://gitlab.gnome.org/GNOME/template-glib"
-  url "https://download.gnome.org/sources/template-glib/3.32/template-glib-3.32.0.tar.xz"
-  sha256 "39a334f5db404fa8b225224766684f2f63f5ec4cf4e971cfc513f1db35e81fbc"
-  revision 1
+  url "https://download.gnome.org/sources/template-glib/3.34/template-glib-3.34.0.tar.xz"
+  sha256 "216bef6ac3607666b8ca72b936467f7020ce6421c02755c301d079576c9c3dfd"
+  license "LGPL-2.1-or-later"
+  revision 2
 
   bottle do
-    cellar :any
-    sha256 "0889af1b50baf0c74ff0541f24c5a8c284a9d45fef95666d7bf6f0f7fe58c454" => :mojave
-    sha256 "c238f40b45213d1bfee2816e5bcf67e7bb7ed9237d27c0c68d73b9a3c61c6f00" => :high_sierra
-    sha256 "84c70944f3df8018d970e7ae8719ae7184a85d33355bbea196aaf099eb5d4e4c" => :sierra
+    sha256 cellar: :any, arm64_monterey: "08a46c016c0262bb1c044085e2259f7506e7df1dba0e8eab51561756de1cfe49"
+    sha256 cellar: :any, arm64_big_sur:  "2340864768d827293d86853d8d368d78ed1bb82b87311c3cd3e7c5b315bb3e47"
+    sha256 cellar: :any, monterey:       "fda2867fd1220b9bbd3a96d5665508c4c1416ee922f9bc8909cb0128f59149e2"
+    sha256 cellar: :any, big_sur:        "4ebcd5e2a6aa072fadc6f4ce54e78aba96cac605fac1ba312bb9d798add9d60d"
+    sha256 cellar: :any, catalina:       "9076cc6161b090edf56b7ffdb0dcb31f3590c5b359b3e74fb78c1c0119b2c256"
+    sha256 cellar: :any, mojave:         "b5cbd61d31bcf899a1940b0e0c00b2a788a6dc1316d90847a0668973525a6048"
+    sha256 cellar: :any, high_sierra:    "4e0560a1eb5ac91fdd4ea3dc89086f0b50cc65d68c32c3c8bb4fa49e0d05454d"
+    sha256               x86_64_linux:   "c6817c5156f3ca6917d529ab1c8c75e259d72df8b49ea0ecd4cd079212514b7f"
   end
 
   depends_on "bison" => :build # does not appear to work with system bison
   depends_on "meson" => :build
   depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "python" => :build
   depends_on "glib"
   depends_on "gobject-introspection"
 
-  # submitted upstream at https://gitlab.gnome.org/GNOME/template-glib/merge_requests/5
-  patch :DATA
+  uses_from_macos "flex"
 
   def install
     mkdir "build" do
-      system "meson", "--prefix=#{prefix}", "-Dwith_vapi=false", ".."
+      system "meson", *std_meson_args, "-Dwith_vapi=false", ".."
       system "ninja", "-v"
       system "ninja", "install", "-v"
     end
@@ -58,47 +61,16 @@ class TemplateGlib < Formula
       -lgio-2.0
       -lglib-2.0
       -lgobject-2.0
-      -lintl
       -ltemplate_glib-1.0
-      -Wl,-framework
-      -Wl,CoreFoundation
     ]
+    if OS.mac?
+      flags += %w[
+        -lintl
+        -Wl,-framework
+        -Wl,CoreFoundation
+      ]
+    end
     system ENV.cc, "test.c", "-o", "test", *flags
     system "./test"
   end
 end
-
-__END__
-diff --git a/meson.build b/meson.build
-index 050c202..d705657 100644
---- a/meson.build
-+++ b/meson.build
-@@ -26,6 +26,8 @@ current = template_glib_version_minor * 100 + template_glib_version_micro - temp
- revision = template_glib_interface_age
- libversion = '@0@.@1@.@2@'.format(soversion, current, revision)
-
-+darwin_versions = [current + 1, '@0@.@1@'.format(current + 1, revision)]
-+
- config_h = configuration_data()
- config_h.set_quoted('GETTEXT_PACKAGE', 'libtemplate_glib')
- config_h.set_quoted('LOCALEDIR', join_paths(get_option('prefix'), get_option('localedir')))
-diff --git a/src/meson.build b/src/meson.build
-index 5adef72..b3eb57a 100644
---- a/src/meson.build
-+++ b/src/meson.build
-@@ -145,10 +145,11 @@ libtemplate_glib = library(
-   'template_glib-' + apiversion,
-   libtemplate_glib_sources,
-
--  dependencies: libtemplate_glib_deps,
--     soversion: soversion,
--       version: libversion,
--       install: true,
-+   dependencies: libtemplate_glib_deps,
-+      soversion: soversion,
-+        version: libversion,
-+darwin_versions: darwin_versions,
-+        install: true,
- )
-
- libtemplate_glib_dep = declare_dependency(

@@ -1,32 +1,39 @@
 class Qjackctl < Formula
   desc "Simple Qt application to control the JACK sound server daemon"
   homepage "https://qjackctl.sourceforge.io/"
-  url "https://downloads.sourceforge.net/qjackctl/qjackctl-0.5.3.tar.gz"
-  sha256 "813be3b92442ee89a1894407980cb3c95b549e6e94b6b155f218d15291530874"
-  head "https://git.code.sf.net/p/qjackctl/code.git"
+  url "https://downloads.sourceforge.net/project/qjackctl/qjackctl/0.9.6/qjackctl-0.9.6.tar.gz"
+  sha256 "39ca2b9d83acfdd16a4c9b3eccd80e1483e1f9a446626f5d00ac297e6f8a166b"
+  license "GPL-2.0-or-later"
+  head "https://git.code.sf.net/p/qjackctl/code.git", branch: "master"
 
-  bottle do
-    sha256 "e661c47a8bb9be298dabc9d0c656f962b7157c6aa7dcebef18119af8ea07c26b" => :mojave
-    sha256 "e23c9278a737692dffba9f15d4ba96ee3545d5054d4dc40b8f298fa2ac88d6d0" => :high_sierra
-    sha256 "b5561ee222cd865048a52ea95c98f1a06b05d17ed31500a8f7e8407ef8caace2" => :sierra
-    sha256 "8c0022b1933f24a53f54ca478a51231951efb00bfbe7f54f68645b5559a551e1" => :el_capitan
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/qjackctl[._-]v?(\d+(?:\.\d+)+)\.t}i)
   end
 
-  depends_on "pkg-config" => :build
+  bottle do
+    sha256 cellar: :any, arm64_monterey: "1b144f9e426d110c45baf9947c91d772a6b009ce7782caafc0b534e22873cd05"
+    sha256 cellar: :any, arm64_big_sur:  "2ab81b4a160c701801c3fb1fb825f25604b6033be11b47e5e1780f4301d7d7a0"
+    sha256 cellar: :any, monterey:       "563f4b996a365640d37b858a47d7db2b958f5caae9fab93aedfdaaa980140153"
+    sha256 cellar: :any, big_sur:        "a66f26c99a0f9ee7a7b8c7c935a54aa6280e35363b9f7ba0b3a935743366c7fa"
+    sha256 cellar: :any, catalina:       "2a245cbda6afc11f608f59149efa21219b40f3e77711e39032ba94c92ff3e439"
+  end
+
+  depends_on "cmake" => :build
   depends_on "jack"
   depends_on "qt"
 
   def install
-    ENV.cxx11
-    system "./configure", "--disable-debug",
-                          "--disable-dbus",
-                          "--disable-portaudio",
-                          "--disable-xunique",
-                          "--prefix=#{prefix}",
-                          "--with-jack=#{Formula["jack"].opt_prefix}",
-                          "--with-qt5=#{Formula["qt"].opt_prefix}"
+    args = std_cmake_args + %w[
+      -DCONFIG_DBUS=OFF
+      -DCONFIG_PORTAUDIO=OFF
+      -DCONFIG_XUNIQUE=OFF
+    ]
 
-    system "make", "install"
+    system "cmake", *args
+    system "cmake", "--build", "."
+    system "cmake", "--install", "."
+
     prefix.install bin/"qjackctl.app"
     bin.install_symlink prefix/"qjackctl.app/Contents/MacOS/qjackctl"
   end

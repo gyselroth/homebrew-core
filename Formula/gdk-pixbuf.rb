@@ -1,25 +1,32 @@
 class GdkPixbuf < Formula
   desc "Toolkit for image loading and pixel buffer manipulation"
   homepage "https://gtk.org"
-  url "https://download.gnome.org/sources/gdk-pixbuf/2.38/gdk-pixbuf-2.38.1.tar.xz"
-  sha256 "f19ff836ba991031610dcc53774e8ca436160f7d981867c8c3a37acfe493ab3a"
-  revision 1
+  url "https://download.gnome.org/sources/gdk-pixbuf/2.42/gdk-pixbuf-2.42.6.tar.xz"
+  sha256 "c4a6b75b7ed8f58ca48da830b9fa00ed96d668d3ab4b1f723dcf902f78bde77f"
+  license "LGPL-2.1-or-later"
 
   bottle do
-    sha256 "183c810ede98f4732b2fcbe781670c4f4c5d9e75f4530975864abb524c1911dd" => :mojave
-    sha256 "f7d10a967373df44ce4e0ca18965428f1404513195f1403e7964511b2e091d57" => :high_sierra
-    sha256 "6c98ec526d0c3fbee49f46339d9997e7aeba93a55a655d1b521f93c26ab16c98" => :sierra
+    sha256 arm64_monterey: "328f6bdde8798f079a1b4abbd60f9ca9f6f1c308efb44eec863421817af4d7a8"
+    sha256 arm64_big_sur:  "1aa92bcea0846fe0b37a4d65bf5947f5c27ffc750a93bd94db69bfe25369fda3"
+    sha256 monterey:       "d8984c02730154183bde0adfcde24fa47bc7611eb134a77e20d15b17b3be4de9"
+    sha256 big_sur:        "f4cf795b20c84fb5074ceeeeaf7b1d22e164b7af13adb6d0b95e3655d867fd41"
+    sha256 catalina:       "94835aba06d5e7160fd19bb14e05d3aad2f27be4c7030c019e42208369cf6014"
+    sha256 mojave:         "4bd3543b83cd74bfd0de1bd94a9e0200374c0834ef636cfe99621fe3c2145aaa"
+    sha256 x86_64_linux:   "cd3d671f4129a4dddef888e1317b4e5840d217b75fee8e46a17b33630da674c8"
   end
 
   depends_on "gobject-introspection" => :build
   depends_on "meson" => :build
   depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "python" => :build
   depends_on "glib"
   depends_on "jpeg"
   depends_on "libpng"
   depends_on "libtiff"
+
+  on_linux do
+    depends_on "shared-mime-info"
+  end
 
   # gdk-pixbuf has an internal version number separate from the overall
   # version number that specifies the location of its module and cache
@@ -38,15 +45,16 @@ class GdkPixbuf < Formula
               "-DGDK_PIXBUF_LIBDIR=\"@0@\"'.format(gdk_pixbuf_libdir)",
               "-DGDK_PIXBUF_LIBDIR=\"@0@\"'.format('#{HOMEBREW_PREFIX}/lib')"
 
-    args = %W[
-      --prefix=#{prefix}
-      -Dx11=false
-      -Ddocs=false
-      -Dgir=true
+    args = std_meson_args + %w[
       -Drelocatable=false
       -Dnative_windows_loaders=false
       -Dinstalled_tests=false
       -Dman=false
+      -Dgtk_doc=false
+      -Dpng=true
+      -Dtiff=true
+      -Djpeg=true
+      -Dintrospection=enabled
     ]
 
     ENV["DESTDIR"] = "/"
@@ -104,8 +112,10 @@ class GdkPixbuf < Formula
       -lgdk_pixbuf-2.0
       -lglib-2.0
       -lgobject-2.0
-      -lintl
     ]
+    on_macos do
+      flags << "-lintl"
+    end
     system ENV.cc, "test.c", "-o", "test", *flags
     system "./test"
   end

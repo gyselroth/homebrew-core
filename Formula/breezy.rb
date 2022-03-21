@@ -3,57 +3,60 @@ class Breezy < Formula
 
   desc "Version control system implemented in Python with multi-format support"
   homepage "https://www.breezy-vcs.org"
-  url "https://files.pythonhosted.org/packages/f6/8a/f5aab26e6769907afda49a79e19dfa187a9f84797d9147ee6e35b52d97b9/breezy-3.0.0.tar.gz"
-  sha256 "d5723a7a3fcaa827bf2731c20df5240d7063c7728b2db3a5d58bc90f6257f878"
+  url "https://files.pythonhosted.org/packages/e4/93/101bb70d7e6c171c7a3a99d50d9f9b64a17a5845cfd6c8ecb95d844bac68/breezy-3.2.1.tar.gz"
+  sha256 "e0b268eb1a28a2af045280c37d021ae32d7ff175f4c9b99f33aad7db0b29d85c"
+  license "GPL-2.0-or-later"
+  revision 1
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "5a5168ff98a8a820806d15619f793189a3f61876879121a5cd7d4b2e1e723dd5" => :mojave
-    sha256 "5f508532d94dcfb5346666b78a2762608294d51b5580ecf047dbdfb4f4c52243" => :high_sierra
-    sha256 "ab4a0b94706bb8f761ba47f60603736364838306c2d108e1c332506d680ff18b" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "ce18d109ba318dd50c753cd3d02fc90ad6df9575ebdb7c515a1847dfc931598f"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "dbec16ab9ab4fec8b1f9e68bbb11a190e066c9201a538da5923996ef366f30f9"
+    sha256 cellar: :any_skip_relocation, monterey:       "9ffbad5b832bcd48b2622fabbc1c8677716046cbbcdb44a94b7056d988b356dd"
+    sha256 cellar: :any_skip_relocation, big_sur:        "cec1b7917f72dd243bb066e794f94164e4c626b1034900945f5c47b5cf0c0615"
+    sha256 cellar: :any_skip_relocation, catalina:       "8da239d61c5e5c0b2b767fac9ca5c76e282681dc74f71b6f61223cea93f2aa22"
+    sha256 cellar: :any_skip_relocation, mojave:         "6f28d8c1bf39889ea05179529c3d1d1c4b2b9076ba859111d881f771635e2be7"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "8eccce30623dfdaeaa0761d98739153c986f27d05f177282e7c3d8aa49182992"
   end
 
+  depends_on "cython" => :build
   depends_on "gettext" => :build
-  depends_on "openssl"
-  depends_on "python"
+  depends_on "openssl@1.1"
+  depends_on "python@3.9"
+  depends_on "six"
+
+  conflicts_with "bazaar", because: "both install `bzr` binaries"
+
+  resource "certifi" do
+    url "https://files.pythonhosted.org/packages/6d/78/f8db8d57f520a54f0b8a438319c342c61c22759d8f9a1cd2e2180b5e5ea9/certifi-2021.5.30.tar.gz"
+    sha256 "2bbf76fd432960138b3ef6dda3dde0544f27cbf8546c458e60baf371917ba9ee"
+  end
 
   resource "configobj" do
     url "https://files.pythonhosted.org/packages/64/61/079eb60459c44929e684fa7d9e2fdca403f67d64dd9dbac27296be2e0fab/configobj-5.0.6.tar.gz"
     sha256 "a2f5650770e1c87fb335af19a9b7eb73fc05ccf22144eb68db7d00cd2bcb0902"
   end
 
-  resource "Cython" do
-    url "https://files.pythonhosted.org/packages/f0/f8/7f406aac4c6919d5a4ce16509bbe059cd256e9ad94bae5ccac14094b7c51/Cython-0.29.1.tar.gz"
-    sha256 "18ab7646985a97e02cee72e1ddba2e732d4931d4e1732494ff30c5aa084bfb97"
-  end
-
   resource "dulwich" do
-    url "https://files.pythonhosted.org/packages/2e/02/42ce6e45a206ccb044d8a3296646497e96b5263624e5862d21da947b9d59/dulwich-0.19.11.tar.gz"
-    sha256 "afbe070f6899357e33f63f3f3696e601731fef66c64a489dea1bc9f539f4a725"
+    url "https://files.pythonhosted.org/packages/7c/d2/a361b4831494531d5112e000d92762fc2926ed45ca7f9e9013f2e90c011c/dulwich-0.20.24.tar.gz"
+    sha256 "6b61ac0a2a8b1b1e18914310f3f7a422396334208b426b9de570f1de31644cf1"
   end
 
-  resource "paramiko" do
-    url "https://files.pythonhosted.org/packages/a4/57/86681372e7a8d642718cadeef38ead1c24c4a1af21ae852642bf974e37c7/paramiko-2.4.2.tar.gz"
-    sha256 "a8975a7df3560c9f1e2b43dc54ebd40fd00a7017392ca5445ce7df409f900fcb"
-  end
-
-  resource "pycrypto" do
-    url "https://files.pythonhosted.org/packages/60/db/645aa9af249f059cc3a368b118de33889219e0362141e75d4eaf6f80f163/pycrypto-2.6.1.tar.gz"
-    sha256 "f2ce1e989b272cfcb677616763e0a2e7ec659effa67a88aa92b3a65528f60a3c"
-  end
-
-  resource "six" do
-    url "https://files.pythonhosted.org/packages/dd/bf/4138e7bfb757de47d1f4b6994648ec67a51efe58fa907c1e11e350cddfca/six-1.12.0.tar.gz"
-    sha256 "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"
+  resource "patiencediff" do
+    url "https://files.pythonhosted.org/packages/90/ca/13cdabb3c491a0ccd7d580419b96abce3d227d4a6ba674364e6b19d4d67e/patiencediff-0.2.2.tar.gz"
+    sha256 "456d9fc47fe43f9aea863059ea2c6df5b997285590e4b7f9ee8fbb6c3419b5a7"
   end
 
   resource "urllib3" do
-    url "https://files.pythonhosted.org/packages/b1/53/37d82ab391393565f2f831b8eedbffd57db5a718216f82f1a8b4d381a1c1/urllib3-1.24.1.tar.gz"
-    sha256 "de9529817c93f27c8ccbfead6985011db27bd0ddfcdb2d86f3f663385c6a9c22"
+    url "https://files.pythonhosted.org/packages/4f/5a/597ef5911cb8919efe4d86206aa8b2658616d676a7088f0825ca08bd7cb8/urllib3-1.26.6.tar.gz"
+    sha256 "f57b4c16c62fa2760b7e3d97c35b255512fb6b59a259730f36ba32ce9f8e342f"
   end
 
   def install
     virtualenv_install_with_resources
+    man1.install_symlink Dir[libexec/"man/man1/*.1"]
+
+    # Replace bazaar with breezy
+    bin.install_symlink "brz" => "bzr"
   end
 
   test do

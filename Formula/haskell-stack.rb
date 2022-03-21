@@ -1,54 +1,54 @@
-require "language/haskell"
-
 class HaskellStack < Formula
-  include Language::Haskell::Cabal
-
-  desc "The Haskell Tool Stack"
+  desc "Cross-platform program for developing Haskell projects"
   homepage "https://haskellstack.org/"
-  url "https://github.com/commercialhaskell/stack/releases/download/v1.9.3/stack-1.9.3-sdist-1.tar.gz"
-  version "1.9.3"
-  sha256 "14e06a71bf6fafbb2d468f83c70fd4e9490395207d6530ab7b9fc056f8972a46"
-  head "https://github.com/commercialhaskell/stack.git"
+  license "BSD-3-Clause"
+  head "https://github.com/commercialhaskell/stack.git", branch: "master"
+
+  stable do
+    url "https://github.com/commercialhaskell/stack/archive/v2.7.5.tar.gz"
+    sha256 "7e77a91c9e2366b6be292188c1a36c96f8830f8a5f4a079fae7f73b9b0d2c8b6"
+  end
+
+  livecheck do
+    url :stable
+    strategy :github_latest
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "e77734678c0a9bb402373a53e1c67663cfd5160f8dd2be3e3a16a569ae5a9a48" => :mojave
-    sha256 "ce65fc3575740104c9a99bd8797ac10e8724d8d36c80326251343ed68ab965c0" => :high_sierra
-    sha256 "3c278a54d4e0d829ab89f018e49d1e69721034a51b56af1435738a5b20e9f5b8" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "8544fc3515d4f792e985bcfc87f65f9b6d172a393ab46dfb68f9698067f0c387"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "3b1f9af2e37102a5986ba24591dad17800c4d8339b18dc74b11690b1a8a1fee9"
+    sha256 cellar: :any_skip_relocation, monterey:       "9694d69422504e9531370a44bccd72a2a02f2e3811876ab4da7eb414a43567df"
+    sha256 cellar: :any_skip_relocation, big_sur:        "258a48a663a48aaf3c7a7ae829e8ad3639efcbc9750158913987dacb89bf65dc"
+    sha256 cellar: :any_skip_relocation, catalina:       "0554a6de930c455adf30e59e47d7a08603a282ed093dc314dfe059d6aed38160"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "72fd574d73cb6fbd45707dfa91cf44a701e9db08d0f2dca87e6100307989c61f"
   end
 
   depends_on "cabal-install" => :build
   depends_on "ghc" => :build
+  # All ghc versions before 9.2.1 requires LLVM Code Generator as a backend on
+  # ARM. GHC 8.10.7 user manual recommend use LLVM 9 through 12 and we met some
+  # unknown issue with LLVM 13 before so conservatively use LLVM 12 here.
+  #
+  # References:
+  #   https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/8.10.7-notes.html
+  #   https://gitlab.haskell.org/ghc/ghc/-/issues/20559
+  depends_on "llvm@12" if Hardware::CPU.arm?
 
-  # Build using a stack config that matches the default Homebrew version of GHC
-  resource "stack_lts_12_yaml" do
-    url "https://raw.githubusercontent.com/commercialhaskell/stack/v1.9.3/stack-lts-12.yaml"
-    version "1.9.3"
-    sha256 "0b4fb72f7c08c96ca853e865036e743cbdc84265dd5d5c4cf5154d305cd680de"
-  end
+  uses_from_macos "zlib"
 
   def install
-    buildpath.install resource("stack_lts_12_yaml")
+    # https://github.com/JustusAdam/mustache/issues/41
+    cabal_install_constraints = ["--constraint=mustache^>=2.3.1"]
 
-    cabal_sandbox do
-      cabal_install "happy"
+    system "cabal", "v2-update"
+    system "cabal", "v2-install", *std_cabal_v2_args, *cabal_install_constraints
 
-      cabal_install
-
-      # Let `stack` handle its own parallelization
-      # Prevents "install: mkdir ... ghc-7.10.3/lib: File exists"
-      jobs = ENV.make_jobs
-      ENV.deparallelize
-
-      system "stack", "-j#{jobs}", "--stack-yaml=stack-lts-12.yaml",
-             "--system-ghc", "--no-install-ghc", "setup"
-      system "stack", "-j#{jobs}", "--stack-yaml=stack-lts-12.yaml",
-             "--system-ghc", "--no-install-ghc", "--local-bin-path=#{bin}",
-             "install"
-    end
+    bin.env_script_all_files libexec, PATH: "${PATH}:#{Formula["llvm@12"].opt_bin}" if Hardware::CPU.arm?
   end
 
   test do
     system bin/"stack", "new", "test"
+    assert_predicate testpath/"test", :exist?
+    assert_match "# test", File.read(testpath/"test/README.md")
   end
 end

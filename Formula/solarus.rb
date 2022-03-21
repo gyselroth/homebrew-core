@@ -1,34 +1,27 @@
 class Solarus < Formula
   desc "Action-RPG game engine"
   homepage "https://www.solarus-games.org/"
-  head "https://github.com/christopho/solarus.git"
-
-  stable do
-    url "https://www.solarus-games.org/downloads/solarus/solarus-1.5.3-src.tar.gz"
-    sha256 "7608f3bdc7baef36e95db5e4fa4c8c5be0a3f436c50c53ab72d70a92aa44cc1c"
-
-    # Upstream patch for build issue, remove in next version
-    # https://github.com/solarus-games/solarus/issues/1084
-    patch do
-      url "https://raw.githubusercontent.com/Homebrew/formula-patches/e6a26f3d/solarus/config.patch"
-      sha256 "7bb5c39dd97eca215a22a28dffe23dfac364252f7ff8221e5d76ae40d037be76"
-    end
-  end
+  url "https://gitlab.com/solarus-games/solarus.git",
+      tag:      "v1.6.5",
+      revision: "3aec70b0556a8d7aed7903d1a3e4d9a18c5d1649"
+  license "GPL-3.0-or-later"
+  revision 1
 
   bottle do
-    cellar :any
-    rebuild 1
-    sha256 "f8c784ab5cc03a3bfc41cc53c9eaa037373f97046fa28044492b2286faa3e2ee" => :mojave
-    sha256 "b03dd0139fb3496f90a23c2847b42908e63366c37f92ad8b219f23bada2c4422" => :high_sierra
-    sha256 "03b09b647d7d940febe3405420b127567922251f493c15e96945b808a11a041d" => :sierra
-    sha256 "270c69a61d8bbc33033b4ca18bc669fabbba1e58c7ad67dcd5cb1150f039160a" => :el_capitan
+    sha256 cellar: :any, arm64_monterey: "e02ef9bfa00c637a6e43e91eebdcb064a85465c72bfd2dbab0344512400bc614"
+    sha256 cellar: :any, arm64_big_sur:  "f3b35b5252b2ee2c4068f7f4e2b952a1f88cbc9cacd4d84fb19680cea344bd7e"
+    sha256 cellar: :any, monterey:       "820ab24962729c085bad240f89d02f7a313a33b0ed7a7fc67f6ddc02e07b030d"
+    sha256 cellar: :any, big_sur:        "21eb9b511e6d49a1f17830ba8a7adcab4f0e3265c63f02679efba837ff77c55b"
+    sha256 cellar: :any, catalina:       "819dc6f84e1b4e56ba679d8b798412b2a3f71350c0923cf340ab49e76075e202"
+    sha256 cellar: :any, mojave:         "417dff62c280dd7e9bb742eef82fbae408a6e5fefcf427daf8d2af5955cc660a"
   end
 
   depends_on "cmake" => :build
+  depends_on "glm"
   depends_on "libmodplug"
   depends_on "libogg"
   depends_on "libvorbis"
-  depends_on "luajit"
+  depends_on "luajit-openresty"
   depends_on "physfs"
   depends_on "sdl2"
   depends_on "sdl2_image"
@@ -36,7 +29,15 @@ class Solarus < Formula
 
   def install
     mkdir "build" do
-      system "cmake", "..", "-DSOLARUS_GUI=OFF", *std_cmake_args
+      ENV.append_to_cflags "-I#{Formula["glm"].opt_include}"
+      ENV.append_to_cflags "-I#{Formula["physfs"].opt_include}"
+      system "cmake", "..",
+                      "-DCMAKE_INSTALL_RPATH=#{rpath}",
+                      "-DSOLARUS_ARCH=#{Hardware::CPU.arch}",
+                      "-DSOLARUS_GUI=OFF",
+                      "-DVORBISFILE_INCLUDE_DIR=#{Formula["libvorbis"].opt_include}",
+                      "-DOGG_INCLUDE_DIR=#{Formula["libogg"].opt_include}",
+                      *std_cmake_args
       system "make", "install"
     end
   end

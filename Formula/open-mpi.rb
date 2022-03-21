@@ -1,14 +1,22 @@
 class OpenMpi < Formula
   desc "High performance message passing library"
   homepage "https://www.open-mpi.org/"
-  url "https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.1.tar.bz2"
-  sha256 "cce7b6d20522849301727f81282201d609553103ac0b09162cf28d102efb9709"
-  revision 1
+  url "https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.2.tar.bz2"
+  sha256 "9b78c7cf7fc32131c5cf43dd2ab9740149d9d87cadb2e2189f02685749a6b527"
+  license "BSD-3-Clause"
+
+  livecheck do
+    url :homepage
+    regex(/MPI v?(\d+(?:\.\d+)+) release/i)
+  end
 
   bottle do
-    sha256 "f7c495b7015a86f61cbc44c5788912d919e5bdd70b13160b0a94e4d07f892f69" => :mojave
-    sha256 "6660708bc834553df9cda635ea590ad5e30112af7aa522e33c78b4655105901b" => :high_sierra
-    sha256 "ecd525d18b89900646a4bbe161760830ad84ad2c9d4ca3afcb9f8855a692c5f1" => :sierra
+    sha256 arm64_monterey: "ed4c20df651ef9c71c9f9b9e39db1e7c365aaa50528515bbe81a8b49d146ac3e"
+    sha256 arm64_big_sur:  "a96a415cdde33add4d1f4f61d785734df7fd4ac642778b143ad877268a5a9c3a"
+    sha256 monterey:       "380caa56100f528862c699244a14747ad66ef8abc109767f6e4573bf561e58a4"
+    sha256 big_sur:        "57559e283299c56ef3285bbda752cf9b1a5e1ac22936cbecb41b6ee15b002f82"
+    sha256 catalina:       "0605a2da6ef4d646095c1b780311df026207d75d2f3451afaf58174058059122"
+    sha256 x86_64_linux:   "3a2969e4feeb5734fba133bd4f496ff9138a847ed0c6707d3d03e3db475dc07a"
   end
 
   head do
@@ -18,31 +26,48 @@ class OpenMpi < Formula
     depends_on "libtool" => :build
   end
 
-  depends_on "gcc"
+  depends_on "gcc" # for gfortran
+  depends_on "hwloc"
   depends_on "libevent"
 
-  conflicts_with "mpich", :because => "both install MPI compiler wrappers"
+  conflicts_with "mpich", because: "both install MPI compiler wrappers"
 
   def install
-    # otherwise libmpi_usempi_ignore_tkr gets built as a static library
+    # Otherwise libmpi_usempi_ignore_tkr gets built as a static library
     ENV["MACOSX_DEPLOYMENT_TARGET"] = MacOS.version
 
+    # Avoid references to the Homebrew shims directory
+    %w[
+      ompi/tools/ompi_info/param.c
+      orte/tools/orte-info/param.c
+      oshmem/tools/oshmem_info/param.c
+      opal/mca/pmix/pmix3x/pmix/src/tools/pmix_info/support.c
+    ].each do |fname|
+      inreplace fname, /(OPAL|PMIX)_CC_ABSOLUTE/, "\"#{ENV.cc}\""
+    end
+
+    %w[
+      ompi/tools/ompi_info/param.c
+      oshmem/tools/oshmem_info/param.c
+    ].each do |fname|
+      inreplace fname, "OMPI_CXX_ABSOLUTE", "\"#{ENV.cxx}\""
+    end
+
     ENV.cxx11
+    ENV.runtime_cpu_detection
 
     args = %W[
       --prefix=#{prefix}
       --disable-dependency-tracking
       --disable-silent-rules
       --enable-ipv6
+      --enable-mca-no-build=reachable-netlink
       --with-libevent=#{Formula["libevent"].opt_prefix}
       --with-sge
     ]
     args << "--with-platform-optimized" if build.head?
 
-    # Fixes an issue in 4.0.0, should be fixed in 4.0.1
-    args << "--enable-mpi1-compatibility"
-
-    system "./autogen.pl" if build.head?
+    system "./autogen.pl", "--force" if build.head?
     system "./configure", *args
     system "make", "all"
     system "make", "check"

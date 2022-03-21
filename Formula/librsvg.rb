@@ -1,14 +1,17 @@
 class Librsvg < Formula
   desc "Library to render SVG files using Cairo"
   homepage "https://wiki.gnome.org/Projects/LibRsvg"
-  url "https://download.gnome.org/sources/librsvg/2.44/librsvg-2.44.14.tar.xz"
-  sha256 "6a85a7868639cdd4aa064245cc8e9d864dad8b8e9a4a8031bb09a4796bc4e303"
-  revision 1
+  url "https://download.gnome.org/sources/librsvg/2.52/librsvg-2.52.7.tar.xz"
+  sha256 "057c1eeeaf85c84e254bdb707459207f5840da5b4d52b4711c03140ed09e6887"
+  license "LGPL-2.1-or-later"
 
   bottle do
-    sha256 "e40ee1831eebb0a15c8dc6f44bdbf188614053454777854e2613f6f1b7a40c99" => :mojave
-    sha256 "13339ab9613fb7c650688fc7bb2d28c09630a582e949add2030cb96a650052fd" => :high_sierra
-    sha256 "d2db27fabd73ef8c322e7163868997c2aa4f8cc3ec9fd4c043703283a9b94095" => :sierra
+    sha256                               arm64_monterey: "0e362408ee1aad807e72b8a12ded24c395470fe606bfbd698d846a4d6b3d243e"
+    sha256                               arm64_big_sur:  "25d1043b31522f2a576b71083d2db0045c8015006d1cdceefdf65fa2193b605a"
+    sha256                               monterey:       "8be5d2eb452b3b70b34a1cd05e43d8fe930694213e49054a7688ef26a5aa2232"
+    sha256                               big_sur:        "a3082a7e46235bfb9bdede1d1c540fcf27fcb240eac7af862eb8518ac0dc077b"
+    sha256                               catalina:       "53a99431714760a9187c6aad1dfdc2d6dbe311a2c8406d5c76ecad7a526f82cf"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "8980f09ba21efdbb4499317887fc58b813413a70c5b59cbe2f74fb9db59f2670"
   end
 
   depends_on "gobject-introspection" => :build
@@ -17,7 +20,6 @@ class Librsvg < Formula
   depends_on "cairo"
   depends_on "gdk-pixbuf"
   depends_on "glib"
-  depends_on "libcroco"
   depends_on "pango"
 
   def install
@@ -89,10 +91,12 @@ class Librsvg < Formula
       -lgio-2.0
       -lglib-2.0
       -lgobject-2.0
-      -lintl
       -lm
       -lrsvg-2
     ]
+    on_macos do
+      flags << "-lintl"
+    end
     system ENV.cc, "test.c", "-o", "test", *flags
     system "./test"
   end

@@ -3,20 +3,27 @@ class Flowgrind < Formula
   homepage "https://launchpad.net/flowgrind"
   url "https://launchpad.net/flowgrind/trunk/flowgrind-0.8.0/+download/flowgrind-0.8.0.tar.bz2"
   sha256 "2e8b58fc919bb1dae8f79535e21931336355b4831d8b5bf75cf43eacd1921d04"
+  revision 3
+
+  livecheck do
+    url :stable
+    regex(%r{<div class="version">\s*Latest version is flowgrind[._-]v?(\d+(?:\.\d+)+)\s*</div>}i)
+  end
 
   bottle do
-    cellar :any
-    sha256 "a46d6483368a731836bf8f241212b879af1ccaa8d1c46ce0958ee5918b705e38" => :mojave
-    sha256 "fc136acf25aed179051b10dd46fe655f0eca478f3918029931b961402c3ff416" => :high_sierra
-    sha256 "10f9b511118c62e1302d427a91b0972d61638a43b64594ba04731b7fa50fce77" => :sierra
-    sha256 "112a89ea6071526c1604047b40cf5f168cc1ca3d779fa2c4b4093c8ee3675c39" => :el_capitan
-    sha256 "a39cc57cb6353dfeae30da6c204c35956f6ef1570c3caf0419fa6c6e75ff0998" => :yosemite
+    sha256 cellar: :any,                 arm64_big_sur: "f1a52d1f915547526cc01ea5be8907ff9580919ea3d838c8bfb16bf9cd0a4675"
+    sha256 cellar: :any,                 big_sur:       "7deade98f4d2b56a16b700d708e014cc9d66224f429629c646e0c45dbc659759"
+    sha256 cellar: :any,                 catalina:      "b6351fe504faa1294e6f280d30bdaeeda2fe93e222146503c8f06e53ab7b57cd"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:  "a103a74d717b0944d8e3849414c122d9e0cd9b071c7305bf2a8f5ea6b7003086"
   end
 
   depends_on "gsl"
   depends_on "xmlrpc-c"
 
   def install
+    # Fix "ld: file not found: /usr/lib/system/libsystem_darwin.dylib" for lxml
+    ENV["SDKROOT"] = MacOS.sdk_path if MacOS.version == :sierra
+
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--disable-silent-rules",

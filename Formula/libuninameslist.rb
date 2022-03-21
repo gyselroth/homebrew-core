@@ -1,14 +1,23 @@
 class Libuninameslist < Formula
   desc "Library of Unicode names and annotation data"
   homepage "https://github.com/fontforge/libuninameslist"
-  url "https://github.com/fontforge/libuninameslist/releases/download/20190305/libuninameslist-dist-20190305.tar.gz"
-  sha256 "98dbc9b4185f85c7b9f8e099c8c56341a6ecc41e594bff54b22f6ecfde128de7"
+  url "https://github.com/fontforge/libuninameslist/releases/download/20211114/libuninameslist-dist-20211114.tar.gz"
+  sha256 "f5f69090de4a483721207a9df7de5327c13c812a1d23de074d8f0496bc2b740d"
+  license "BSD-3-Clause"
+
+  livecheck do
+    url :stable
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)*)["' >]}i)
+    strategy :github_latest
+  end
 
   bottle do
-    cellar :any
-    sha256 "ba55ae3ceca9253f6e4fa9030652dc918b1c2a527356b913a66c8bd3234596ec" => :mojave
-    sha256 "510029411344ac2f58c485e14ad640eb92dff84b88c8b8d58b9578b81ab2b2d2" => :high_sierra
-    sha256 "4c30d7f3afa2bfeaf0e315a701944e5b8185a2dbc2e655ce52c76ee1cb6b8151" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "52a867309170da4f022177dedcacd778d93822952333408ee7e9df1e32e9ab34"
+    sha256 cellar: :any,                 arm64_big_sur:  "08d9a0329d057e4dc9cc1211a70409b2816241b093500c2ed2712320bbe162da"
+    sha256 cellar: :any,                 monterey:       "d4ce52bf3926b9cf5f1c1bfec702706ea7516744f8d76706cb0880fb1c272127"
+    sha256 cellar: :any,                 big_sur:        "12309abb98a5e23b712d583cced9d25a2f0b0aabd7499cb6a561458440c36576"
+    sha256 cellar: :any,                 catalina:       "f9eb6d104a3b0e20751b6dc3ffc8c63552ae46a367135b48ca3191280e7c0787"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "135de398275c32165030df5b3af15e49172e498fda65271f85facf396e4df527"
   end
 
   head do

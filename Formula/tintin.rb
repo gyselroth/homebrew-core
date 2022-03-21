@@ -1,14 +1,23 @@
 class Tintin < Formula
   desc "MUD client"
-  homepage "https://tintin.sourceforge.io/"
-  url "https://downloads.sourceforge.net/tintin/tintin-2.01.6.tar.gz"
-  sha256 "522b3ca3ef2aadc0c3c3fd4a2cb9b779c977c9db5ea5e18309bf120cd11d153e"
+  homepage "https://tintin.mudhalla.net/"
+  url "https://github.com/scandum/tintin/releases/download/2.02.12/tintin-2.02.12.tar.gz"
+  sha256 "b6f9fd4f2c1e7cdc8cff4172d7a80014961b0394380ced9182209dc34d781a00"
+  license "GPL-3.0-or-later"
+
+  livecheck do
+    url :stable
+    strategy :github_latest
+  end
 
   bottle do
-    cellar :any
-    sha256 "0095d467450f7e04547555ce696ab3c1237957522b5ad71abe344a8ebfbcde10" => :mojave
-    sha256 "ab8ce7088ab4406f546b2875b47ba06ede4cdbfc3d83e698081343b3fcaa8ff8" => :high_sierra
-    sha256 "c3c5c1bdc641d73852bbe723f6c6e441c4dc01ee4aaa84bb3bd584f0825ce9e4" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "ebbbc301281083b40f6681ce3e3c305261cfdfa8ff5539b814e0eff7b8a55f03"
+    sha256 cellar: :any,                 arm64_big_sur:  "73d0bbde0e88409ccc7a46c0aea1df8fd50c627f35d9e90fe3f2fa9d2c07467b"
+    sha256 cellar: :any,                 monterey:       "66816b03eff95a19f251bf229e312482c87458bbbba2b24e04b39cdc6bad1b26"
+    sha256 cellar: :any,                 big_sur:        "a2c52474736bbf2789f2595d045b9257c92fd547d8943ed023fc14d99e96cd52"
+    sha256 cellar: :any,                 catalina:       "38f0217f785c1218c73f2dfd066d27e551d6f4930108a8b69524b5f11b19010e"
+    sha256 cellar: :any,                 mojave:         "23d1eaf2dd6b6a14b167353b6edcbf6934c58b5c105451e44377a30b29e46f48"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "e61815e3d0602667ddac1ba5eec6601f051baf43d267b9f2fec6ecfbea74eb2e"
   end
 
   depends_on "gnutls"
@@ -28,10 +37,6 @@ class Tintin < Formula
   end
 
   test do
-    require "pty"
-    (testpath/"input").write("#end {bye}\n")
-    PTY.spawn(bin/"tt++", "-G", "input") do |r, _w, _pid|
-      assert_match "Goodbye", r.read
-    end
+    assert_match version.to_s, shell_output("#{bin}/tt++ -V", 1)
   end
 end

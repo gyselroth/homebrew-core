@@ -1,13 +1,23 @@
 class Nagios < Formula
   desc "Network monitoring and management system"
   homepage "https://www.nagios.org/"
-  url "https://downloads.sourceforge.net/project/nagios/nagios-4.x/nagios-4.4.3/nagios-4.4.3.tar.gz"
-  sha256 "bba8f0e8dc8cf72f7a7ae4e8ce9c60f5bd315629421b9ec34818a28b8da49f67"
+  url "https://downloads.sourceforge.net/project/nagios/nagios-4.x/nagios-4.4.6/nagios-4.4.6.tar.gz"
+  sha256 "ab0d5a52caf01e6f4dcd84252c4eb5df5a24f90bb7f951f03875eef54f5ab0f4"
+  license "GPL-2.0"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/nagios[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
-    sha256 "c43d0121dfd38b6ddb681b9246423bd1df13d613ef8127a12cf44b2658e22c4f" => :mojave
-    sha256 "ede951f998ff5b872fe1f7c9ea82c316af1d2ccdd9dc60137c9d1019ded9c079" => :high_sierra
-    sha256 "7ec696beb2bb347fffdb159ecc0ac46e9b71ead5ae560e9d09b9b8d391885150" => :sierra
+    rebuild 2
+    sha256 arm64_monterey: "2b77251a1b5c81fb004289653d2638bc4b48204969ae564da6aba1b1d7934ef4"
+    sha256 arm64_big_sur:  "1ed969491c110280e2a679170c7848d78b15eb9a06bcef27a3fef551aad06b9c"
+    sha256 monterey:       "452a9ca237648ee83cace7f6eb1ba098b8bd6d3ccb927301908edb975945d82c"
+    sha256 big_sur:        "6472fe7ecf390a6e320619c07c646177667b5f9fc1b142385b24fa07c6577d81"
+    sha256 catalina:       "f8e2718a8f2c5bc9041085a9ee8a79f3496330ed1f896cfcc66b84a3de4f08c8"
+    sha256 mojave:         "f74727cd114d3afb3b413391e2f34703b243292232de3e1344db43ab6259c7d8"
   end
 
   depends_on "gd"
@@ -31,11 +41,11 @@ class Nagios < Formula
   end
 
   def user
-    Utils.popen_read("id -un").chomp
+    Utils.safe_popen_read("id", "-un").chomp
   end
 
   def group
-    Utils.popen_read("id -gn").chomp
+    Utils.safe_popen_read("id", "-gn").chomp
   end
 
   def install
@@ -73,63 +83,45 @@ class Nagios < Formula
     inreplace config, "brew", ENV["USER"]
   end
 
-  def caveats; <<~EOS
-    First we need to create a command dir using superhuman powers:
+  def caveats
+    <<~EOS
+      First we need to create a command dir using superhuman powers:
 
-      mkdir -p #{nagios_var}/rw
-      sudo chgrp _www #{nagios_var}/rw
-      sudo chmod 2775 #{nagios_var}/rw
+        mkdir -p #{nagios_var}/rw
+        sudo chgrp _www #{nagios_var}/rw
+        sudo chmod 2775 #{nagios_var}/rw
 
-    Then install the Nagios web frontend into Apple's build-in Apache:
+      Then install the Nagios web frontend into Apple's built-in Apache:
 
-      1) Turn on Personal Web Sharing.
+        1) Turn on Personal Web Sharing.
 
-      2) Load the cgi and php modules by patching /etc/apache2/httpd.conf:
+        2) Load the cgi and php modules by patching /etc/apache2/httpd.conf:
 
-        -#LoadModule php5_module        libexec/apache2/libphp5.so
-        +LoadModule php5_module        libexec/apache2/libphp5.so
+          -#LoadModule php5_module        libexec/apache2/libphp5.so
+          +LoadModule php5_module        libexec/apache2/libphp5.so
 
-        -#LoadModule cgi_module libexec/apache2/mod_cgi.so
-        +LoadModule cgi_module libexec/apache2/mod_cgi.so
+          -#LoadModule cgi_module libexec/apache2/mod_cgi.so
+          +LoadModule cgi_module libexec/apache2/mod_cgi.so
 
-      3) Symlink the sample config and create your web account:
+        3) Symlink the sample config and create your web account:
 
-        sudo ln -sf #{share}/nagios.conf /etc/apache2/other/
-        htpasswd -cs #{nagios_etc}/htpasswd.users nagiosadmin
-        sudo apachectl restart
+          sudo ln -sf #{share}/nagios.conf /etc/apache2/other/
+          htpasswd -cs #{nagios_etc}/htpasswd.users nagiosadmin
+          sudo apachectl restart
 
-    Log in with your web account (and don't forget to RTFM :-)
+      Log in with your web account (and don't forget to RTFM :-)
 
-      open http://localhost/nagios
+        open http://localhost/nagios
 
-  EOS
+    EOS
   end
 
-  plist_options :startup => true, :manual => "nagios #{HOMEBREW_PREFIX}/etc/nagios/nagios.cfg"
-
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>KeepAlive</key>
-      <true/>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_bin}/nagios</string>
-        <string>#{nagios_etc}/nagios.cfg</string>
-      </array>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>StandardErrorPath</key>
-      <string>/dev/null</string>
-      <key>StandardOutPath</key>
-      <string>/dev/null</string>
-    </dict>
-    </plist>
-  EOS
+  plist_options startup: true
+  service do
+    run [opt_bin/"nagios", etc/"nagios/nagios.cfg"]
+    keep_alive true
+    log_path "/dev/null"
+    error_log_path "/dev/null"
   end
 
   test do

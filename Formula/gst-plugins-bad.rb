@@ -1,55 +1,64 @@
 class GstPluginsBad < Formula
   desc "GStreamer plugins less supported, not fully tested"
   homepage "https://gstreamer.freedesktop.org/"
-  url "https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-1.16.0.tar.xz"
-  sha256 "22139de35626ada6090bdfa3423b27b7fc15a0198331d25c95e6b12cb1072b05"
-  revision 1
+  url "https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-1.20.0.tar.xz"
+  sha256 "015b8d4d9a395ebf444d40876867a2034dd3304b3ad48bc3a0dd0c1ee71dc11d"
+  license "LGPL-2.0-or-later"
+  head "https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git", branch: "master"
 
-  bottle do
-    sha256 "22cad057848653fed6dbbe94f95d13d158fd4bca5b0168f3a06c30bdb96a2225" => :mojave
-    sha256 "d03cde706f512aa5d15b77895aa2988b41d0241de7bcd567bb7c59e6baad139a" => :high_sierra
-    sha256 "5c28732cc6646aad8fffbacc0a0156ce7ae1083c5ea3083ffcdc5d76dc4d66a1" => :sierra
+  livecheck do
+    url "https://gstreamer.freedesktop.org/src/gst-plugins-bad/"
+    regex(/href=.*?gst-plugins-bad[._-]v?(\d+\.\d*[02468](?:\.\d+)*)\.t/i)
   end
 
-  head do
-    url "https://anongit.freedesktop.org/git/gstreamer/gst-plugins-bad.git"
-
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
+  bottle do
+    sha256 arm64_monterey: "56b5ff67223daa651c1157a5c33c2228f41d1a93ea75953a5fc109e63b224d6d"
+    sha256 arm64_big_sur:  "01395a5c550a59c5d0f0a9ff5cb3546031af73b532a16dd3637751bfb69e528b"
+    sha256 monterey:       "35f133ea38f3e6e97a3303c88a94ee62d0962005b7c49dd0f1471c82965cf814"
+    sha256 big_sur:        "a69ab37a044c5bb73023da346721e51e5f3d3185b333747b2ecfb5d5e25df930"
+    sha256 catalina:       "aa3184252ca45b09c5326d704913fc637dff98c759ae6cb9b586278724bdf99e"
+    sha256 x86_64_linux:   "971a6c9d18c23d128875f94d292607f988c1f4399b70e5c69c6245dde37ded88"
   end
 
   depends_on "gobject-introspection" => :build
-  depends_on "libtool" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "faac"
   depends_on "faad2"
   depends_on "gettext"
   depends_on "gst-plugins-base"
   depends_on "jpeg"
-  depends_on "libmms"
-  depends_on "openssl"
+  depends_on "libnice"
+  depends_on "libusrsctp"
+  depends_on "openssl@1.1"
   depends_on "opus"
   depends_on "orc"
+  depends_on "rtmpdump"
+  depends_on "srtp"
+
+  on_macos do
+    # musepack is not bottled on Linux
+    # https://github.com/Homebrew/homebrew-core/pull/92041
+    depends_on "musepack"
+  end
 
   def install
-    args = %W[
-      --prefix=#{prefix}
-      --disable-yadif
-      --disable-examples
-      --disable-debug
-      --disable-dependency-tracking
-      --enable-introspection=yes
+    # Plugins with GPL-licensed dependencies: faad
+    args = std_meson_args + %w[
+      -Dgpl=enabled
+      -Dintrospection=enabled
+      -Dexamples=disabled
     ]
 
-    if build.head?
-      # autogen is invoked in "stable" build because we patch configure.ac
-      ENV["NOCONFIGURE"] = "yes"
-      system "./autogen.sh"
-    end
+    # The apple media plug-in uses API that was added in Mojave
+    args << "-Dapplemedia=disabled" if MacOS.version <= :high_sierra
 
-    system "./configure", *args
-    system "make"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *args, ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
+    end
   end
 
   test do

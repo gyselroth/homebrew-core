@@ -1,14 +1,22 @@
 class Visp < Formula
   desc "Visual Servoing Platform library"
   homepage "https://visp.inria.fr/"
-  url "https://gforge.inria.fr/frs/download.php/latestfile/475/visp-3.2.0.tar.gz"
-  sha256 "072237ed5c6fcbc6a87300fa036014ec574fd081724907e41ae2d6fb5a222fbc"
-  revision 3
+  url "https://visp-doc.inria.fr/download/releases/visp-3.5.0.tar.gz"
+  sha256 "494a648b2570da2a200ba326ed61a14e785eb9ee08ef12d3ad178b2f384d3d30"
+  license "GPL-2.0-or-later"
+  revision 1
+
+  livecheck do
+    url "https://visp.inria.fr/download/"
+    regex(/href=.*?visp[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "ec3b6c3daf0b521e9913aa82269acd90cb6a343c4b1cf8199586a60357207b91" => :mojave
-    sha256 "efad0ce8037486f2dfb4de39f6ff0d3f7566f67543527f0005f6623312265bf8" => :high_sierra
-    sha256 "de6f90719e322885bc03c6ba0d5c8c58b2ccea6fa2fd042b2a54a60284c65b4e" => :sierra
+    sha256 cellar: :any, arm64_monterey: "8cfe4fdc76612710b245a9f20ff23f4b8a0e31dd21a632c918dcbae3f311259b"
+    sha256 cellar: :any, arm64_big_sur:  "faddbd4e18caba15dbc033a686c6ecfde11006a45f2849ef7fd0cdff9da3ce66"
+    sha256 cellar: :any, monterey:       "ab699c9e421d6a09f49cc880f1585aea6336aba3e7bd5945652df96292dbc53c"
+    sha256 cellar: :any, big_sur:        "2cd260cb6587cfe9a4739c78cbb972e2190b428c8c7e29305f33476b4e9fd654"
+    sha256 cellar: :any, catalina:       "23f11b05c01c2aa107b077a5f9bf5287da606ed91ada7c27995665f457cb8586"
   end
 
   depends_on "cmake" => :build
@@ -22,10 +30,21 @@ class Visp < Formula
   depends_on "pcl"
   depends_on "zbar"
 
+  uses_from_macos "libxml2"
+  uses_from_macos "zlib"
+
   def install
     ENV.cxx11
 
-    sdk = MacOS::CLT.installed? ? "" : MacOS.sdk_path
+    # Avoid superenv shim references
+    inreplace "CMakeLists.txt" do |s|
+      s.sub!(/CMake build tool:"\s+\${CMAKE_BUILD_TOOL}/,
+             "CMake build tool:            gmake\"")
+      s.sub!(/C\+\+ Compiler:"\s+\${VISP_COMPILER_STR}/,
+             "C++ Compiler:                clang++\"")
+      s.sub!(/C Compiler:"\s+\${CMAKE_C_COMPILER}/,
+             "C Compiler:                  clang\"")
+    end
 
     system "cmake", ".", "-DBUILD_DEMOS=OFF",
                          "-DBUILD_EXAMPLES=OFF",
@@ -52,23 +71,33 @@ class Visp < Formula
                          "-DPNG_PNG_INCLUDE_DIR=#{Formula["libpng"].opt_include}",
                          "-DPNG_LIBRARY_RELEASE=#{Formula["libpng"].opt_lib}/libpng.dylib",
                          "-DUSE_PTHREAD=ON",
-                         "-DPTHREAD_INCLUDE_DIR=#{sdk}/usr/include",
-                         "-DPTHREAD_LIBRARY=/usr/lib/libpthread.dylib",
                          "-DUSE_PYLON=OFF",
                          "-DUSE_REALSENSE=OFF",
                          "-DUSE_REALSENSE2=OFF",
                          "-DUSE_X11=OFF",
                          "-DUSE_XML2=ON",
-                         "-DXML2_INCLUDE_DIR=#{sdk}/usr/include/libxml2",
-                         "-DXML2_LIBRARY=/usr/lib/libxml2.dylib",
                          "-DUSE_ZBAR=ON",
                          "-DZBAR_INCLUDE_DIRS=#{Formula["zbar"].opt_include}",
                          "-DZBAR_LIBRARIES=#{Formula["zbar"].opt_lib}/libzbar.dylib",
                          "-DUSE_ZLIB=ON",
-                         "-DZLIB_INCLUDE_DIR=#{sdk}/usr/include",
-                         "-DZLIB_LIBRARY_RELEASE=/usr/lib/libz.dylib",
                          *std_cmake_args
+
+    # Replace generated references to OpenCV's Cellar path
+    opencv = Formula["opencv"]
+    opencv_references = Dir[
+      "CMakeCache.txt",
+      "CMakeFiles/Export/lib/cmake/visp/VISPModules.cmake",
+      "VISPConfig.cmake",
+      "VISPGenerateConfigScript.info.cmake",
+      "VISPModules.cmake",
+      "modules/**/flags.make",
+      "unix-install/VISPConfig.cmake",
+    ]
+    inreplace opencv_references, opencv.prefix.realpath, opencv.opt_prefix
     system "make", "install"
+
+    # Make sure software built against visp don't reference opencv's cellar path either
+    inreplace lib/"pkgconfig/visp.pc", opencv.prefix.realpath, opencv.opt_prefix
   end
 
   test do

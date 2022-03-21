@@ -1,15 +1,23 @@
 class WlaDx < Formula
   desc "Yet another crossassembler package"
   homepage "https://github.com/vhelin/wla-dx"
-  url "https://github.com/vhelin/wla-dx/archive/v9.7.tar.gz"
-  sha256 "22d544ab9f596df7f4141c26bec9735de790213d22e18d11c9b4bd12253e1420"
+  url "https://github.com/vhelin/wla-dx/archive/v10.1.tar.gz"
+  sha256 "a3a985b28c210426650da444eed60f66c593b97d26c402386f1dac78617ea56a"
+  license "GPL-2.0"
+
+  livecheck do
+    url :stable
+    strategy :github_latest
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)(?:-fix)*["' >]}i)
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "8d0dfce3510dbeb60d876cfa9d470453c7e2a48e49d691683e5b03def051a788" => :mojave
-    sha256 "227175578a34d7e37a67c7a1d54f578880b9d433168f2863e8550ea0e8b4dfd5" => :high_sierra
-    sha256 "831b9f5f6b67d9f51ee41d6b9b582506c93a5a677631ca8c996401bffb58961a" => :sierra
-    sha256 "f9f5a3c5e03f4145b30f09b42d8d247aae1f13b86dceee53efeb9f2b16ec0b00" => :el_capitan
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "1d8ca0ef1d076a6ad9751fd83d2cb9b4136bfc475552984c81cc0f739c5a92ff"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "f92f501f3e3a9183a0475fde4c0fbecb295ac3ad0b2fb9c57b86889591f9490e"
+    sha256 cellar: :any_skip_relocation, monterey:       "615f48ed20c08134f6b9179dcbc309f3efb087d6649b4e9bcee5a62d64ac585f"
+    sha256 cellar: :any_skip_relocation, big_sur:        "dc6db662561786b69914c0b6b980659c9769f383d3d8af8573aa85059735a607"
+    sha256 cellar: :any_skip_relocation, catalina:       "e2c8be4e613ca7c010cb7143ce3bc79d6360eb2f6fb39940bc798dc3de8a790a"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "4259a83b65704eff0133136d667e97bdab8d322034aa9cb40c09aac0e6deb80b"
   end
 
   depends_on "cmake" => :build

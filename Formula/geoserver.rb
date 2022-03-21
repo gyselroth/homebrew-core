@@ -1,10 +1,22 @@
 class Geoserver < Formula
   desc "Java server to share and edit geospatial data"
-  homepage "http://geoserver.org/"
-  url "https://downloads.sourceforge.net/project/geoserver/GeoServer/2.14.3/geoserver-2.14.3-bin.zip"
-  sha256 "07056c692efc5a49726dca3e952767ebcaadfae50cd450e201c02df5426f5ca0"
+  homepage "https://geoserver.org/"
+  url "https://downloads.sourceforge.net/project/geoserver/GeoServer/2.20.3/geoserver-2.20.3-bin.zip"
+  sha256 "c73ca8020fa7822d084fa1148414d6bb46f6edae26ad3731715c8b65e0724bcf"
 
-  bottle :unneeded
+  # GeoServer releases contain a large number of files for each version, so the
+  # SourceForge RSS feed may only contain the most recent version (which may
+  # have a different major/minor version than the latest stable). We check the
+  # "GeoServer" directory page instead, since this is reliable.
+  livecheck do
+    url "https://sourceforge.net/projects/geoserver/files/GeoServer/"
+    strategy :page_match
+    regex(%r{href=(?:["']|.*?GeoServer/)?v?(\d+(?:\.\d+)+)/?["' >]}i)
+  end
+
+  bottle do
+    sha256 cellar: :any_skip_relocation, all: "2768b53ce79cf721696f42870c354318d34e0c82de27ad59de1f8e508e20c468"
+  end
 
   def install
     libexec.install Dir["*"]
@@ -18,10 +30,11 @@ class Geoserver < Formula
     EOS
   end
 
-  def caveats; <<~EOS
-    To start geoserver:
-      geoserver path/to/data/dir
-  EOS
+  def caveats
+    <<~EOS
+      To start geoserver:
+        geoserver path/to/data/dir
+    EOS
   end
 
   test do

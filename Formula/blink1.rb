@@ -2,22 +2,31 @@ class Blink1 < Formula
   desc "Control blink(1) indicator light"
   homepage "https://blink1.thingm.com/"
   url "https://github.com/todbot/blink1-tool.git",
-      :tag      => "v2.0.2",
-      :revision => "ddea93375101a9b43e0248205b5460a0e3b45f74"
-  head "https://github.com/todbot/blink1-tool.git"
+      tag:      "v2.3.0",
+      revision: "69561a9ed9e83ff67c95cc70187c394150f51cd5"
+  license "CC-BY-SA-3.0"
+  head "https://github.com/todbot/blink1-tool.git", branch: "master"
 
   bottle do
-    cellar :any
-    sha256 "6a9aae3733db387dfa9e9c1bbacb9b3c7993f42486115254c8c67d9c716c455d" => :mojave
-    sha256 "0a19927c5f385f1aede59f406edc34d91cfa46b0b961d1f02bf7170e06888f4f" => :high_sierra
-    sha256 "9cc48de0d254d4e30d2ac0649d298e55ef0576b97da7b77f170261b9a913da43" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "6aaa7efbcc86913250293edca2410848c30e01bf1e0ef70efd798fcd9c893ca8"
+    sha256 cellar: :any,                 arm64_big_sur:  "9e57a3c3f96ad7a97056aebfeadb075a5471fe43fa078f4e7f02fdebc3582979"
+    sha256 cellar: :any,                 monterey:       "23bc96b6e6a9b1e9b0abdacc11033c85cd680a7ca3fc51836ebaadeb0e4be373"
+    sha256 cellar: :any,                 big_sur:        "dfbcb34a56386bd9ce68d770bfe3355c408ed0d93197f1f07da69e53312b01c8"
+    sha256 cellar: :any,                 catalina:       "52a3d5efa444acbd4fe4a76ba38152513bdbfa7138d66e799401aeb0ac87af78"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "947b96287a04a1ee9fbe4dd3e0316e084a3cb54a73dbeb411f59959c991dabc4"
+  end
+
+  on_linux do
+    depends_on "pkg-config" => :build
+    depends_on "systemd"
   end
 
   def install
     system "make"
     bin.install "blink1-tool"
-    lib.install "libBlink1.dylib"
     include.install "blink1-lib.h"
+    library = OS.mac? ? "libBlink1.dylib" : "libblink1.so"
+    lib.install library
   end
 
   test do

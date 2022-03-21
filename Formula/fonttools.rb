@@ -3,25 +3,33 @@ class Fonttools < Formula
 
   desc "Library for manipulating fonts"
   homepage "https://github.com/fonttools/fonttools"
-  url "https://github.com/fonttools/fonttools/releases/download/3.43.1/fonttools-3.43.1.zip"
-  sha256 "217176a154341c05c91a1b2f78f5534fb7ca14b84671ac73893e14578527888e"
-  head "https://github.com/fonttools/fonttools.git"
+  url "https://files.pythonhosted.org/packages/54/0d/d3759728d25bd4f6e0ed5dee684d08fe74b8ee0058025059a95f51a65feb/fonttools-4.31.1.zip"
+  sha256 "f8b35ed9ba189710994cec2c86b8eb5f0c49336698575e439a0d5671d3ca1ace"
+  license "MIT"
+  head "https://github.com/fonttools/fonttools.git", branch: "main"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "bdf62edadd87e6d3f164a8edcae03db52a33e46774067fa96f83d60565abb093" => :mojave
-    sha256 "6e7b938517d967162dd11eaca97914e1f98ae3cf74f7e49b0dcd93922a011557" => :high_sierra
-    sha256 "0ffe8a8ba25b2832296e3ac7f1fc013df538d46b42fc23c0a0960a7a3b58bda5" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "a2addebc33ca3416cc16f52530e1b50ad1bf94c5a35e16bb83ab4d86ea28befd"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "a2addebc33ca3416cc16f52530e1b50ad1bf94c5a35e16bb83ab4d86ea28befd"
+    sha256 cellar: :any_skip_relocation, monterey:       "f950fcfc20e93d372820e12048a7b0bac653c587fa9687c317ad0857f515ff24"
+    sha256 cellar: :any_skip_relocation, big_sur:        "f950fcfc20e93d372820e12048a7b0bac653c587fa9687c317ad0857f515ff24"
+    sha256 cellar: :any_skip_relocation, catalina:       "f950fcfc20e93d372820e12048a7b0bac653c587fa9687c317ad0857f515ff24"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "768262c4edd7698c7574805098bca86c14d81066b8125844a1bc23d11cbbb54e"
   end
 
-  depends_on "python"
+  depends_on "python@3.10"
 
   def install
     virtualenv_install_with_resources
   end
 
   test do
-    cp "/Library/Fonts/Arial.ttf", testpath
-    system bin/"ttx", "Arial.ttf"
+    on_macos do
+      cp "/System/Library/Fonts/ZapfDingbats.ttf", testpath
+      system bin/"ttx", "ZapfDingbats.ttf"
+    end
+    on_linux do
+      assert_match "usage", shell_output("#{bin}/ttx -h")
+    end
   end
 end

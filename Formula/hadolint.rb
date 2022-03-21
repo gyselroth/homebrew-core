@@ -1,30 +1,37 @@
-require "language/haskell"
-
 class Hadolint < Formula
-  include Language::Haskell::Cabal
-
   desc "Smarter Dockerfile linter to validate best practices"
   homepage "https://github.com/hadolint/hadolint"
-  url "https://github.com/hadolint/hadolint/archive/v1.16.3.tar.gz"
-  sha256 "885ad19fe1657cee5e3f4e8f103e238c72339c75ea3ec45ab7e8100b4322dac3"
+  url "https://github.com/hadolint/hadolint/archive/v2.9.2.tar.gz"
+  sha256 "de789a2fb4d92d927e8e126fb54fec9dd2b58baf05d7aa7843cf5347428bb543"
+  license "GPL-3.0-only"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "921c4525a11c4748d8a1e9e034769a52b884f8adb00e57226948bd2978c3ee27" => :mojave
-    sha256 "ae1ea77bc1dd7324dc3dfb27e5efd3ea9cccc3604c43b96d05b3abd3fbd8bf73" => :high_sierra
-    sha256 "9cdbd5e35ed0ccaf6eb2e9dd90b3a3b59c2883fce0977a6e536dc7780907115e" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "fbd4167b4f1c90c86b581c33472d9327da687c9a22bae5ddc8976ea470bf8513"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "e94ba605593f2811e50db5f2ce74ce7550a33b241f23f353f7c4a9d030d33922"
+    sha256 cellar: :any_skip_relocation, monterey:       "5862dc8527aa60c018986c8a07edfb95b64a2aa75a9d1f54c46ed775d78ea470"
+    sha256 cellar: :any_skip_relocation, big_sur:        "b35ebd0fddcdaf07b371605f88736e8717d262a0f3c005c17d58831dd8b8d735"
+    sha256 cellar: :any_skip_relocation, catalina:       "9e5f758e4878e698b4bf637d69724e62966565f1cdc828b5a7ad87d3ed5274df"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "977ffe9a745b23adc8a7a88aae9c1cee7a78054a253204c2cedd47b06bf64bc7"
   end
 
-  depends_on "cabal-install" => :build
   depends_on "ghc" => :build
+  depends_on "haskell-stack" => :build
+
+  uses_from_macos "xz"
 
   def install
-    cabal_sandbox do
-      cabal_install "hpack"
-      system "./.cabal-sandbox/bin/hpack"
-    end
+    # Let `stack` handle its own parallelization
+    jobs = ENV.make_jobs
+    ENV.deparallelize
 
-    install_cabal_package
+    ghc_args = [
+      "--system-ghc",
+      "--no-install-ghc",
+      "--skip-ghc-check",
+    ]
+
+    system "stack", "-j#{jobs}", "build", *ghc_args
+    system "stack", "-j#{jobs}", "--local-bin-path=#{bin}", "install", *ghc_args
   end
 
   test do

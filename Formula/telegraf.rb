@@ -1,31 +1,30 @@
 class Telegraf < Formula
   desc "Server-level metric gathering agent for InfluxDB"
-  homepage "https://influxdata.com"
-  url "https://github.com/influxdata/telegraf/archive/1.11.0.tar.gz"
-  sha256 "492f9c9b97011271b65f1589556b70028ff3c50d55eae874ff49cb8971b8d443"
-  head "https://github.com/influxdata/telegraf.git"
+  homepage "https://www.influxdata.com/"
+  url "https://github.com/influxdata/telegraf/archive/v1.21.4.tar.gz"
+  sha256 "dc1f04662fe81c970019271a215979c5549aec86b896562376d69bc76d7eaeda"
+  license "MIT"
+  head "https://github.com/influxdata/telegraf.git", branch: "master"
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "2e4c69f9db57a1e12e826a73d977ad94f4bb33ee6b8b187ac033e7369eb00237" => :mojave
-    sha256 "d5cacd7971264c9bf285cd9d3a8cac0c9e5b4450cebeed8e1948104561ca14ef" => :high_sierra
-    sha256 "226314aada88d27a652773ad76b23a4ae2bb7a9dc200ba2af0652edee8952f12" => :sierra
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
   end
 
-  depends_on "dep" => :build
+  bottle do
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "18bd096a97e2931854450977da90a204f95f3d6d094f4009fb877e1df8101620"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "33fe37bf8a3410286ab7bd10d929bf54be0625ed633c2bbc9ec4e01c7a7fde3d"
+    sha256 cellar: :any_skip_relocation, monterey:       "5f99828a4d30ab5c396976c05ed32f908dccc9c0ccb777e65ff9be913734e00b"
+    sha256 cellar: :any_skip_relocation, big_sur:        "c826e0a845820eef49929badca7fa59acebb8dd53f28820198a36bf83fef89ab"
+    sha256 cellar: :any_skip_relocation, catalina:       "f61a9bdd2895030ba68f0ad00e76f8e934f36b9fdbb2abac8acb96fff0fbbbdd"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "9f30c5ff622841ae78b3455a991a331ab84644ff7266eb87de3f7bb448461359"
+  end
+
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    dir = buildpath/"src/github.com/influxdata/telegraf"
-    dir.install buildpath.children
-    cd dir do
-      system "dep", "ensure", "-vendor-only"
-      system "go", "install", "-ldflags", "-X main.version=#{version}", "./..."
-      prefix.install_metafiles
-    end
-    bin.install "bin/telegraf"
-    etc.install dir/"etc/telegraf.conf" => "telegraf.conf"
+    system "go", "build", *std_go_args, "-ldflags", "-X main.version=#{version}", "./cmd/telegraf"
+    etc.install "etc/telegraf.conf" => "telegraf.conf"
   end
 
   def post_install
@@ -33,39 +32,12 @@ class Telegraf < Formula
     (etc/"telegraf.d").mkpath
   end
 
-  plist_options :manual => "telegraf -config #{HOMEBREW_PREFIX}/etc/telegraf.conf"
-
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>KeepAlive</key>
-        <dict>
-          <key>SuccessfulExit</key>
-          <false/>
-        </dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_bin}/telegraf</string>
-          <string>-config</string>
-          <string>#{etc}/telegraf.conf</string>
-          <string>-config-directory</string>
-          <string>#{etc}/telegraf.d</string>
-        </array>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>WorkingDirectory</key>
-        <string>#{var}</string>
-        <key>StandardErrorPath</key>
-        <string>#{var}/log/telegraf.log</string>
-        <key>StandardOutPath</key>
-        <string>#{var}/log/telegraf.log</string>
-      </dict>
-    </plist>
-  EOS
+  service do
+    run [opt_bin/"telegraf", "-config", etc/"telegraf.conf", "-config-directory", etc/"telegraf.d"]
+    keep_alive true
+    working_dir var
+    log_path var/"log/telegraf.log"
+    error_log_path var/"log/telegraf.log"
   end
 
   test do

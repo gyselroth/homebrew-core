@@ -1,22 +1,39 @@
 require "language/node"
 
 class Gitmoji < Formula
-  desc "Emoji guide for your commit messages"
-  homepage "https://gitmoji.carloscuesta.me"
-  url "https://registry.npmjs.org/gitmoji-cli/-/gitmoji-cli-1.9.2.tgz"
-  sha256 "af7a6c7b0874d2971be909c9c2166b94db4fe1c3d1500f49cfac30d0a5d1b433"
+  desc "Interactive command-line tool for using emoji in commit messages"
+  homepage "https://gitmoji.dev"
+  url "https://registry.npmjs.org/gitmoji-cli/-/gitmoji-cli-4.10.0.tgz"
+  sha256 "50a7074c9b89ebfe9428961c752fa1b46bdee9a06bbf637340ca4c014248afad"
+  license "MIT"
+
   bottle do
-    cellar :any_skip_relocation
-    sha256 "809f082f95b3ba8a3fb85557313556e94e6e730f6bf27bfb590ae96e7f431140" => :mojave
-    sha256 "9f254dfce3f33088a04924771633cc724dae7686ee80ae9ddd3c13542da2a614" => :high_sierra
-    sha256 "9bfb1c3478817213c023ed69a644dfd0446662f6045f0e34a383e3b91126c2dd" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "3c71e1b330bcdb745c81b2d8c9d84c50aa16a52d54e624bf8488fddc6a73c393"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "3c71e1b330bcdb745c81b2d8c9d84c50aa16a52d54e624bf8488fddc6a73c393"
+    sha256 cellar: :any_skip_relocation, monterey:       "99af84a803f3d1598edda02e7a71574390081609a2b7e428fb7ebe07e17a2c41"
+    sha256 cellar: :any_skip_relocation, big_sur:        "99af84a803f3d1598edda02e7a71574390081609a2b7e428fb7ebe07e17a2c41"
+    sha256 cellar: :any_skip_relocation, catalina:       "99af84a803f3d1598edda02e7a71574390081609a2b7e428fb7ebe07e17a2c41"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "962670a0969a922c320c958ddea3c2eb4ab7893d6ba93661291dd92b1a59b64a"
   end
 
   depends_on "node"
 
+  on_macos do
+    depends_on "macos-term-size"
+  end
+
   def install
     system "npm", "install", *Language::Node.std_npm_install_args(libexec)
     bin.install_symlink Dir["#{libexec}/bin/*"]
+
+    term_size_vendor_dir = libexec/"lib/node_modules/gitmoji-cli/node_modules/term-size/vendor"
+    term_size_vendor_dir.rmtree # remove pre-built binaries
+    if OS.mac?
+      macos_dir = term_size_vendor_dir/"macos"
+      macos_dir.mkpath
+      # Replace the vendored pre-built term-size with one we build ourselves
+      ln_sf (Formula["macos-term-size"].opt_bin/"term-size").relative_path_from(macos_dir), macos_dir
+    end
   end
 
   test do

@@ -1,34 +1,31 @@
 class S2geometry < Formula
   desc "Computational geometry and spatial indexing on the sphere"
-  homepage "https://github.com/google/s2geometry.git"
+  homepage "https://github.com/google/s2geometry"
   url "https://github.com/google/s2geometry/archive/v0.9.0.tar.gz"
   sha256 "54c09b653f68929e8929bffa60ea568e26f3b4a51e1b1734f5c3c037f1d89062"
+  license "Apache-2.0"
+  revision 2
+
+  livecheck do
+    url :homepage
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
-    cellar :any
-    sha256 "8da23e65efaf589541edbc5175d660a25f77fe561638cec60aa2ac8bb060eb27" => :mojave
-    sha256 "20ddf938193fdab274d143c291d1ace3fafc9805809fb8ee94f4268b614e6c59" => :high_sierra
-    sha256 "88dab2878c97148b09b3bb611336ea1327e7c1b9cb2a98b429213a33a59160ae" => :sierra
+    sha256 cellar: :any, monterey: "48041de390b83abe6f77dd9b624b99846a444643077885745ec2f6f1fa212b54"
+    sha256 cellar: :any, big_sur:  "68903a12c6383cbfef68c89a82c224aa5f51fc7fb03cd416b67f395aa134c218"
+    sha256 cellar: :any, catalina: "be6efced1d7d6339598aa104619fafb57b8f3b8f87837882369a17511a1d4800"
+    sha256 cellar: :any, mojave:   "bb270713b3f271b75d992cd0bc76e594163c319104e9aac8ac58605dd7e31135"
   end
 
   depends_on "cmake" => :build
   depends_on "glog" => :build
-  depends_on "openssl"
-
-  resource "gtest" do
-    url "https://github.com/google/googletest/archive/release-1.8.1.tar.gz"
-    sha256 "9bf1fe5182a604b4135edc1a425ae356c9ad15e9b23f9f12a02e80184c3a249c"
-  end
+  depends_on "googletest" => :build
+  depends_on "openssl@1.1"
 
   def install
-    ENV["OPENSSL_ROOT_DIR"] = Formula["openssl"].opt_prefix
-
-    (buildpath/"gtest").install resource "gtest"
-    (buildpath/"gtest/googletest").cd do
-      system "cmake", "."
-      system "make"
-    end
-    ENV["CXXFLAGS"] = "-I../gtest/googletest/include"
+    ENV["OPENSSL_ROOT_DIR"] = Formula["openssl@1.1"].opt_prefix
+    ENV.append "CXXFLAGS", "-I#{Formula["googletest"].opt_include}"
 
     args = std_cmake_args + %w[
       -DWITH_GLOG=1

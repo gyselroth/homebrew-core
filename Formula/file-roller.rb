@@ -1,20 +1,24 @@
 class FileRoller < Formula
   desc "GNOME archive manager"
   homepage "https://wiki.gnome.org/Apps/FileRoller"
-  url "https://download.gnome.org/sources/file-roller/3.32/file-roller-3.32.1.tar.xz"
-  sha256 "1cab0847845b3236725a99f81a638c504d06ac0576c7a947824208e498383547"
+  url "https://download.gnome.org/sources/file-roller/3.40/file-roller-3.40.0.tar.xz"
+  sha256 "4a2886a3966200fb0a9cbba4e2b79f8dad9d26556498aacdaed71775590b3c0d"
+  license "GPL-2.0-or-later"
 
   bottle do
-    sha256 "e070592be2f1f124fa79de20236a831dbc6eaeec85e77c76a74c6720fe6814b8" => :mojave
-    sha256 "5a43e0be9444065350922bc667a98ba3e460c37ed3c75b3b721858d3b3e44a9f" => :high_sierra
-    sha256 "89c4d42379d14deef41d9989a3b824bae73f32058f652f3f4ba16d4d8662fdc7" => :sierra
+    sha256 arm64_monterey: "793ec9e8756e08d21795dde62ae5a5d1c54e1bd3823d08e8f785616b0c7a0c5b"
+    sha256 arm64_big_sur:  "ec8dd1da7d8848a40aa0cf197a6a0853335368531b780801195b23762c1275e6"
+    sha256 monterey:       "65365f28461d2ba9bd085134e0f7056ea2957e3737b37164e5c62a3d8dac4947"
+    sha256 big_sur:        "c5a9da3650723915180b287312a0518f75cf01e191b3a7c1b6127b44f35de9b1"
+    sha256 catalina:       "8394e9a33b4c7ee7b9e2b9a85f188ee6ac88512c36aee2aaf1fa6d31b755f1a9"
+    sha256 mojave:         "bf140573b865d85ea497b500735e465963559551d382fc6a7c1a0814d3602853"
+    sha256 x86_64_linux:   "69d8649eba38a6c77ae695ae11790f53c09b3942698f9cd900ad5e14b1734aa0"
   end
 
   depends_on "itstool" => :build
   depends_on "meson" => :build
   depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "python" => :build
   depends_on "adwaita-icon-theme"
   depends_on "gtk+3"
   depends_on "hicolor-icon-theme"
@@ -29,7 +33,7 @@ class FileRoller < Formula
     # stop meson_post_install.py from doing what needs to be done in the post_install step
     ENV["DESTDIR"] = ""
     mkdir "build" do
-      system "meson", "--prefix=#{prefix}", "-Dpackagekit=false", ".."
+      system "meson", *std_meson_args, "-Dpackagekit=false", ".."
       system "ninja"
       system "ninja", "install"
     end

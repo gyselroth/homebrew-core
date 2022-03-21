@@ -1,76 +1,153 @@
 class Csound < Formula
   desc "Sound and music computing system"
   homepage "https://csound.com"
-  url "https://github.com/csound/csound/archive/6.12.2.tar.gz"
-  sha256 "39f4872b896eb1cbbf596fcacc0f2122fd3e5ebbb5cec14a81b4207d6b8630ff"
+  url "https://github.com/csound/csound.git",
+      tag:      "6.17.0",
+      revision: "f5b4258794a82c99f7d85f1807c6638f2e80ccac"
+  license "LGPL-2.1-or-later"
   revision 2
+  head "https://github.com/csound/csound.git", branch: "develop"
+
+  livecheck do
+    url :stable
+    strategy :github_latest
+  end
 
   bottle do
-    sha256 "0b391ad5c63f24dff9f82b95545c2868f917ae1beadfea5dc4a1e4011b98f610" => :mojave
-    sha256 "9f63f9c43fb7a3c48c7ea94b67a45149de337b6da6d8561b1cca039ca0320d08" => :high_sierra
-    sha256 "3f003ad77d5abbc304cb60f16cf6d1fed60058f540d83f16be146e12d791f332" => :sierra
+    sha256 arm64_monterey: "26a567ef30983a2e5ff47497b950ba77d0e4a2042271d80f853d9f33e56019d6"
+    sha256 arm64_big_sur:  "4b0654e6521c2c61e1c16c1253b70c3a92af1a1fc2f00ed37ac91ec81c674bf8"
+    sha256 monterey:       "04b93f58c7ce216eb4fcf2ffd73adcd18d52264d60e5cfa5d6b275d0bf4948fd"
+    sha256 big_sur:        "828eeb36cc7caa50e15ccdceddb7f6b5f7df921ff54af887015ae08111a448db"
+    sha256 catalina:       "97f66dd1f414aef51e083c0e466497c56c3410a5187db84f2f7581d5c9b3d786"
   end
 
+  depends_on "asio" => :build
   depends_on "cmake" => :build
-  depends_on "python" => [:build, :test]
-  depends_on "python@2" => [:build, :test]
+  depends_on "eigen" => :build
+  depends_on "swig" => :build
+  depends_on "faust"
   depends_on "fltk"
+  depends_on "fluid-synth"
+  depends_on "gettext"
+  depends_on "hdf5"
+  depends_on "jack"
+  depends_on "lame"
   depends_on "liblo"
+  depends_on "libpng"
   depends_on "libsamplerate"
   depends_on "libsndfile"
+  depends_on "libwebsockets"
   depends_on "numpy"
+  depends_on "openjdk"
   depends_on "portaudio"
   depends_on "portmidi"
+  depends_on "python@3.9"
   depends_on "stk"
+  depends_on "wiiuse"
 
-  conflicts_with "libextractor", :because => "both install `extract` binaries"
-  conflicts_with "pkcrack", :because => "both install `extract` binaries"
+  uses_from_macos "bison" => :build
+  uses_from_macos "flex" => :build
+  uses_from_macos "curl"
+  uses_from_macos "zlib"
+
+  conflicts_with "libextractor", because: "both install `extract` binaries"
+  conflicts_with "pkcrack", because: "both install `extract` binaries"
+
+  resource "ableton-link" do
+    url "https://github.com/Ableton/link/archive/Link-3.0.3.tar.gz"
+    sha256 "195b46f7a33bb88800de19bb08065ec0235e5a920d203a4b2c644c18fbcaff11"
+  end
+
+  resource "csound-plugins" do
+    url "https://github.com/csound/plugins/archive/refs/tags/1.0.2.tar.gz"
+    sha256 "8c2f0625ad1d38400030f414b92d82cfdec5c04b7dc178852f3e1935abf75d30"
+  end
+
+  resource "getfem" do
+    url "https://download.savannah.gnu.org/releases/getfem/stable/getfem-5.4.1.tar.gz"
+    sha256 "6b58cc960634d0ecf17679ba12f8e8cfe4e36b25a5fa821925d55c42ff38a64e"
+  end
 
   def install
-    inreplace "CMakeLists.txt",
-      %r{^set\(CS_FRAMEWORK_DEST\s+"~/Library/Frameworks"\)$},
-      "set(CS_FRAMEWORK_DEST \"#{frameworks}\")"
+    ENV["JAVA_HOME"] = Formula["openjdk"].libexec/"openjdk.jdk/Contents/Home"
 
-    args = std_cmake_args + %W[
-      -DBUILD_FLUID_OPCODES=OFF
-      -DBUILD_JAVA_INTERFACE=OFF
-      -DBUILD_LUA_INTERFACE=OFF
-      -DBUILD_PYTHON_INTERFACE=OFF
-      -DCMAKE_INSTALL_RPATH=#{frameworks}
-    ]
+    system "cmake", "-S", ".", "-B", "build",
+                    "-DBUILD_JAVA_INTERFACE=ON",
+                    "-DBUILD_LUA_INTERFACE=OFF",
+                    "-DCMAKE_INSTALL_RPATH=@loader_path/../Frameworks;#{rpath}",
+                    "-DCS_FRAMEWORK_DEST=#{frameworks}",
+                    "-DJAVA_MODULE_INSTALL_DIR=#{libexec}",
+                    *std_cmake_args
+    system "cmake", "--build", "build"
+    system "cmake", "--install", "build"
 
-    mkdir "build" do
-      system "cmake", "..", *args
-      system "make", "install"
-    end
+    include.install_symlink frameworks/"CsoundLib64.framework/Headers" => "csound"
 
-    include.install_symlink "#{frameworks}/CsoundLib64.framework/Headers" => "csound"
+    libexec.install buildpath/"interfaces/ctcsound.py"
 
-    libexec.install "#{buildpath}/interfaces/ctcsound.py"
+    (prefix/Language::Python.site_packages("python3")/"homebrew-csound.pth").write <<~EOS
+      import site; site.addsitedir('#{libexec}')
+    EOS
 
-    ["python2", "python3"].each do |python|
-      version = Language::Python.major_minor_version python
-      (lib/"python#{version}/site-packages/homebrew-csound.pth").write <<~EOS
-        import site; site.addsitedir('#{libexec}')
-      EOS
+    resource("csound-plugins").stage do
+      resource("ableton-link").stage buildpath/"ableton-link"
+      resource("getfem").stage { cp_r "src/gmm", buildpath }
+
+      system "cmake", "-S", ".", "-B", "build",
+                      "-DABLETON_LINK_HOME=#{buildpath}/ableton-link",
+                      "-DBUILD_ABLETON_LINK_OPCODES=ON",
+                      "-DBUILD_CHUA_OPCODES=ON",
+                      "-DBUILD_CUDA_OPCODES=OFF",
+                      "-DBUILD_FAUST_OPCODES=ON",
+                      "-DBUILD_FLUID_OPCODES=ON",
+                      "-DBUILD_HDF5_OPCODES=ON",
+                      "-DBUILD_IMAGE_OPCODES=ON",
+                      "-DBUILD_JACK_OPCODES=ON",
+                      "-DBUILD_LINEAR_ALGEBRA_OPCODES=ON",
+                      "-DBUILD_MP3OUT_OPCODE=ON",
+                      "-DBUILD_OPENCL_OPCODES=OFF",
+                      "-DBUILD_P5GLOVE_OPCODES=ON",
+                      "-DBUILD_PYTHON_OPCODES=ON",
+                      "-DBUILD_STK_OPCODES=ON",
+                      "-DBUILD_WEBSOCKET_OPCODE=ON",
+                      "-DBUILD_WIIMOTE_OPCODES=ON",
+                      "-DCSOUND_FRAMEWORK=#{frameworks}/CsoundLib64.framework",
+                      "-DCSOUND_INCLUDE_DIR=#{include}/csound",
+                      "-DGMM_INCLUDE_DIR=#{buildpath}",
+                      "-DPLUGIN_INSTALL_DIR=#{frameworks}/CsoundLib64.framework/Resources/Opcodes64",
+                      "-DUSE_FLTK=ON",
+                      *std_cmake_args
+      system "cmake", "--build", "build"
+      system "cmake", "--install", "build"
     end
   end
 
-  def caveats; <<~EOS
-    To use the Python bindings, you may need to add to your .bash_profile:
-      export DYLD_FRAMEWORK_PATH="$DYLD_FRAMEWORK_PATH:#{opt_prefix}/Frameworks"
-  EOS
+  def caveats
+    <<~EOS
+      To use the Java bindings, you may need to add to #{shell_profile}:
+        export CLASSPATH="#{opt_libexec}/csnd6.jar:."
+      and link the native shared library into your Java Extensions folder:
+        mkdir -p ~/Library/Java/Extensions
+        ln -s "#{opt_libexec}/lib_jcsound6.jnilib" ~/Library/Java/Extensions
+    EOS
   end
 
   test do
     (testpath/"test.orc").write <<~EOS
       0dbfs = 1
+      gi_peer link_create
+      gi_programHandle faustcompile "process = _;", "--vectorize --loop-variant 1"
       FLrun
+      gi_fluidEngineNumber fluidEngine
+      gi_realVector la_i_vr_create 1
       pyinit
       instr 1
-          pyruni "from __future__ import print_function; print('hello, world')"
-          aSignal STKPlucked 440, 1
-          out aSignal
+          a_, a_, a_ chuap 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+          a_signal STKPlucked 440, 1
+          a_, a_ hrtfstat a_signal, 0, 0, sprintf("hrtf-%d-left.dat", sr), sprintf("hrtf-%d-right.dat", sr), 9, sr
+          hdf5write "test.h5", a_signal
+          mp3out a_signal, a_signal, "test.mp3"
+          out a_signal
       endin
     EOS
 
@@ -79,20 +156,38 @@ class Csound < Formula
       e
     EOS
 
-    ENV["OPCODE6DIR64"] = "#{HOMEBREW_PREFIX}/Frameworks/CsoundLib64.framework/Resources/Opcodes64"
-    ENV["RAWWAVE_PATH"] = "#{HOMEBREW_PREFIX}/share/stk/rawwaves"
+    ENV["OPCODE6DIR64"] = frameworks/"CsoundLib64.framework/Resources/Opcodes64"
+    ENV["RAWWAVE_PATH"] = Formula["stk"].pkgshare/"rawwaves"
+    ENV["SADIR"] = frameworks/"CsoundLib64.framework/Versions/Current/samples"
 
-    require "open3"
-    stdout, stderr, status = Open3.capture3("#{bin}/csound test.orc test.sco")
+    system bin/"csound", "test.orc", "test.sco"
 
-    assert_equal true, status.success?
-    assert_equal "hello, world\n", stdout
-    assert_match /^rtaudio:/, stderr
-    assert_match /^rtmidi:/, stderr
+    assert_predicate testpath/"test.aif", :exist?
+    assert_predicate testpath/"test.h5", :exist?
+    assert_predicate testpath/"test.mp3", :exist?
 
-    ENV["DYLD_FRAMEWORK_PATH"] = "#{opt_prefix}/Frameworks"
+    (testpath/"opcode-existence.orc").write <<~EOS
+      JackoInfo
+      instr 1
+          p5gconnect
+          i_output websocket 8888, 0
+          i_success wiiconnect 1, 1
+      endin
+    EOS
+    system bin/"csound", "--orc", "--syntax-check-only", "opcode-existence.orc"
 
-    system "python2", "-c", "import ctcsound"
-    system "python3", "-c", "import ctcsound"
+    system Formula["python@3.9"].bin/"python3", "-c", "import ctcsound"
+
+    (testpath/"test.java").write <<~EOS
+      import csnd6.*;
+      public class test {
+          public static void main(String args[]) {
+              csnd6.csoundInitialize(csnd6.CSOUNDINIT_NO_ATEXIT | csnd6.CSOUNDINIT_NO_SIGNAL_HANDLER);
+          }
+      }
+    EOS
+    system Formula["openjdk"].bin/"javac", "-classpath", "#{libexec}/csnd6.jar", "test.java"
+    system Formula["openjdk"].bin/"java", "-classpath", "#{libexec}/csnd6.jar:.",
+                                          "-Djava.library.path=#{libexec}", "test"
   end
 end

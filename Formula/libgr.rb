@@ -1,20 +1,32 @@
 class Libgr < Formula
   desc "GR framework: a graphics library for visualisation applications"
   homepage "https://gr-framework.org/"
-  url "https://github.com/sciapp/gr/archive/v0.37.0.tar.gz"
-  sha256 "9120c4215cd2c10239f45f4cbf79dcb199a9e7e3bbbf36e5ce8f4e5eb2e70e24"
+  url "https://github.com/sciapp/gr/archive/v0.64.0.tar.gz"
+  sha256 "bfefe7e067480584faa2ad1ce296c1aaea1d0da2035224b46024abfaa6931076"
+  license "MIT"
 
   bottle do
-    sha256 "cf43f68b60d8c2084f84e35fc66daa8d88b66b13b2380bee6b7807d622f440ef" => :mojave
-    sha256 "66e7569c1ab5112a958b7d986ce0aae23ca939d40d6967707d0806bd64d479e8" => :high_sierra
-    sha256 "00a6481d88b6c4dc5d1557ae8b249521009234410e2d546d5d39e0013acd4645" => :sierra
+    sha256 arm64_monterey: "74970ed8d0e0ecec128e79788046311f06b292ad0d4acf684b81d9fa43cc94a1"
+    sha256 arm64_big_sur:  "33abc59575fff2d39e71918935fa06d0a60dc563dfe2f61f5ae5b13cd0c3b0ef"
+    sha256 monterey:       "d387060cb3d72fc09d73d31ceeb8dda98a04a6808e39572fee414d5bbe6ef2ee"
+    sha256 big_sur:        "ed32855aef185d8523fc67cca9c7f677a2e7b55ec1e291fdb8670cf040f384d4"
+    sha256 catalina:       "c0409f0bd6d5d34781870147bff6e8970ba36dc4651fe3c7b9c85623b60dcf14"
   end
 
-  depends_on :xcode => :build
+  depends_on "cmake" => :build
   depends_on "cairo"
+  depends_on "glfw"
+  depends_on "libtiff"
+  depends_on "qhull"
+  depends_on "qt@5"
+  depends_on "zeromq"
 
   def install
-    system "make", "self", "GRDIR=#{prefix}"
+    mkdir "build" do
+      system "cmake", "..", *std_cmake_args
+      system "make"
+      system "make", "install"
+    end
   end
 
   test do
@@ -25,6 +37,7 @@ class Libgr < Formula
       int main(void) {
           gr_opengks();
           gr_openws(1, "test.png", 140);
+          gr_activatews(1);
           double x[] = {0, 0.2, 0.4, 0.6, 0.8, 1.0};
           double y[] = {0.3, 0.5, 0.4, 0.2, 0.6, 0.7};
           gr_polyline(6, x, y);

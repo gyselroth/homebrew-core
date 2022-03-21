@@ -1,18 +1,27 @@
 class Glfw < Formula
   desc "Multi-platform library for OpenGL applications"
   homepage "https://www.glfw.org/"
-  url "https://github.com/glfw/glfw/archive/3.3.tar.gz"
-  sha256 "81bf5fde487676a8af55cb317830703086bb534c53968d71936e7b48ee5a0f3e"
-  head "https://github.com/glfw/glfw.git"
+  url "https://github.com/glfw/glfw/archive/3.3.6.tar.gz"
+  sha256 "ed07b90e334dcd39903e6288d90fa1ae0cf2d2119fec516cf743a0a404527c02"
+  license "Zlib"
+  head "https://github.com/glfw/glfw.git", branch: "master"
 
   bottle do
-    cellar :any
-    sha256 "5f7f80b2113be000ab11c52357d2b1dc684b82a61455c562c2d84968fab2b2c7" => :mojave
-    sha256 "d064f1a5ed0ac3d2cc2979472f47116c4aa4dcabe5a2b8f6684411e157bf0ef6" => :high_sierra
-    sha256 "bf7f440724924b206abe7be4407df6277cf7c145c25eb9429d20d2d4ccd0994e" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "8f155b434f74ac11c303fab7887b5b41b2ea6440f438e101172b2b0a813ca004"
+    sha256 cellar: :any,                 arm64_big_sur:  "dca3eaac840e35f4e56f57a0825b557e932fcdc1bc9963b98fa18bf90c0af647"
+    sha256 cellar: :any,                 monterey:       "0eca3ff0166f1ece7deceb367e65b4edfbca79796b39675c6cb5e97e062908c2"
+    sha256 cellar: :any,                 big_sur:        "9cbe17a177731240a8fc404aa28610f9377001e6b22c0d9824f06ba7079a6177"
+    sha256 cellar: :any,                 catalina:       "843ed388610abf58783e081e47974eaa000cd67a1146b5795df6e17fba4c2062"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "c0f4bed83bf9ff81bb0bb0d78b35b07c6405777e5ad82b9e8e73606ab4f24677"
   end
 
   depends_on "cmake" => :build
+
+  on_linux do
+    depends_on "freeglut"
+    depends_on "libxcursor"
+    depends_on "mesa"
+  end
 
   def install
     args = std_cmake_args + %w[
@@ -41,6 +50,12 @@ class Glfw < Formula
 
     system ENV.cc, "test.c", "-o", "test",
                    "-I#{include}", "-L#{lib}", "-lglfw"
+
+    on_linux do
+      # glfw does not work in headless mode
+      return if ENV["HOMEBREW_GITHUB_ACTIONS"]
+    end
+
     system "./test"
   end
 end

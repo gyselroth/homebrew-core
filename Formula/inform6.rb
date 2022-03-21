@@ -1,33 +1,34 @@
 class Inform6 < Formula
   desc "Design system for interactive fiction"
   homepage "https://inform-fiction.org/inform6.html"
-  head "https://github.com/DavidGriffith/inform6unix.git"
-
-  stable do
-    url "https://ifarchive.org/if-archive/infocom/compilers/inform6/source/old/inform-6.33-6.12.1.tar.gz"
-    version "6.33-6.12.1"
-    sha256 "9170d6a0283aa65e1205621e89f78d674c8df978ee9c0b1c67f8b1aea4722a77"
-  end
+  url "https://ifarchive.org/if-archive/infocom/compilers/inform6/source/inform-6.36-r1.tar.gz"
+  version "6.36-r1"
+  sha256 "25aa95b10982bbeace4e33ed9452b01bef4a29cf952c4ff50cbd93f5c42a47c1"
+  license "Artistic-2.0"
+  head "https://gitlab.com/DavidGriffith/inform6unix.git", branch: "master"
 
   bottle do
-    sha256 "30308254bda21b87550ffb0701e8264d58c8474ad8845d1767264bf7104c0dc0" => :mojave
-    sha256 "99fbc0e56d7a8eb8b5dad3c7604332a04286908cbfe51c385c52b958a058ff37" => :high_sierra
-    sha256 "9ba31815431daff2d34c193bc48acaeb7d97cf312162efd809a28ea53c0e3e04" => :sierra
-    sha256 "7907b51b7c5b95d258a0418e6c8a455b814266ca72498d28573b9021761a57e2" => :el_capitan
-    sha256 "517cb99fc16eb03a54deb203c90c891982d6bbcaa1a135dfec4f8b4bb79029ab" => :yosemite
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "30f3169f13d110a9b4e91c3b5e13d4718fe5f8109a9f4c8a4aff88eebde0c15c"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "4098f22b6db124a96dc0c3edaf7cd7525dbbdc1da0b6b713a0f23f059a401f25"
+    sha256 cellar: :any_skip_relocation, monterey:       "70448796f87f81162b05f950ea894412b0738d8e4bd22cb3072e014ee4c0999f"
+    sha256 cellar: :any_skip_relocation, big_sur:        "fe3510088977e60df1cd3907641cd7860e9b68909fae95247f66c7b723778535"
+    sha256 cellar: :any_skip_relocation, catalina:       "e5e16cdc74c99d7bce63fb8ac5444cbe26a76e334cf62dddd2b7b5fdecaa8538"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "91a38c69c935c407882450728f81bf7e21889f27aacd41ae3df5012e878832fb"
   end
 
-  resource "Adventureland.inf" do
+  resource "homebrew-test_resource" do
     url "https://inform-fiction.org/examples/Adventureland/Adventureland.inf"
     sha256 "3961388ff00b5dfd1ccc1bb0d2a5c01a44af99bdcf763868979fa43ba3393ae7"
   end
 
   def install
-    system "make", "PREFIX=#{prefix}", "MAN_PREFIX=#{man}", "install"
+    # Parallel install fails because of: https://gitlab.com/DavidGriffith/inform6unix/-/issues/26
+    ENV.deparallelize
+    system "make", "PREFIX=#{prefix}", "MAN_PREFIX=#{man}", "MANDIR=#{man1}", "install"
   end
 
   test do
-    resource("Adventureland.inf").stage do
+    resource("homebrew-test_resource").stage do
       system "#{bin}/inform", "Adventureland.inf"
       assert_predicate Pathname.pwd/"Adventureland.z5", :exist?
     end

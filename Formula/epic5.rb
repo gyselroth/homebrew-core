@@ -1,18 +1,27 @@
 class Epic5 < Formula
   desc "Enhanced, programmable IRC client"
   homepage "http://www.epicsol.org/"
-  url "http://ftp.epicsol.org/pub/epic/EPIC5-PRODUCTION/epic5-2.1.1.tar.xz"
-  mirror "https://www.mirrorservice.org/sites/distfiles.macports.org/epic5/epic5-2.1.1.tar.xz"
-  sha256 "81e18b5f6aa32c5c4b5d01d4cd94e3124b538e3ba42cf7dbb74a6f1f5081f9df"
-  head "http://git.epicsol.org/epic5.git"
+  url "http://ftp.epicsol.org/pub/epic/EPIC5-PRODUCTION/epic5-2.1.6.tar.xz"
+  mirror "https://www.mirrorservice.org/sites/distfiles.macports.org/epic5/epic5-2.1.6.tar.xz"
+  sha256 "84d59cc22cb20ffac9cbea6c97b35d1d7e4993e7b1221fa5e82bcb0f03b9066d"
+  license "BSD-3-Clause"
+  head "http://git.epicsol.org/epic5.git", branch: "master"
 
-  bottle do
-    sha256 "4abdb34751cea65e816529bbda596a7dc232040290dd5fec4fdd59a6c786c991" => :mojave
-    sha256 "743f168eeb02f773f9ae7467e1d7adae9405b846db0adf8f03e23564e5275bf2" => :high_sierra
-    sha256 "db98c71f129c0d8bf7d012cc35e5627a6a623db2909153bbebca71b0c19b507e" => :sierra
+  livecheck do
+    url "http://ftp.epicsol.org/pub/epic/EPIC5-PRODUCTION/"
+    regex(/href=.*?epic5[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on "openssl"
+  bottle do
+    sha256 arm64_monterey: "a840f83399674d45b45c29bd41cbaf6a901779e33226c83cc4d71e08cbc93ec6"
+    sha256 arm64_big_sur:  "5139ccc0ee27332891de4634edccab4b74d39c0a65b9bac8034c4f76ae8dc8be"
+    sha256 monterey:       "e91fcbf5d7cc3af521719f0172836dab56634f0f7a8c52854343d38151e11f04"
+    sha256 big_sur:        "e34de29881ed577de6ffbc5fdec471f59707c4e6a91bce1f453656d93612c37f"
+    sha256 catalina:       "882c365f9c32d24c729464e83b399a35d4620944bffc5732cc21bff52751836f"
+    sha256 mojave:         "1ddec44e5b0af07dd5a434ebd913c7139a3270cb8bf6a0807eafca9795aa5dc0"
+  end
+
+  depends_on "openssl@1.1"
 
   def install
     system "./configure", "--disable-debug",
@@ -20,9 +29,8 @@ class Epic5 < Formula
                           "--prefix=#{prefix}",
                           "--mandir=#{man}",
                           "--with-ipv6",
-                          "--with-ssl=#{Formula["openssl"].opt_prefix}"
+                          "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}"
     system "make"
-    system "make", "test"
     system "make", "install"
   end
 

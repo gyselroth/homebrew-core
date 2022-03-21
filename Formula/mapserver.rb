@@ -1,14 +1,23 @@
 class Mapserver < Formula
   desc "Publish spatial data and interactive mapping apps to the web"
   homepage "https://mapserver.org/"
-  url "https://download.osgeo.org/mapserver/mapserver-7.2.2.tar.gz"
-  sha256 "287f8dfe10961bc685bb87e118b7aa81382df907b2b3961d6559169b527ba95c"
+  url "https://download.osgeo.org/mapserver/mapserver-7.6.4.tar.gz"
+  sha256 "b46c884bc42bd49873806a05325872e4418fc34e97824d4e13d398e86ea474ac"
+  license "MIT"
+  revision 1
+
+  livecheck do
+    url "https://mapserver.org/download.html"
+    regex(/href=.*?mapserver[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    cellar :any
-    sha256 "3b24b6e3017545591672754741556ad53d2af3f7d9a22e4d5a884787013383ff" => :mojave
-    sha256 "5e845a5488957540ac077276509abfcb9da88b780245049fb1d78c20f011ecfa" => :high_sierra
-    sha256 "dc60f67df38a0c8fdc14f607ca1fd559fa47f1a84c672742e98612b49c909bdb" => :sierra
+    sha256 cellar: :any,                 arm64_monterey: "7e62c905331c71a62ec7cfa886e86aa49f59313a4347ada4b4fd8f99f07129f3"
+    sha256 cellar: :any,                 arm64_big_sur:  "6fe918f74417fe3d6290472c20d6d3fea2d15fd22ecb881db07bb65b6e362f28"
+    sha256 cellar: :any,                 monterey:       "957dc74d6938859b25e88d557db1431b8da4fe1a3aa9bb53295d2226aac3aeb0"
+    sha256 cellar: :any,                 big_sur:        "f6ebf38e5f1741223655e4eb57e50d79d779f28ed6c87aed5d9f707eb3e7348a"
+    sha256 cellar: :any,                 catalina:       "b2c70beabc7fffe4b00cfdb7ede9ca389494117cbf4f6af85035f450dae3b47c"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "ac9a93450d6f376354f9c5770b8469f5db94612bc666a9edaca1e793a4c14fdd"
   end
 
   depends_on "cmake" => :build
@@ -23,15 +32,22 @@ class Mapserver < Formula
   depends_on "giflib"
   depends_on "libpng"
   depends_on "postgresql"
-  depends_on "proj"
+  depends_on "proj@7"
   depends_on "protobuf-c"
+  depends_on "python@3.9"
+
+  uses_from_macos "curl"
+
+  on_linux do
+    depends_on "gcc"
+  end
+
+  fails_with gcc: "5"
 
   def install
-    # Harfbuzz support requires fribidi and fribidi support requires
-    # harfbuzz but fribidi currently fails to build with:
-    # fribidi-common.h:61:12: fatal error: 'glib.h' file not found
-    args = std_cmake_args + %w[
-      -DPYTHON_EXECUTABLE:FILEPATH=/usr/bin/python
+    ENV.cxx11
+
+    args = %W[
       -DWITH_CLIENT_WFS=ON
       -DWITH_CLIENT_WMS=ON
       -DWITH_CURL=ON
@@ -43,37 +59,30 @@ class Mapserver < Formula
       -DWITH_KML=ON
       -DWITH_OGR=ON
       -DWITH_POSTGIS=ON
-      -DWITH_PROJ=ON
       -DWITH_PYTHON=ON
       -DWITH_SOS=ON
       -DWITH_WFS=ON
-      -WITH_CAIRO=ON
+      -DPYTHON_EXECUTABLE=#{Formula["python@3.9"].opt_bin/"python3"}
+      -DPHP_EXTENSION_DIR=#{lib}/php/extensions
+      -DCMAKE_INSTALL_RPATH=#{rpath}
     ]
 
     # Install within our sandbox
     inreplace "mapscript/python/CMakeLists.txt" do |s|
-      s.gsub! "${PYTHON_SITE_PACKAGES}", lib/"python2.7/site-packages"
       s.gsub! "${PYTHON_LIBRARIES}", "-Wl,-undefined,dynamic_lookup"
     end
-    inreplace "mapscript/php/CMakeLists.txt", "${PHP5_EXTENSION_DIR}", lib/"php/extensions"
 
-    # Using rpath on python module seems to cause problems if you attempt to
-    # import it with an interpreter it wasn't built against.
-    # 2): Library not loaded: @rpath/libmapserver.1.dylib
-    args << "-DCMAKE_SKIP_RPATH=ON"
+    system "cmake", "-S", ".", "-B", "build", *args, *std_cmake_args
+    system "cmake", "--build", "build"
+    system "cmake", "--install", "build"
 
-    # Use Proj 6.0.0 compatibility headers
-    # https://github.com/mapserver/mapserver/issues/5766
-    ENV.append_to_cflags "-DACCEPT_USE_OF_DEPRECATED_PROJ_API_H"
-
-    mkdir "build" do
-      system "cmake", "..", *args
-      system "make", "install"
+    cd "build/mapscript/python" do
+      system Formula["python@3.9"].opt_bin/"python3", *Language::Python.setup_install_args(prefix)
     end
   end
 
   test do
     assert_match version.to_s, shell_output("#{bin}/mapserv -v")
-    system "python2.7", "-c", "import mapscript"
+    system Formula["python@3.9"].opt_bin/"python3", "-c", "import mapscript"
   end
 end

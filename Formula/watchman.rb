@@ -1,73 +1,82 @@
 class Watchman < Formula
   desc "Watch files and take action when they change"
   homepage "https://github.com/facebook/watchman"
-  revision 2
-  head "https://github.com/facebook/watchman.git"
-
-  stable do
-    url "https://github.com/facebook/watchman/archive/v4.9.0.tar.gz"
-    sha256 "1f6402dc70b1d056fffc3748f2fdcecff730d8843bb6936de395b3443ce05322"
-
-    # Upstream commit from 1 Sep 2017: "Have bin scripts use iter() method for python3"
-    patch do
-      url "https://github.com/facebook/watchman/commit/17958f7d.diff?full_index=1"
-      sha256 "edad4971fceed2aecfa2b9c3e8e22c455bfa073732a3a0c77b030e506ee860af"
-    end
-  end
+  url "https://github.com/facebook/watchman/archive/v2022.03.14.00.tar.gz"
+  sha256 "baa98fb0963f42140d4f5735b694284b4c0a23f35bd41412289f3df4e3bd4391"
+  license "MIT"
+  head "https://github.com/facebook/watchman.git", branch: "main"
 
   bottle do
-    sha256 "fd932d78fec199bbd71e7f192eb16deb728d0d7aeb26127fd0827221de2d92cb" => :mojave
-    sha256 "83e3c11bdb57ba39b51c4d9e17fb38638f541a17343be51106f7409df17c7bf3" => :high_sierra
-    sha256 "a6ae3a7240b6427a44a032fa2d1d23743bdcc4a8cf3ee80276eac895028b470b" => :sierra
+    sha256 cellar: :any, arm64_monterey: "dc8e7fc4d68dd9f8a98dd319c29b9aadc2100809ba85beefd681171f4a348996"
+    sha256 cellar: :any, arm64_big_sur:  "955df2af021db82f5655e6c63eab1394283aa04d17ce3b4d8feb59036e72bffa"
+    sha256 cellar: :any, monterey:       "d149080fd53736e3e6b9d3630c8393ad4b8c85aedadcb993af19cb506eb06b4c"
+    sha256 cellar: :any, big_sur:        "1db0f7c80738e11a9e6291341fd493aa85327dada1863089238a51b1afeabaee"
+    sha256 cellar: :any, catalina:       "01ffb5d763749bea790eb0a24d25e7ad6e61cf244703c10cc1582a10746bcf61"
+    sha256               x86_64_linux:   "a08d56f0da824c14e8149eb91710e74800bc90074b0afb4d17dd91c10dc6243c"
   end
 
-  depends_on "autoconf" => :build
-  depends_on "automake" => :build
-  depends_on "libtool" => :build
+  # https://github.com/facebook/watchman/issues/963
+  pour_bottle? only_if: :default_prefix
+
+  depends_on "cmake" => :build
+  depends_on "googletest" => :build
   depends_on "pkg-config" => :build
-  depends_on :macos => :yosemite # older versions don't support fstatat(2)
-  depends_on "openssl"
+  depends_on "rust" => :build
+  depends_on "boost"
+  depends_on "fmt"
+  depends_on "folly"
+  depends_on "gflags"
+  depends_on "glog"
+  depends_on "libevent"
+  depends_on "openssl@1.1"
   depends_on "pcre"
-  depends_on "python"
+  depends_on "python@3.10"
+
+  # Dependencies for Eden support. Enabling Eden support fails to build on Linux.
+  on_macos do
+    depends_on "cpptoml" => :build
+    depends_on "fb303"
+  end
+
+  on_linux do
+    depends_on "gcc"
+  end
+
+  fails_with gcc: "5"
 
   def install
-    system "./autogen.sh"
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}",
-                          "--with-pcre",
-                          # Do homebrew specific Python installation below
-                          "--without-python",
-                          "--enable-statedir=#{var}/run/watchman"
-    system "make"
-    system "make", "install"
+    # Fix build failure on Linux. Borrowed from Fedora:
+    # https://src.fedoraproject.org/rpms/watchman/blob/rawhide/f/watchman.spec#_70
+    inreplace "CMakeLists.txt", /^t_test/, "#t_test" if OS.linux?
 
-    # Homebrew specific python application installation
-    xy = Language::Python.major_minor_version "python3"
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python#{xy}/site-packages"
-    cd "python" do
-      system "python3", *Language::Python.setup_install_args(libexec)
-    end
-    bin.install Dir[libexec/"bin/*"]
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    # NOTE: Setting `BUILD_SHARED_LIBS=ON` will generate DSOs for Eden libraries.
+    #       These libraries are not part of any install targets and have the wrong
+    #       RPATHs configured, so will need to be installed and relocated manually
+    #       if they are built as shared libraries. They're not used by any other
+    #       formulae, so let's link them statically instead. This is done by default.
+    system "cmake", "-S", ".", "-B", "build",
+                    "-DENABLE_EDEN_SUPPORT=#{OS.mac?}",
+                    "-DWATCHMAN_VERSION_OVERRIDE=#{version}",
+                    "-DWATCHMAN_BUILDINFO_OVERRIDE=#{tap.user}",
+                    "-DWATCHMAN_STATE_DIR=#{var}/run/watchman",
+                    *std_cmake_args
+
+    # Workaround for `Process terminated due to timeout`
+    ENV.deparallelize { system "cmake", "--build", "build" }
+    system "cmake", "--install", "build"
+
+    path = Pathname.new(File.join(prefix, HOMEBREW_PREFIX))
+    bin.install Dir[path/"bin/*"]
+    lib.install Dir[path/"lib/*"]
+    path.rmtree
   end
 
   def post_install
     (var/"run/watchman").mkpath
     chmod 042777, var/"run/watchman"
-    # Older versions would use socket activation in the launchd.plist, and since
-    # the homebrew paths are versioned, this meant that launchd would continue
-    # to reference the old version of the binary after upgrading.
-    # https://github.com/facebook/watchman/issues/358
-    # To help swing folks from an older version to newer versions, force unloading
-    # the plist here.  This is needed even if someone wanted to add brew services
-    # support; while there are still folks with watchman <4.8 this is still an
-    # upgrade concern.
-    home = ENV["HOME"]
-    system "launchctl", "unload",
-           "-F", "#{home}/Library/LaunchAgents/com.github.facebook.watchman.plist"
   end
 
   test do
-    assert_equal /(\d+\.\d+\.\d+)/.match(version)[0], shell_output("#{bin}/watchman -v").chomp
+    assert_equal(version.to_s, shell_output("#{bin}/watchman -v").chomp)
   end
 end

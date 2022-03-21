@@ -1,25 +1,29 @@
 class Proj < Formula
   desc "Cartographic Projections Library"
-  homepage "https://proj4.org/"
-  url "https://download.osgeo.org/proj/proj-6.1.0.tar.gz"
-  sha256 "676165c54319d2f03da4349cbd7344eb430b225fe867a90191d848dc64788008"
+  homepage "https://proj.org/"
+  url "https://github.com/OSGeo/PROJ/releases/download/9.0.0/proj-9.0.0.tar.gz"
+  sha256 "0620aa01b812de00b54d6c23e7c5cc843ae2cd129b24fabe411800302172b989"
+  license "MIT"
+  head "https://github.com/OSGeo/proj.git", branch: "master"
 
   bottle do
-    sha256 "63be7d4fa4555300a5b64fa243f1b22597ae0622b0eaa88397919dd102dc83e1" => :mojave
-    sha256 "baa0d9bbe0f5a22baaa29c4dfff3cadfbd070bb3072fc401217f7f9bf130d95f" => :high_sierra
-    sha256 "df7076eda0eb6e27a90ccd3db0746ca42072154e20e1a054301af66ae32d1a34" => :sierra
+    sha256 arm64_monterey: "41cda6ba8300463d30e7779df5733439c6bfbec75ea7444860e2077932a021f8"
+    sha256 arm64_big_sur:  "8866b82dd9abc74cd4b641384701ef0667a11980a5b9fc8e74387bed8bd61b9d"
+    sha256 monterey:       "8a3e638910eedcf4048f0dad2a7b2162436a3fc4a69ce7cc97976030cdfbc124"
+    sha256 big_sur:        "69b22cef6b1b22c15243b43f63cc40b53902c192a6f2fc9edfe105b61f7e8b39"
+    sha256 catalina:       "e3ff7034a575136fb142157af00dd1fcc0972ca76be08a9a09dadda173744564"
+    sha256 x86_64_linux:   "1e9845b299ed00a4fc564372a7a8a7586897ea6aa8cce0a0d182ee0dbe775d38"
   end
 
-  head do
-    url "https://github.com/OSGeo/proj.4.git"
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
-  end
-
+  depends_on "cmake" => :build
+  depends_on "libtool" => :build
   depends_on "pkg-config" => :build
+  depends_on "libtiff"
 
-  conflicts_with "blast", :because => "both install a `libproj.a` library"
+  uses_from_macos "curl"
+  uses_from_macos "sqlite"
+
+  conflicts_with "blast", because: "both install a `libproj.a` library"
 
   skip_clean :la
 
@@ -31,11 +35,9 @@ class Proj < Formula
 
   def install
     (buildpath/"nad").install resource("datumgrid")
-
-    system "./autogen.sh" if build.head?
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+    system "cmake", "-S", ".", "-B", "build", *std_cmake_args, "-DCMAKE_INSTALL_RPATH=#{rpath}"
+    system "cmake", "--build", "build"
+    system "cmake", "--install", "build"
   end
 
   test do

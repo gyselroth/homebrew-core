@@ -1,34 +1,38 @@
 class Scw < Formula
-  desc "Manage BareMetal Servers from command-line (as easily as with Docker)"
+  desc "Command-line Interface for Scaleway"
   homepage "https://github.com/scaleway/scaleway-cli"
-  url "https://github.com/scaleway/scaleway-cli/archive/v1.19.tar.gz"
-  sha256 "307bb2a67cd8b8a7fb58524dfe3f65bbba476496c051e289e76f11d0508a0ab7"
-  head "https://github.com/scaleway/scaleway-cli.git"
+  url "https://github.com/scaleway/scaleway-cli/archive/v2.4.0.tar.gz"
+  sha256 "7baa6d7af5602703bc9b1f54beb5a36642151cc12d6584d6ab76df8bb088365e"
+  license "Apache-2.0"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "57a21449714df68f713fba876e8c2b4a62de751fd48cd51c15b5109d4a6fb74f" => :mojave
-    sha256 "f292e2359a0f203d78598f08c36c333a7e418bdd2da019dcb12b4a662b1d2e36" => :high_sierra
-    sha256 "585ec2a43d879705288fc165ca77f19d027976da976e38e72874b1273128c790" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "aab6889425b7988dc4625408b8aff4745919f54e36639955ea0f229161b10d4d"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "329526d63baa9f2bf9bf0ed6196ffab482af98c4f698ff51a8ff94b8e90589a8"
+    sha256 cellar: :any_skip_relocation, monterey:       "8e2ebcf8cf1972283e4b3495f45ee5d5e221c64c5dbb885794a7843bcc71614a"
+    sha256 cellar: :any_skip_relocation, big_sur:        "6632940d906d29f0e3c693e618d2c5c1a6972f15dbcfd35e1145b5543dde3658"
+    sha256 cellar: :any_skip_relocation, catalina:       "bc04b5b0dc0721749caa804bbe2581cdceadf4a590a83a57fc9b57b9b7399938"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "d950e6358f787d7927eb47d1296de6388ebb877f2fb13e421beb80c2658c9fc4"
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    ENV["GOBIN"] = buildpath
-    (buildpath/"src/github.com/scaleway/scaleway-cli").install Dir["*"]
+    system "go", "build", *std_go_args, "./cmd/scw"
 
-    system "go", "build", "-o", "#{bin}/scw", "-v", "-ldflags",
-           "-X github.com/scaleway/scaleway-cli/pkg/scwversion.GITCOMMIT=homebrew",
-           "github.com/scaleway/scaleway-cli/cmd/scw/"
+    zsh_output = Utils.safe_popen_read({ "SHELL" => "zsh" }, bin/"scw", "autocomplete", "script")
+    (zsh_completion/"_scw").write zsh_output
 
-    bash_completion.install "src/github.com/scaleway/scaleway-cli/contrib/completion/bash/scw.bash"
-    zsh_completion.install "src/github.com/scaleway/scaleway-cli/contrib/completion/zsh/_scw"
+    bash_output = Utils.safe_popen_read({ "SHELL" => "bash" }, bin/"scw", "autocomplete", "script")
+    (bash_completion/"scw").write bash_output
+
+    fish_output = Utils.safe_popen_read({ "SHELL" => "fish" }, bin/"scw", "autocomplete", "script")
+    (fish_completion/"scw.fish").write fish_output
   end
 
   test do
-    output = shell_output(bin/"scw version")
-    assert_match "OS/Arch (client): darwin/amd64", output
+    (testpath/"config.yaml").write ""
+    output = shell_output(bin/"scw -c config.yaml config set access-key=SCWXXXXXXXXXXXXXXXXX")
+    assert_match "✅ Successfully update config.", output
+    assert_match "access_key: SCWXXXXXXXXXXXXXXXXX", File.read(testpath/"config.yaml")
   end
 end

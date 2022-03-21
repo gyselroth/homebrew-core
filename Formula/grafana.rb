@@ -1,42 +1,51 @@
 class Grafana < Formula
   desc "Gorgeous metric visualizations and dashboards for timeseries databases"
   homepage "https://grafana.com"
-  url "https://github.com/grafana/grafana/archive/v6.2.4.tar.gz"
-  sha256 "cd2f440858cfe531e815c9769d21245e384a85e76c2de336c5596310c35698c0"
-  head "https://github.com/grafana/grafana.git"
+  url "https://github.com/grafana/grafana/archive/v8.4.4.tar.gz"
+  sha256 "eec93f907f9888ae9d81b9ec5531a3bf8d6ca5bb61e661e310edc56aea8dbd5a"
+  license "AGPL-3.0-only"
+  head "https://github.com/grafana/grafana.git", branch: "main"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "9bc8df095a1dd27984f792438ac1e2eb0cb4f12b337da4f6b3f8973f6b59b397" => :mojave
-    sha256 "68d71632f63c15257d05f21468e56c81a0fb0a64113420f5720510b04efb5bab" => :high_sierra
-    sha256 "eb34ab3214a981aca7490ceb6125b3fe183cd168e926c091cc1232a870e4a413" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "4b6ce0d5a511b07f93cb3b453f52310099ae6e8517be5ed521b15978608059d7"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "16047b3aacf71159f53bd9864c75b3bf0c291245c529d2987336ac0a471ca80d"
+    sha256 cellar: :any_skip_relocation, monterey:       "26399c4f0d8ff58f6cc7f08cb9c4d635c0c216e7e244ddaf01a40d8beebbce2a"
+    sha256 cellar: :any_skip_relocation, big_sur:        "81d1c87327e00b9781a72865650ae29b950b25c265b3ffe3da0a5cd0a5d400d1"
+    sha256 cellar: :any_skip_relocation, catalina:       "95809b00bac287a955ec56a40770f192e626eca6897ecd058a16201722e93b93"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "d7c9bdbed225a8ad68f293bd54eae7225548b9ab341e997233996d4d7319b59c"
   end
 
   depends_on "go" => :build
-  depends_on "node@10" => :build
+  depends_on "node" => :build
   depends_on "yarn" => :build
 
+  uses_from_macos "zlib"
+
+  on_linux do
+    depends_on "fontconfig"
+    depends_on "freetype"
+  end
+
   def install
-    ENV["GOPATH"] = buildpath
-    grafana_path = buildpath/"src/github.com/grafana/grafana"
-    grafana_path.install buildpath.children
+    ENV["NODE_OPTIONS"] = "--max-old-space-size=8000"
+    system "make", "gen-go"
+    system "go", "run", "build.go", "build"
 
-    cd grafana_path do
-      system "go", "run", "build.go", "build"
+    system "yarn", "install"
+    system "yarn", "build"
 
-      system "yarn", "install", "--ignore-engines"
-
-      system "node_modules/grunt-cli/bin/grunt", "build"
-
-      bin.install "bin/darwin-amd64/grafana-cli"
-      bin.install "bin/darwin-amd64/grafana-server"
-      (etc/"grafana").mkpath
-      cp("conf/sample.ini", "conf/grafana.ini.example")
-      etc.install "conf/sample.ini" => "grafana/grafana.ini"
-      etc.install "conf/grafana.ini.example" => "grafana/grafana.ini.example"
-      pkgshare.install "conf", "public", "tools", "vendor"
-      prefix.install_metafiles
+    if OS.mac?
+      bin.install Dir["bin/darwin-*/grafana-cli"]
+      bin.install Dir["bin/darwin-*/grafana-server"]
+    else
+      bin.install "bin/linux-amd64/grafana-cli"
+      bin.install "bin/linux-amd64/grafana-server"
     end
+    (etc/"grafana").mkpath
+    cp("conf/sample.ini", "conf/grafana.ini.example")
+    etc.install "conf/sample.ini" => "grafana/grafana.ini"
+    etc.install "conf/grafana.ini.example" => "grafana/grafana.ini.example"
+    pkgshare.install "conf", "public", "tools"
   end
 
   def post_install
@@ -44,48 +53,18 @@ class Grafana < Formula
     (var/"lib/grafana/plugins").mkpath
   end
 
-  plist_options :manual => "grafana-server --config=#{HOMEBREW_PREFIX}/etc/grafana/grafana.ini --homepath #{HOMEBREW_PREFIX}/share/grafana --packaging=brew cfg:default.paths.logs=#{HOMEBREW_PREFIX}/var/log/grafana cfg:default.paths.data=#{HOMEBREW_PREFIX}/var/lib/grafana cfg:default.paths.plugins=#{HOMEBREW_PREFIX}/var/lib/grafana/plugins"
-
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>KeepAlive</key>
-        <dict>
-          <key>SuccessfulExit</key>
-          <false/>
-        </dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_bin}/grafana-server</string>
-          <string>--config</string>
-          <string>#{etc}/grafana/grafana.ini</string>
-          <string>--homepath</string>
-          <string>#{opt_pkgshare}</string>
-          <string>--packaging=brew</string>
-          <string>cfg:default.paths.logs=#{var}/log/grafana</string>
-          <string>cfg:default.paths.data=#{var}/lib/grafana</string>
-          <string>cfg:default.paths.plugins=#{var}/lib/grafana/plugins</string>
-        </array>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>WorkingDirectory</key>
-        <string>#{var}/lib/grafana</string>
-        <key>StandardErrorPath</key>
-        <string>#{var}/log/grafana/grafana-stderr.log</string>
-        <key>StandardOutPath</key>
-        <string>#{var}/log/grafana/grafana-stdout.log</string>
-        <key>SoftResourceLimits</key>
-        <dict>
-          <key>NumberOfFiles</key>
-          <integer>10240</integer>
-        </dict>
-      </dict>
-    </plist>
-  EOS
+  service do
+    run [opt_bin/"grafana-server",
+         "--config", etc/"grafana/grafana.ini",
+         "--homepath", opt_pkgshare,
+         "--packaging=brew",
+         "cfg:default.paths.logs=#{var}/log/grafana",
+         "cfg:default.paths.data=#{var}/lib/grafana",
+         "cfg:default.paths.plugins=#{var}/lib/grafana/plugins"]
+    keep_alive true
+    error_log_path var/"log/grafana-stderr.log"
+    log_path var/"log/grafana-stdout.log"
+    working_dir var/"lib/grafana"
   end
 
   test do
@@ -115,10 +94,10 @@ class Grafana < Formula
     w = res[1]
     pid = res[2]
 
-    listening = Timeout.timeout(5) do
+    listening = Timeout.timeout(10) do
       li = false
       r.each do |l|
-        if l =~ /Initializing HTTPServer/
+        if /HTTP Server Listen/.match?(l)
           li = true
           break
         end

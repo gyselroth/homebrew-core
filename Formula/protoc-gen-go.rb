@@ -1,27 +1,27 @@
 class ProtocGenGo < Formula
   desc "Go support for Google's protocol buffers"
-  homepage "https://github.com/golang/protobuf"
-  url "https://github.com/golang/protobuf/archive/v1.3.1.tar.gz"
-  sha256 "3f3a6123054a9847093c119895f1660612f301fe95358f3a6a1a33fd0933e6cf"
-  revision 1
-  head "https://github.com/golang/protobuf.git"
+  homepage "https://github.com/protocolbuffers/protobuf-go"
+  url "https://github.com/protocolbuffers/protobuf-go/archive/v1.27.1.tar.gz"
+  sha256 "3ec41a8324431e72f85e0dc0c2c098cc14c3cb1ee8820996c8f46afca2d65609"
+  license "BSD-3-Clause"
+  head "https://github.com/protocolbuffers/protobuf-go.git", branch: "master"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "80c035e22ba7de3927be1ee7dd10427827799d5fe06d001da19b760413c9f292" => :mojave
-    sha256 "010f1f168b06ca15d68d349ffcbb4e2ac956145e751fe88b678baf7d0a773786" => :high_sierra
-    sha256 "135dca0f702150d991b367c495a7c55ad05636490c74e6928cb336ae100bb252" => :sierra
+    sha256 cellar: :any_skip_relocation, arm64_monterey: "08363c023c5841eff91cbea29452c902b615516196fcb68d826b4dc877d2e3d8"
+    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "577196328ed1d829d999d7eb7a1fbdcd340831619b5e53db1e9ff880bb0514cb"
+    sha256 cellar: :any_skip_relocation, monterey:       "eb5cf886304f8d4079b81e5f698f2999b9c1f1b9d63abe7a156a21f9dc620baa"
+    sha256 cellar: :any_skip_relocation, big_sur:        "3990c0be0447ef4cebc03575c737a01a8a7af9e3766cb014addc4c932eeb4228"
+    sha256 cellar: :any_skip_relocation, catalina:       "3990c0be0447ef4cebc03575c737a01a8a7af9e3766cb014addc4c932eeb4228"
+    sha256 cellar: :any_skip_relocation, mojave:         "3990c0be0447ef4cebc03575c737a01a8a7af9e3766cb014addc4c932eeb4228"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "bf23c02b98cfea6ed4a0d293a6f669b61fa11c6a04f5288ae6d910b20c0a8f4c"
   end
 
   depends_on "go" => :build
   depends_on "protobuf"
 
   def install
-    ENV["GOPATH"] = buildpath
-    ENV["GO111MODULE"] = "off"
-    (buildpath/"src/github.com/golang/protobuf").install buildpath.children
-    system "go", "install", "github.com/golang/protobuf/protoc-gen-go"
-    bin.install buildpath/"bin/protoc-gen-go"
+    system "go", "build", *std_go_args(ldflags: "-s -w"), "./cmd/protoc-gen-go"
+    prefix.install_metafiles
   end
 
   test do
@@ -29,12 +29,13 @@ class ProtocGenGo < Formula
     protofile.write <<~EOS
       syntax = "proto3";
       package proto3;
+      option go_package = "package/test";
       message Request {
         string name = 1;
         repeated int64 key = 2;
       }
     EOS
-    system "protoc", "--go_out=.", "proto3.proto"
+    system "protoc", "--go_out=.", "--go_opt=paths=source_relative", "proto3.proto"
     assert_predicate testpath/"proto3.pb.go", :exist?
     refute_predicate (testpath/"proto3.pb.go").size, :zero?
   end
