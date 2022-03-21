@@ -5,8 +5,6 @@ class Tubectl < Formula
   sha256 "bc6b8e1e98eceb79542323cb635942d9f0e99ed26128cc1d6041043bef111f7d"
   version "1.2.2"
 
-  bottle :unneeded
-
   def install
     bin.install "tubectl-osx-x64"
     mv bin/"tubectl-osx-x64", bin/"tubectl"
