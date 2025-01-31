@@ -1,4 +1,4 @@
-class Tutbectltest < Formula
+class Tubectltest < Formula
   desc "tubectl testing"
   homepage "https://github.com/gyselroth/tubee-client-cli"
   version "1.3.2-beta1"
