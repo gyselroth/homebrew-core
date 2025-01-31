@@ -1,4 +1,4 @@
-class Tubectl-x64 < Formula
+class Tubectl_x64 < Formula
   desc "The tubectl-x64 for OS X"
   homepage "https://github.com/gyselroth/tubee-client-cli"
   url "https://github.com/gyselroth/tubee-client-cli/releases/download/v1.3.2-beta1/tubectl-osx-x64"
