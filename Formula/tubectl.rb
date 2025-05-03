@@ -1,16 +1,16 @@
 class Tubectl < Formula
   desc "The tubectl for OS X"
   homepage "https://github.com/gyselroth/tubee-client-cli"
-  version "1.3.2"
+  version "1.3.3"
 
   on_arm do
-    sha256 "d89224bc9874e9c5841d6c5ea6084a28009d22ffd3e674174502023c566f749f"
-    url "https://github.com/gyselroth/tubee-client-cli/releases/download/v1.3.2/tubectl-osx-x64"
+    sha256 "dd29884a134de07e403f70645408ec12b62a4de76987f83d9d8ff731b189561b"
+    url "https://github.com/gyselroth/tubee-client-cli/releases/download/v1.3.3/tubectl-osx-x64"
   end
 
   on_intel do
-    sha256 "b3dd6952b57616ebd050a14982e2ce0f29171eaa8f050a60c15308a7e0898f7c"
-    url "https://github.com/gyselroth/tubee-client-cli/releases/download/v1.3.2/tubectl-osx-x64"
+    sha256 "7e25c06d610249bef15e189c713efa937fc4bf5d5053502508d5f4473b5e2b77"
+    url "https://github.com/gyselroth/tubee-client-cli/releases/download/v1.3.3/tubectl-osx-x64"
   end
 
   def install
