@@ -5,7 +5,7 @@ class Tubectl < Formula
 
   on_arm do
     sha256 "509ede7952813527630824bc99f1f21e9bcfd915825da0aa861517924451636a"
-    url "https://github.com/gyselroth/tubee-client-cli/releases/download/v1.3.4/tubectl-osx-x64"
+    url "https://github.com/gyselroth/tubee-client-cli/releases/download/v1.3.4/tubectl-osx-arm64"
   end
 
   on_intel do
